@@ -1,4 +1,4 @@
-# 탐사 시스템 설계 (v0.6)
+﻿# 탐사 시스템 설계 (v0.6)
 
 > 상위 문서: game_blueprint.md (코어 시스템 1축: 탐사)
 > 관련 문서: system_npc_relationship.md (유닛 조우/영입 상세, 파티 편성)

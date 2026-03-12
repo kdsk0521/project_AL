@@ -1,4 +1,4 @@
-# 경영 시스템 설계 (v0.6)
+﻿# 경영 시스템 설계 (v0.6)
 
 > 상위 문서: game_blueprint.md (코어 시스템 3축: 경영)
 > 관련 문서: system_npc_relationship.md (가게 배치 보너스, 게시판/주문서 시스템)

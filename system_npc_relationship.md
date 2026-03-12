@@ -1,4 +1,4 @@
-# NPC 제로 환경: 조우 & 관계 & 서사 전달 시스템 설계 (v0.2)
+﻿# NPC 제로 환경: 조우 & 관계 & 서사 전달 시스템 설계 (v0.2)
 
 > 상위 문서: system_unit.md, world_setting.md
 > 관련 문서: system_exploration.md (탐사), system_economy.md (경영)
