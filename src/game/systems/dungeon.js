@@ -223,11 +223,11 @@ class DungeonSystem {
       loot.push({ id: 'MAT_IRON_ORE', qty: 3, name: '철광석' });
       loot.push({ id: 'MAT_HERB', qty: 3, name: '약초' });
     } else if (floor <= 10) {
-      loot.push({ id: 'MAT_DEEP_WATER', qty: 2, name: '심층수' });
+      loot.push({ id: 'MAT_WATER', qty: 2, name: '물' });
       loot.push({ id: 'MAT_MAGIC_STONE', qty: 2, name: '마력석' });
     } else {
-      loot.push({ id: 'MAT_MAGIC_RESIDUE', qty: 2, name: '마력 잔재' });
-      loot.push({ id: 'MAT_ANCIENT_PART', qty: 2, name: '고대 부품' });
+      loot.push({ id: 'MAT_CATALYST_GRASS', qty: 2, name: '촉매초' });
+      loot.push({ id: 'MAT_MAGIC_STONE', qty: 2, name: '마력석' });
     }
 
     for (const item of loot) {

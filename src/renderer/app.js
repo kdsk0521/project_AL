@@ -89,6 +89,43 @@ class App {
     this.outputEl.scrollTop = this.outputEl.scrollHeight;
   }
 
+  // Clickable menu option — highlights on hover, executes command on click
+  printOption(cmd, text, className = 'menu') {
+    const line = document.createElement('div');
+    line.className = `output-line ${className} clickable`;
+    line.innerHTML = text;
+    line.dataset.cmd = cmd;
+    line.addEventListener('click', () => {
+      this.print(`> ${cmd}`, 'command');
+      this.processCommand(cmd);
+    });
+    this.outputEl.appendChild(line);
+    this.outputEl.scrollTop = this.outputEl.scrollHeight;
+  }
+
+  // Fixed action bar — always visible at bottom, shows current choices
+  setActions(actions) {
+    // actions = [{key: '1', label: '탐사 준비'}, {key: 'r', label: '귀환하기'}, ...]
+    const bar = document.getElementById('action-bar');
+    if (!bar) return;
+    bar.innerHTML = '';
+    for (const a of actions) {
+      const btn = document.createElement('button');
+      btn.className = 'action-btn';
+      btn.innerHTML = `<span class="key">[${a.key}]</span>${a.label}`;
+      btn.addEventListener('click', () => {
+        this.print(`> ${a.key}`, 'command');
+        this.processCommand(a.key);
+      });
+      bar.appendChild(btn);
+    }
+  }
+
+  clearActions() {
+    const bar = document.getElementById('action-bar');
+    if (bar) bar.innerHTML = '';
+  }
+
   printSeparator() {
     this.print('─'.repeat(60), 'dim');
   }
@@ -168,6 +205,7 @@ class App {
       case 'dungeon_prep':       this.handleDungeonPrep(cmd);       break;
       case 'dungeon_node':       this.handleDungeonNode(cmd);       break;
       case 'encounter':          this.handleEncounter(cmd);         break;
+      case 'recruit_choice':     this.handleRecruitChoice(cmd);     break;
       case 'combat':             this.handleCombat(cmd);            break;
       case 'combat_result':      this.handleCombatResult(cmd);      break;
       case 'crafting':           this.handleCrafting(cmd);          break;
@@ -200,6 +238,7 @@ class App {
   // ============================================================
   showMainMenu() {
     this.clearOutput();
+    this.clearActions();
     this.currentScreen = 'main_menu';
     this.printBlank();
     this.print('╔══════════════════════════════════════════╗', 'system');
@@ -207,14 +246,12 @@ class App {
     this.print('║      미 궁  연 금 술 사  알 파           ║', 'system');
     this.print('║      Labyrinth Alchemist Alpha           ║', 'system');
     this.print('║                                          ║', 'system');
-    this.print('╠══════════════════════════════════════════╣', 'system');
-    this.print('║                                          ║', 'system');
-    this.print('║   1. 새 게임                             ║', 'system');
-    this.print('║   2. 계속하기                            ║', 'system');
-    this.print('║                                          ║', 'system');
     this.print('╚══════════════════════════════════════════╝', 'system');
     this.printBlank();
-    this.print('번호를 입력하세요.', 'dim');
+    this.printOption('1', '  1. 새 게임');
+    this.printOption('2', '  2. 계속하기');
+    this.printBlank();
+    this.setActions([{key:'1', label:'새 게임'}, {key:'2', label:'계속하기'}]);
   }
 
   handleMainMenu(cmd) {
@@ -265,7 +302,8 @@ class App {
       this.print(`  인(${starter.sigilName}) | ${starter.category} | Lv.${starter.level}`, 'dim');
     }
     this.printBlank();
-    this.print('[아무 키나 입력하여 계속]', 'system');
+    this.printOption('1', '  [계속]');
+    this.setActions([{key:'1', label:'계속'}]);
   }
 
   handleIntro(_cmd) {
@@ -289,15 +327,20 @@ class App {
     this.printBlank();
     this.print('도시의 중심 광장. 탐사자들이 분주히 오가고 있다.', 'description');
     this.printBlank();
-    this.print('  1. 탐사 준비    — 미궁에 진입한다', 'menu');
-    this.print('  2. 조합/가공    — 공방에서 제작한다', 'menu');
-    this.print('  3. 유닛 관리    — 유닛을 확인/육성한다', 'menu');
-    this.print('  4. 도시 시설    — 시설을 관리한다', 'menu');
-    this.print('  5. 전서         — 유닛을 구매/등록한다', 'menu');
-    this.print('  6. 인벤토리     — 소지품을 확인한다', 'menu');
-    this.print('  7. 하루 넘기기', 'menu');
-    this.print('  8. 저장', 'menu');
+    this.printOption('1', '  1. 탐사 준비    — 미궁에 진입한다');
+    this.printOption('2', '  2. 조합/가공    — 공방에서 제작한다');
+    this.printOption('3', '  3. 유닛 관리    — 유닛을 확인/육성한다');
+    this.printOption('4', '  4. 도시 시설    — 시설을 관리한다');
+    this.printOption('5', '  5. 전서         — 유닛을 구매/등록한다');
+    this.printOption('6', '  6. 인벤토리     — 소지품을 확인한다');
+    this.printOption('7', '  7. 하루 넘기기');
+    this.printOption('8', '  8. 저장');
     this.printBlank();
+    this.setActions([
+      {key:'1', label:'탐사'}, {key:'2', label:'조합'}, {key:'3', label:'유닛'},
+      {key:'4', label:'시설'}, {key:'5', label:'전서'}, {key:'6', label:'인벤토리'},
+      {key:'7', label:'넘기기'}, {key:'8', label:'저장'}
+    ]);
     this.updateStatus();
   }
 
@@ -356,6 +399,7 @@ class App {
     this.printBlank();
     this.print('진입할 층 번호를 입력하세요. (0 = 돌아가기)', 'dim');
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
   }
 
@@ -424,7 +468,7 @@ class App {
       this.print('이동 가능한 노드:', 'system');
       connected.forEach((n, i) => {
         const nType = typeNames[n.type] || n.type;
-        this.print(`  ${i + 1}. ${n.name || n.id} [${nType}]`, 'menu');
+        this.printOption(`${i + 1}`, `  ${i + 1}. ${n.name || n.id} [${nType}]`);
       });
     }
     this.printBlank();
@@ -432,38 +476,52 @@ class App {
     // Node-type-specific actions
     switch (node.type) {
       case 'entrance':
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('r', '  r. 귀환하기');
         break;
       case 'exit':
-        this.print('  d. 다음 층으로 내려가기', 'menu');
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('d', '  d. 다음 층으로 내려가기');
+        this.printOption('r', '  r. 귀환하기');
         break;
       case 'collect':
-        this.print('  c. 채집하기', 'menu');
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('c', '  c. 채집하기');
+        this.printOption('r', '  r. 귀환하기');
         break;
       case 'rest':
-        this.print('  h. 휴식하기 (체력 회복)', 'menu');
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('h', '  h. 휴식하기 (체력 회복)');
+        this.printOption('r', '  r. 귀환하기');
         break;
       case 'chest':
-        this.print('  o. 상자 열기', 'menu');
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('o', '  o. 상자 열기');
+        this.printOption('r', '  r. 귀환하기');
         break;
       case 'event':
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('r', '  r. 귀환하기');
         break;
       case 'combat':
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('r', '  r. 귀환하기');
         break;
       case 'boss':
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('r', '  r. 귀환하기');
         break;
       default:
-        this.print('  r. 귀환하기', 'menu');
+        this.printOption('r', '  r. 귀환하기');
         break;
     }
     this.printBlank();
+
+    // Build fixed action bar for dungeon
+    const actions = [];
+    connected.forEach((n, i) => {
+      const nType = typeNames[n.type] || n.type;
+      actions.push({key: `${i+1}`, label: `${n.id} [${nType}]`});
+    });
+    if (node.type === 'exit') actions.push({key:'d', label:'다음 층'});
+    if (node.type === 'collect') actions.push({key:'c', label:'채집'});
+    if (node.type === 'rest') actions.push({key:'h', label:'휴식'});
+    if (node.type === 'chest') actions.push({key:'o', label:'상자'});
+    actions.push({key:'r', label:'귀환'});
+    this.setActions(actions);
+
     this.updateStatus();
   }
 
@@ -601,7 +659,7 @@ class App {
         this.print(moveResult.event.lore, 'lore');
       }
       this.printBlank();
-      this.print('[아무 키나 입력하여 계속]', 'system');
+      this.printOption('1', '  [계속]');
       this.currentScreen = 'dungeon_node';
       const self = this;
       const origHandler = this.handleDungeonNode.bind(this);
@@ -629,7 +687,7 @@ class App {
       }
       this.printBlank();
     }
-    this.print('[아무 키나 입력하여 마을로 돌아가기]', 'system');
+    this.printOption('1', '  [마을로 돌아가기]');
     this.currentScreen = 'advance_day';
     const self = this;
     this.handleAdvanceDay = function(_c) {
@@ -663,10 +721,13 @@ class App {
       this.print(`  성향: ${ud.personalityTraits.join(', ')}`, 'dim');
     }
     this.printBlank();
-    this.print('  1. 대화 (교섭)', 'menu');
-    this.print('  2. 전투', 'menu');
-    this.print('  3. 도주', 'menu');
+    this.printOption('1', '  1. 대화 (교섭)');
+    this.printOption('2', '  2. 전투');
+    this.printOption('3', '  3. 도주');
     this.printBlank();
+    this.setActions([
+      {key:'1', label:'대화(교섭)'}, {key:'2', label:'전투'}, {key:'3', label:'도주'}
+    ]);
   }
 
   handleEncounter(cmd) {
@@ -703,15 +764,30 @@ class App {
       this.print(`${enc.unitDef.name}이(가) 동료가 되었다!`, 'success');
       this.print(`  인: ${instance.sigilName} | Lv.${instance.level} | ${instance.category}`, 'unit');
       this.printBlank();
-      this.print('[아무 키나 입력하여 계속]', 'system');
-      this.currentScreen = 'dungeon_node';
-      const self = this;
-      const origHandler = this.handleDungeonNode.bind(this);
-      this.handleDungeonNode = function(_c) {
-        self.handleDungeonNode = origHandler;
-        self.updateStatus();
-        self.showDungeonNode();
-      };
+
+      // Check if party has room
+      const partySize = this.engine.state.party.length;
+      const maxParty = this.engine.state.maxPartySize;
+      if (partySize < maxParty) {
+        this.print(`파티에 빈 자리가 있다. (${partySize}/${maxParty})`, 'system');
+        this.printOption('1', '  1. 파티에 편입');
+        this.printOption('2', '  2. 공방으로 송환');
+        this.printBlank();
+        this._recruitedInstance = instance;
+        this.currentScreen = 'recruit_choice';
+      } else {
+        this.print(`파티가 가득 차 있어 공방으로 송환된다. (${partySize}/${maxParty})`, 'dim');
+        this.printBlank();
+        this.printOption('1', '  [계속]');
+        this.currentScreen = 'dungeon_node';
+        const self = this;
+        const origHandler = this.handleDungeonNode.bind(this);
+        this.handleDungeonNode = function(_c) {
+          self.handleDungeonNode = origHandler;
+          self.updateStatus();
+          self.showDungeonNode();
+        };
+      }
     } else {
       // Failure
       const failResult = this.dungeon.handleNegotiationFailure(enc.unitDef, this._negotiationAttempt);
@@ -721,7 +797,7 @@ class App {
       if (failResult.result === 'fight') {
         this.print('전투가 시작된다!', 'combat');
         this.printBlank();
-        this.print('[아무 키나 입력하여 전투 시작]', 'system');
+        this.printOption('1', '  [전투 시작]');
         this.currentScreen = 'encounter';
         const self = this;
         const origEncHandler = this.handleEncounter.bind(this);
@@ -730,7 +806,7 @@ class App {
           self.startCombatFromEncounter();
         };
       } else if (failResult.result === 'flee') {
-        this.print('[아무 키나 입력하여 계속]', 'system');
+        this.printOption('1', '  [계속]');
         this.currentScreen = 'dungeon_node';
         const self = this;
         const origHandler = this.handleDungeonNode.bind(this);
@@ -740,14 +816,14 @@ class App {
         };
       } else if (failResult.result === 'rejected' && this._negotiationAttempt < 2) {
         // Can try again
-        this.print('  1. 다시 대화 시도', 'menu');
-        this.print('  2. 전투', 'menu');
-        this.print('  3. 도주', 'menu');
+        this.printOption('1', '  1. 다시 대화 시도');
+        this.printOption('2', '  2. 전투');
+        this.printOption('3', '  3. 도주');
         this.printBlank();
         // Stay on encounter screen
       } else {
         // ignore — unit leaves
-        this.print('[아무 키나 입력하여 계속]', 'system');
+        this.printOption('1', '  [계속]');
         this.currentScreen = 'dungeon_node';
         const self = this;
         const origHandler = this.handleDungeonNode.bind(this);
@@ -764,7 +840,7 @@ class App {
     if (Math.random() < 0.7) {
       this.print('빠르게 뒤로 물러선다. 도주 성공!', 'success');
       this.printBlank();
-      this.print('[아무 키나 입력하여 계속]', 'system');
+      this.printOption('1', '  [계속]');
       this.currentScreen = 'dungeon_node';
       const self = this;
       const origHandler = this.handleDungeonNode.bind(this);
@@ -775,7 +851,7 @@ class App {
     } else {
       this.print('도주에 실패했다! 전투가 시작된다!', 'combat');
       this.printBlank();
-      this.print('[아무 키나 입력하여 전투 시작]', 'system');
+      this.printOption('1', '  [전투 시작]');
       this.currentScreen = 'encounter';
       const self = this;
       const origEncHandler = this.handleEncounter.bind(this);
@@ -789,6 +865,24 @@ class App {
   // ============================================================
   //  SCREEN: Combat
   // ============================================================
+  handleRecruitChoice(cmd) {
+    const n = parseInt(cmd);
+    const instance = this._recruitedInstance;
+    if (!instance) { this.showDungeonNode(); return; }
+
+    if (n === 1) {
+      // 파티 편입
+      this.engine.state.party.push(instance.instanceId);
+      this.print(`${instance.name}이(가) 파티에 합류했다!`, 'success');
+    } else {
+      this.print(`${instance.name}은(는) 공방으로 보내졌다.`, 'dim');
+    }
+    this._recruitedInstance = null;
+    this.printBlank();
+    this.updateStatus();
+    this.showDungeonNode();
+  }
+
   startCombatFromEncounter() {
     const enc = this._encounter;
     if (!enc) {
@@ -848,9 +942,10 @@ class App {
       return;
     }
 
-    this.print('  1. 다음 라운드 (계속)', 'menu');
-    this.print('  2. 아이템 사용', 'menu');
-    this.print('  3. 도주', 'menu');
+    this.printOption('1', '  1. 다음 라운드 (계속)');
+    this.printOption('2', '  2. 아이템 사용');
+    this.printOption('3', '  3. 도주');
+    this.setActions([{key:'1', label:'계속'}, {key:'2', label:'아이템'}, {key:'3', label:'도주'}]);
     this.printBlank();
   }
 
@@ -901,9 +996,9 @@ class App {
         if (!u.isKO) this.print(`  ${u.name} HP:${u.hp}/${u.maxHp}`, 'danger');
       }
       this.printBlank();
-      this.print('  1. 다음 라운드 (계속)', 'menu');
-      this.print('  2. 아이템 사용', 'menu');
-      this.print('  3. 도주', 'menu');
+      this.printOption('1', '  1. 다음 라운드 (계속)');
+      this.printOption('2', '  2. 아이템 사용');
+      this.printOption('3', '  3. 도주');
       this.printBlank();
     }
     this.updateStatus();
@@ -927,9 +1022,9 @@ class App {
 
     this.print('사용 가능한 아이템:', 'system');
     usableItems.forEach((item, i) => {
-      this.print(`  ${i + 1}. ${item.name} x${item.qty} — ${item.effect.desc}`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${item.name} x${item.qty} — ${item.effect.desc}`);
     });
-    this.print('  0. 취소', 'menu');
+    this.printOption('0', '  0. 취소');
     this.printBlank();
 
     // Temporarily override handler for item selection
@@ -989,7 +1084,7 @@ class App {
       // Apply partial results
       this.combat.applyBattleResults();
       this.updateStatus();
-      this.print('[아무 키나 입력하여 계속]', 'system');
+      this.printOption('1', '  [계속]');
       this.currentScreen = 'combat_result';
       this._combatWon = false;
       this._combatFled = true;
@@ -1025,17 +1120,43 @@ class App {
         if (results.drops.length > 0) {
           this.print('획득 아이템:', 'system');
           for (const drop of results.drops) {
-            this.print(`  ${drop.name} x${drop.qty}`, 'lore');
+            this.print(`  ▸ ${drop.name} ×${drop.qty}`, 'lore');
           }
         }
         if (results.expGained > 0) {
           this.print(`전투 경험치: +${Math.floor(results.expGained)}`, 'success');
         }
+
+        // Boss milestone check
+        const enemies = bs.enemies || [];
+        const defeatedBoss = enemies.find(e => e.isBoss);
+        if (defeatedBoss) {
+          const floor = this.engine.state.dungeon.currentFloor;
+          this.printBlank();
+          this.print(`★ 보스 격파! (${floor}층)`, 'lore');
+
+          if (floor === 5 && !this.engine.state.milestones.firstBossDefeated) {
+            this.engine.state.milestones.firstBossDefeated = true;
+          }
+          if (floor === 10 && !this.engine.state.milestones.floor10Cleared) {
+            this.engine.state.milestones.floor10Cleared = true;
+          }
+          if (floor === 15 && !this.engine.state.milestones.floor15Cleared) {
+            this.engine.state.milestones.floor15Cleared = true;
+          }
+
+          // Apply milestone rewards (party expansion etc.)
+          const rewards = this.engine.checkMilestones();
+          for (const r of rewards) {
+            this.print(`  ★ ${r}`, 'success');
+          }
+        }
       }
     }
 
     this.printBlank();
-    this.print('[아무 키나 입력하여 계속]', 'system');
+    this.printOption('1', '  [계속]');
+    this.setActions([{key:'1', label:'계속'}]);
     this.updateStatus();
   }
 
@@ -1087,11 +1208,12 @@ class App {
     const eq = this.engine.state.equipment;
     this.print(`  장비: 가마${eq.furnace ? '(O)' : '(X)'} | 분쇄기${eq.crusher ? '(O)' : '(X)'} | 압축기${eq.compressor ? '(O)' : '(X)'}`, 'dim');
     this.printBlank();
-    this.print('  1. 가공 (재료에 장비 사용)', 'menu');
-    this.print('  2. 조합 (재료 2개 합성)', 'menu');
-    this.print('  3. 레시피 확인', 'menu');
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('1', '  1. 가공 (재료에 장비 사용)');
+    this.printOption('2', '  2. 조합 (재료 2개 합성)');
+    this.printOption('3', '  3. 레시피 확인');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
+    this.setActions([{key:'1', label:'가공'}, {key:'2', label:'조합'}, {key:'3', label:'레시피'}, {key:'0', label:'돌아가기'}]);
     this.updateStatus();
   }
 
@@ -1119,16 +1241,16 @@ class App {
     if (matIds.length === 0) {
       this.print('  가공 가능한 재료가 없습니다.', 'dim');
       this.printBlank();
-      this.print('  0. 돌아가기', 'menu');
+      this.printOption('0', '  0. 돌아가기');
       return;
     }
 
     matIds.forEach((matId, i) => {
       const name = this.engine.getMaterialName(matId);
-      this.print(`  ${i + 1}. ${name} x${inv[matId]}`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${name} x${inv[matId]}`);
     });
     this.printBlank();
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
   }
 
@@ -1160,10 +1282,10 @@ class App {
     this.printBlank();
     this.print(`── ${matName} 가공 장비 선택 ──`, 'system');
     options.forEach((opt, i) => {
-      this.print(`  ${i + 1}. ${opt.name}`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${opt.name}`);
     });
     this.printBlank();
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
   }
 
@@ -1195,6 +1317,7 @@ class App {
       if (tagStr) this.print(`  태그: ${tagStr}`, 'dim');
     }
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
 
     // Return to crafting process select
@@ -1214,17 +1337,19 @@ class App {
     if (matIds.length < 2) {
       this.print('  조합하려면 재료가 2종류 이상 필요합니다.', 'dim');
       this.printBlank();
-      this.print('  0. 돌아가기', 'menu');
+      this.printOption('0', '  0. 돌아가기');
+      this.setActions([{key:'0', label:'돌아가기'}]);
       return;
     }
 
     matIds.forEach((matId, i) => {
       const name = this.engine.getMaterialName(matId);
-      this.print(`  ${i + 1}. ${name} x${inv[matId]}`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${name} x${inv[matId]}`);
     });
     this.printBlank();
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
   }
 
   handleCraftingCombine(cmd) {
@@ -1256,10 +1381,10 @@ class App {
 
     matIds.forEach((matId, i) => {
       const name = this.engine.getMaterialName(matId);
-      this.print(`  ${i + 1}. ${name} x${inv[matId]}`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${name} x${inv[matId]}`);
     });
     this.printBlank();
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
   }
 
@@ -1304,11 +1429,12 @@ class App {
       this.print(`  모순 수: ${result.contradictions}`, 'dim');
     }
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
 
     // Return to crafting menu
     this.currentScreen = 'crafting';
-    this.print('  0. 돌아가기 / 번호 입력으로 계속', 'menu');
+    this.printOption('0', '  0. 돌아가기 / 번호 입력으로 계속');
   }
 
   showRecipeList() {
@@ -1324,10 +1450,15 @@ class App {
         const matNames = (r.materials || []).map(mid => this.engine.getMaterialName(mid));
         const canCraft = this.crafting.canCraftRecipe(r);
         const craftTag = canCraft ? '[제작 가능]' : '[재료 부족]';
-        this.print(`  ${i + 1}. ${r.name} ← ${matNames.join(' + ')} ${craftTag}`, canCraft ? 'menu' : 'dim');
+        if (canCraft) {
+          this.printOption(`${i + 1}`, `  ${i + 1}. ${r.name} ← ${matNames.join(' + ')} ${craftTag}`);
+        } else {
+          this.print(`  ${i + 1}. ${r.name} ← ${matNames.join(' + ')} ${craftTag}`, 'dim');
+        }
       });
     }
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
   }
 
   // ============================================================
@@ -1361,6 +1492,7 @@ class App {
     this.printBlank();
     this.print('유닛 번호를 입력하여 상세 보기 (0 = 돌아가기)', 'dim');
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
   }
 
@@ -1427,15 +1559,16 @@ class App {
 
     const inParty = this.engine.state.party.includes(u.instanceId);
     this.printBlank();
-    this.print('  1. 훈련 (전투 경험치)', 'menu');
-    this.print('  2. 교류 (호감도)', 'menu');
-    this.print('  3. 조교', 'menu');
-    this.print('  4. 장비 변경', 'menu');
-    this.print(`  5. 파티 편성 (현재: ${inParty ? '편성됨' : '미편성'})`, 'menu');
-    this.print('  6. 납품 (영혼력 획득)', 'menu');
-    this.print('  7. 합체 (유닛 합성)', 'menu');
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('1', '  1. 훈련 (전투 경험치)');
+    this.printOption('2', '  2. 교류 (호감도)');
+    this.printOption('3', '  3. 조교');
+    this.printOption('4', '  4. 장비 변경');
+    this.printOption('5', `  5. 파티 편성 (현재: ${inParty ? '편성됨' : '미편성'})`);
+    this.printOption('6', '  6. 납품 (영혼력 획득)');
+    this.printOption('7', '  7. 합체 (유닛 합성)');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
+    this.setActions([{key:'1',label:'훈련'},{key:'2',label:'교류'},{key:'3',label:'조교'},{key:'5',label:'파티'},{key:'6',label:'납품'},{key:'7',label:'합체'},{key:'0',label:'돌아가기'}]);
     this.updateStatus();
   }
 
@@ -1539,9 +1672,9 @@ class App {
       const slotName = item.category === 'equipment_weapon' ? '무기' :
                         item.category === 'equipment_armor' ? '방어구' : '장신구';
       const effectDesc = item.effect ? item.effect.desc : '';
-      this.print(`  ${i + 1}. ${item.name} [${slotName}] ${effectDesc}`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${item.name} [${slotName}] ${effectDesc}`);
     });
-    this.print('  0. 취소', 'menu');
+    this.printOption('0', '  0. 취소');
     this.printBlank();
 
     this._equipItems = equipItems;
@@ -1647,15 +1780,15 @@ class App {
 
     if (units.length === 0) {
       this.print('합체 가능한 다른 유닛이 없습니다.', 'dim');
-      this.print('  0. 돌아가기', 'menu');
+      this.printOption('0', '  0. 돌아가기');
       return;
     }
 
     units.forEach((u, i) => {
-      this.print(`  ${i + 1}. ${u.name} Lv.${u.level} (인:${u.sigilName})`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${u.name} Lv.${u.level} (인:${u.sigilName})`);
     });
     this.printBlank();
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
   }
 
@@ -1728,6 +1861,7 @@ class App {
       }
 
       this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
       this.updateStatus();
       this.showUnitManagement();
     } else {
@@ -1754,13 +1888,14 @@ class App {
     facilities.forEach((fac, i) => {
       const unitName = fac.assignedUnit || '없음';
       const levelStr = fac.level > 0 ? `Lv.${fac.level}` : '미건설';
-      this.print(`  ${i + 1}. ${fac.name} [${levelStr}] — 배치: ${unitName}`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${fac.name} [${levelStr}] — 배치: ${unitName}`);
       this.print(`     ${fac.description}`, 'dim');
     });
 
     this.printBlank();
     this.print('시설 번호를 입력하여 관리 (0 = 돌아가기)', 'dim');
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
   }
 
@@ -1813,10 +1948,10 @@ class App {
     }
     this.printBlank();
 
-    this.print('  1. 업그레이드 (건설)', 'menu');
-    this.print('  2. 유닛 배치', 'menu');
-    this.print('  3. 유닛 해제', 'menu');
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('1', '  1. 업그레이드 (건설)');
+    this.printOption('2', '  2. 유닛 배치');
+    this.printOption('3', '  3. 유닛 해제');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
   }
 
@@ -1851,6 +1986,7 @@ class App {
       this.print(result.reason, 'error');
     }
     this.printBlank();
+    this.setActions([{key:'1',label:'업그레이드'},{key:'2',label:'배치'},{key:'3',label:'해제'},{key:'0',label:'돌아가기'}]);
     this.updateStatus();
     this.showFacilityDetail();
   }
@@ -1869,15 +2005,15 @@ class App {
     if (availableUnits.length === 0) {
       this.print('  배치 가능한 유닛이 없습니다.', 'dim');
       this.print('  (파티/시설에 속하지 않고 기절하지 않은 유닛만 가능)', 'dim');
-      this.print('  0. 돌아가기', 'menu');
+      this.printOption('0', '  0. 돌아가기');
       return;
     }
 
     availableUnits.forEach((u, i) => {
-      this.print(`  ${i + 1}. ${u.name} Lv.${u.level}`, 'menu');
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${u.name} Lv.${u.level}`);
     });
     this.printBlank();
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
   }
 
@@ -1902,6 +2038,7 @@ class App {
       this.print(result.reason, 'error');
     }
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
     this.showFacilityDetail();
   }
@@ -1958,6 +2095,7 @@ class App {
     this.printBlank();
     this.print('소환할 유닛 번호를 입력하세요. (0 = 돌아가기)', 'dim');
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
   }
 
@@ -2041,8 +2179,9 @@ class App {
     }
 
     this.printBlank();
-    this.print('  0. 돌아가기', 'menu');
+    this.printOption('0', '  0. 돌아가기');
     this.printBlank();
+    this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
   }
 
@@ -2102,7 +2241,7 @@ class App {
       }
     }
 
-    this.print('[아무 키나 입력하여 계속]', 'system');
+    this.printOption('1', '  [계속]');
     this.updateStatus();
   }
 
@@ -2143,7 +2282,7 @@ class App {
     this.print(`  미궁 최고 도달층: ${s.dungeon.maxFloorReached}층`, 'dim');
     this.print(`  전서 등록 수: ${s.compendium.registered.length}종`, 'dim');
     this.printBlank();
-    this.print('1. 타이틀로 돌아가기', 'menu');
+    this.printOption('1', '  1. 타이틀로 돌아가기');
     this.printBlank();
   }
 

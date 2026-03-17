@@ -343,16 +343,39 @@ class CombatSystem {
       return drops;
     }
 
-    // Slime enemies always drop slime core
+    // Slime enemies always drop slime core (confirmed + quantity bonus)
     if (enemy.isSlime || enemy.name.includes('슬라임')) {
-      drops.push({ id: 'MAT_SLIME_CORE', qty: Math.floor(Math.random() * 2) + 1, name: '슬라임핵' });
+      drops.push({ id: 'MAT_SLIME_CORE', qty: 1 + Math.floor(Math.random() * 2), name: '슬라임핵' });
+      return drops;
     }
 
-    // Regular unit drops (30% chance)
-    if (Math.random() < 0.3) {
-      const commonDrops = ['MAT_HERB', 'MAT_IRON_ORE', 'MAT_WATER', 'MAT_CATALYST_HERB', 'MAT_SLIME_CORE'];
-      const pick = commonDrops[Math.floor(Math.random() * commonDrops.length)];
+    // Unit drops — based on element affinity (구역별 드랍 테이블)
+    // Primary element determines main drop, secondary gives chance for bonus
+    const elementDrops = {
+      '열': ['MAT_MAGIC_STONE', 'MAT_IRON_ORE'],       // 석굴/기관부 계열
+      '위': ['MAT_IRON_ORE', 'MAT_MAGIC_STONE'],       // 석굴/결빙 계열
+      '동': ['MAT_SLIME_CORE', 'MAT_WATER'],            // 수계/기관부 계열
+      '광': ['MAT_POISON_FISH', 'MAT_WATER'],            // 수계 계열
+      '식': ['MAT_HERB', 'MAT_CATALYST_HERB']            // 독림 계열
+    };
+
+    // Main drop (60% chance) — based on primary element
+    const mainPool = elementDrops[enemy.primaryElement] || ['MAT_SLIME_CORE'];
+    if (Math.random() < 0.6) {
+      const pick = mainPool[Math.floor(Math.random() * mainPool.length)];
       drops.push({ id: pick, qty: 1, name: this.engine.getMaterialName(pick) });
+    }
+
+    // Bonus drop (25% chance) — random from all Tier 1
+    if (Math.random() < 0.25) {
+      const allT1 = ['MAT_HERB', 'MAT_CATALYST_HERB', 'MAT_IRON_ORE', 'MAT_MAGIC_STONE', 'MAT_POISON_FISH', 'MAT_WATER', 'MAT_SLIME_CORE'];
+      const pick = allT1[Math.floor(Math.random() * allT1.length)];
+      drops.push({ id: pick, qty: 1, name: this.engine.getMaterialName(pick) });
+    }
+
+    // Slime core always has a small chance (15%) from any unit combat
+    if (Math.random() < 0.15) {
+      drops.push({ id: 'MAT_SLIME_CORE', qty: 1, name: '슬라임핵' });
     }
 
     return drops;

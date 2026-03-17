@@ -434,7 +434,7 @@
       "floor": 7,
       "name": "기관부 본격 진입",
       "nodeCount": 5,
-      "notes": "기관부 유닛+채집 본격 도입. 기관부 고유 재료(고대 부품) 첫 안정 파밍 지점.",
+      "notes": "기관부 유닛+채집 본격 도입. 마력석+촉매초 안정 파밍 지점.",
       "nodes": [
         {
           "id": "F7-A",
@@ -627,9 +627,11 @@
           ],
           "encounter": [],
           "collect": [
-            "MAT_DEEP_WATER"
+            "MAT_WATER",
+            "MAT_VENOMFISH",
+            "MAT_HERB"
           ],
-          "note": "1회성 보상 (심층수 등 고급 재료)"
+          "note": "1회성 보상 (물, 독물고기, 약초 등 복합)"
         },
         {
           "id": "F9-D",

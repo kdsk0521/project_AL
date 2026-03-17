@@ -67,8 +67,56 @@
     .output-line.description { color: #c8c8c8; }
     .output-line.location { color: #4a9eff; font-weight: bold; font-size: 15px; }
     .output-line.menu     { color: #c8c8c8; }
+    .output-line.clickable {
+      cursor: pointer;
+      transition: color 0.15s, padding-left 0.15s;
+    }
+    .output-line.clickable:hover {
+      color: #ffd700;
+      padding-left: 8px;
+    }
+    .output-line.clickable:active {
+      color: #ffaa00;
+    }
     .output-line.error    { color: #ff4444; }
     .output-line.dim      { color: #666; }
+
+    /* ── Action Bar (고정 선택지) ── */
+    #action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px 16px;
+      border-top: 1px solid #333;
+      background: #111;
+      min-height: 20px;
+    }
+    #action-bar:empty { display: none; }
+    .action-btn {
+      background: #1a1a2e;
+      color: #c8c8c8;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-family: "D2Coding", "Consolas", monospace;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .action-btn:hover {
+      color: #ffd700;
+      border-color: #ffd700;
+      background: #1a1a3e;
+    }
+    .action-btn:active {
+      color: #ffaa00;
+      background: #2a2a3e;
+    }
+    .action-btn .key {
+      color: #4a9eff;
+      font-weight: bold;
+      margin-right: 4px;
+    }
 
     /* ── Input Area ── */
     #input-area {
@@ -242,6 +290,8 @@
   <!-- Main Game Area -->
   <div id="main-area">
     <div id="game-output"></div>
+
+    <div id="action-bar"></div>
 
     <div id="quick-buttons">
       <button class="quick-btn" id="inventory-btn">인벤토리</button>

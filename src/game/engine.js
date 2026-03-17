@@ -118,10 +118,10 @@ class GameEngine {
 
       // Milestone flags
       milestones: {
-        firstBossDefeated: false,
+        firstBossDefeated: false,  // 5층 보스 → 파티 +1 (3인)
         compressorBuilt: false,
-        floor10Cleared: false,
-        floor15Cleared: false
+        floor10Cleared: false,     // 10층 보스 → 파티 +1 (4인)
+        floor15Cleared: false      // 15층 보스 → 파티 +1 (5인)
       },
 
       // Unit instance counter
@@ -380,6 +380,26 @@ class GameEngine {
 
   getPartyUnits() {
     return this.state.party.map(id => this.getUnitInstance(id)).filter(Boolean);
+  }
+
+  // Check and apply milestone rewards (call after boss defeat, crafting, etc.)
+  checkMilestones() {
+    const s = this.state;
+    const rewards = [];
+
+    if (s.milestones.firstBossDefeated && s.maxPartySize < 3) {
+      s.maxPartySize = 3;
+      rewards.push('파티 슬롯 확장! (최대 3인)');
+    }
+    if (s.milestones.floor10Cleared && s.maxPartySize < 4) {
+      s.maxPartySize = 4;
+      rewards.push('파티 슬롯 확장! (최대 4인)');
+    }
+    if (s.milestones.floor15Cleared && s.maxPartySize < 5) {
+      s.maxPartySize = 5;
+      rewards.push('파티 슬롯 확장! (최대 5인)');
+    }
+    return rewards;
   }
 
   // Soul power
