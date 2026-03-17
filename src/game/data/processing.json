@@ -1,0 +1,209 @@
+{
+  "equipment": [
+    {
+      "id": "EQUIP_KILN",
+      "name": "가마",
+      "tier": 1,
+      "injectElement": "열",
+      "releaseElement": "광",
+      "physicalAction": "굽는다",
+      "description": "열을 넣어 성질을 바꿈. 부산물로 빛(광)이 빠져나감."
+    },
+    {
+      "id": "EQUIP_CRUSHER",
+      "name": "분쇄기",
+      "tier": 1,
+      "injectElement": "위",
+      "releaseElement": "식",
+      "physicalAction": "부순다",
+      "description": "축적(위)을 풀어 부숨. 구조가 깨지며 기이함(식)도 빠짐."
+    },
+    {
+      "id": "EQUIP_COMPRESSOR",
+      "name": "압축기",
+      "tier": 1.5,
+      "injectElement": "위",
+      "releaseElement": "동",
+      "physicalAction": "누른다",
+      "description": "위치에너지(위)를 주입해 눌러 담음. 운동(동)이 멈춤."
+    }
+  ],
+  "rules": [
+    {
+      "material": "MAT_HERB",
+      "materialName": "약초",
+      "baseTags": { "function": "회복", "element": "식", "form": "식물" },
+      "kiln": {
+        "functionChange": { "from": "회복", "to": "보존" },
+        "formChange": null,
+        "elementRemoved": null,
+        "resultName": "보존허브",
+        "note": "열 주입으로 보존 성질 획득"
+      },
+      "crusher": {
+        "functionChange": null,
+        "formChange": { "from": "식물", "to": "분말" },
+        "elementRemoved": "식",
+        "resultName": "약초분말",
+        "note": "식 해방으로 기이한 성질 소멸, 형태 분말화"
+      },
+      "compressor": {
+        "functionChange": { "from": "회복", "to": "수호" },
+        "formChange": { "from": "식물", "to": "결정" },
+        "elementRemoved": null,
+        "resultName": "약초결정",
+        "note": "위 주입으로 기능 변환, 형태 결정화"
+      }
+    },
+    {
+      "material": "MAT_CATALYST_HERB",
+      "materialName": "촉매초",
+      "baseTags": { "function": "촉매", "element": null, "form": "식물" },
+      "kiln": {
+        "functionChange": { "from": "촉매", "to": "억제" },
+        "formChange": null,
+        "elementRemoved": null,
+        "resultName": "억제초",
+        "note": "열 주입으로 억제 성질 획득"
+      },
+      "crusher": {
+        "functionChange": null,
+        "formChange": { "from": "식물", "to": "분말" },
+        "elementRemoved": null,
+        "resultName": "촉매분말",
+        "note": "원소 없으므로 해방 효과 해당 없음"
+      },
+      "compressor": {
+        "functionChange": { "from": "촉매", "to": "부여" },
+        "formChange": { "from": "식물", "to": "결정" },
+        "elementRemoved": null,
+        "resultName": "촉매결정",
+        "note": "위 주입으로 부여 성질 획득, 결정화"
+      }
+    },
+    {
+      "material": "MAT_IRON_ORE",
+      "materialName": "철광석",
+      "baseTags": { "function": "경도", "element": "위", "form": "광물" },
+      "kiln": {
+        "functionChange": { "from": "경도", "to": "공격" },
+        "formChange": null,
+        "elementRemoved": null,
+        "resultName": "공격광물",
+        "note": "열 주입으로 경도가 공격으로 전환"
+      },
+      "crusher": {
+        "functionChange": null,
+        "formChange": { "from": "광물", "to": "분말" },
+        "elementRemoved": null,
+        "resultName": "철가루",
+        "note": "위 해방 — 축적된 것을 해방. 분말화"
+      },
+      "compressor": {
+        "functionChange": null,
+        "formChange": { "from": "광물", "to": "결정" },
+        "elementRemoved": null,
+        "resultName": "철결정",
+        "note": "경도 유지, 형태만 결정으로 변환"
+      }
+    },
+    {
+      "material": "MAT_MAGIC_STONE",
+      "materialName": "마력석",
+      "baseTags": { "function": "촉매", "element": "열", "form": "광물" },
+      "kiln": {
+        "functionChange": { "from": "촉매", "to": "마력촉매" },
+        "formChange": null,
+        "elementRemoved": null,
+        "resultName": "마력촉매석",
+        "note": "열+열 반응. 촉매가 마력촉매로 승격"
+      },
+      "crusher": {
+        "functionChange": null,
+        "formChange": { "from": "광물", "to": "분말" },
+        "elementRemoved": null,
+        "resultName": "마력석분말",
+        "note": "분쇄하여 분말화"
+      },
+      "compressor": {
+        "functionChange": { "from": "촉매", "to": "부여" },
+        "formChange": { "from": "광물", "to": "결정" },
+        "elementRemoved": null,
+        "resultName": "마력결정",
+        "note": "위 주입으로 부여 성질 획득, 결정화"
+      }
+    },
+    {
+      "material": "MAT_POISON_FISH",
+      "materialName": "독물고기",
+      "baseTags": { "function": "독성", "element": "광", "form": "유기" },
+      "kiln": {
+        "functionChange": { "from": "독성", "to": "가공성" },
+        "formChange": null,
+        "elementRemoved": "광",
+        "resultName": "식재료",
+        "note": "광 해방으로 독 제거. 해독되어 식재료화"
+      },
+      "crusher": {
+        "functionChange": null,
+        "formChange": { "from": "유기", "to": "분말" },
+        "elementRemoved": null,
+        "resultName": "독분말",
+        "note": "분쇄하여 독 분말화"
+      },
+      "compressor": {
+        "functionChange": { "from": "독성", "to": "조련" },
+        "formChange": { "from": "유기", "to": "결정" },
+        "elementRemoved": null,
+        "resultName": "독결정",
+        "note": "위 주입으로 조련 성질 획득, 결정화"
+      }
+    },
+    {
+      "material": "MAT_WATER",
+      "materialName": "물",
+      "baseTags": { "function": "가공성", "element": null, "form": "액체" },
+      "kiln": {
+        "functionChange": null,
+        "formChange": { "from": "액체", "to": "기체" },
+        "elementRemoved": null,
+        "resultName": "증기",
+        "note": "열 주입으로 증발. 기체화"
+      },
+      "crusher": null,
+      "compressor": {
+        "functionChange": { "from": "가공성", "to": "전도" },
+        "formChange": { "from": "액체", "to": "결정" },
+        "elementRemoved": null,
+        "resultName": "물결정",
+        "note": "위 주입으로 전도 성질 획득, 결정화"
+      }
+    },
+    {
+      "material": "MAT_SLIME_CORE",
+      "materialName": "슬라임핵",
+      "baseTags": { "function": "전도", "element": "동", "form": "유기" },
+      "kiln": {
+        "functionChange": { "from": "전도", "to": "수호" },
+        "formChange": null,
+        "elementRemoved": null,
+        "resultName": "수호체",
+        "note": "열 주입으로 경화. 수호 성질 획득"
+      },
+      "crusher": {
+        "functionChange": null,
+        "formChange": { "from": "유기", "to": "분말" },
+        "elementRemoved": null,
+        "resultName": "슬라임분말",
+        "note": "분쇄하여 분말화"
+      },
+      "compressor": {
+        "functionChange": { "from": "전도", "to": "보존" },
+        "formChange": { "from": "유기", "to": "결정" },
+        "elementRemoved": "동",
+        "resultName": "슬라임결정",
+        "note": "동 해방. 진동이 멈추며 에너지가 루프화. 보존 결정"
+      }
+    }
+  ]
+}

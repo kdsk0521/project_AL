@@ -1,0 +1,98 @@
+[
+  {
+    "id": "MAT_HERB",
+    "name": "약초",
+    "tier": 1,
+    "tags": {
+      "function": "회복",
+      "element": "식",
+      "form": "식물"
+    },
+    "source": "수풀",
+    "lore": "미궁 입구에서도 자라는 흔한 풀."
+  },
+  {
+    "id": "MAT_CATALYST_HERB",
+    "name": "촉매초",
+    "tier": 1,
+    "tags": {
+      "function": "촉매",
+      "element": null,
+      "form": "식물"
+    },
+    "source": "수풀",
+    "lore": "가공과 변환에 쓰이는 범용 소재."
+  },
+  {
+    "id": "MAT_IRON_ORE",
+    "name": "철광석",
+    "tier": 1,
+    "tags": {
+      "function": "경도",
+      "element": "위",
+      "form": "광물"
+    },
+    "source": "광맥",
+    "lore": "축적된 에너지를 품은 광석."
+  },
+  {
+    "id": "MAT_MAGIC_STONE",
+    "name": "마력석",
+    "tier": 1,
+    "tags": {
+      "function": "촉매",
+      "element": "열",
+      "form": "광물"
+    },
+    "source": "광맥",
+    "lore": "마력 반응을 촉진하는 돌."
+  },
+  {
+    "id": "MAT_POISON_FISH",
+    "name": "독물고기",
+    "tier": 1,
+    "tags": {
+      "function": "독성",
+      "element": "광",
+      "form": "유기"
+    },
+    "source": "수계",
+    "lore": "수계의 독성 재료. 마력 방출로 독화."
+  },
+  {
+    "id": "MAT_WATER",
+    "name": "물",
+    "tier": 1,
+    "tags": {
+      "function": "가공성",
+      "element": null,
+      "form": "액체"
+    },
+    "source": "수계",
+    "lore": "뭐든 섞는 기본 베이스."
+  },
+  {
+    "id": "MAT_SLIME_CORE",
+    "name": "슬라임핵",
+    "tier": 1,
+    "tags": {
+      "function": "전도",
+      "element": "동",
+      "form": "유기"
+    },
+    "source": "전투드랍",
+    "lore": "말랑한 구슬. 만지면 미세하게 떨린다."
+  },
+  {
+    "id": "MAT_SPRING",
+    "name": "스프링",
+    "tier": 2,
+    "tags": {
+      "function": "전도",
+      "element": "동",
+      "form": "광물"
+    },
+    "source": "보스드랍",
+    "lore": "보스 고유 소재. 2티어 제작기 재료."
+  }
+]

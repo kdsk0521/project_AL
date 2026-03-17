@@ -1,0 +1,308 @@
+{
+  "combatCombat": [
+    {
+      "id": "TSYN_CC_01",
+      "name": "독창",
+      "requiredTraits": ["CT_PIERCE", "CT_VENOM_STING"],
+      "resultTrait": "TSYN_CC_01",
+      "resultCategory": "전투",
+      "tier": 3,
+      "effect": "물리+식 복합, 지속 데미지",
+      "description": "찌르기에 독이 실린다. 물리와 식 속성 복합 공격에 지속 데미지를 부여한다."
+    },
+    {
+      "id": "TSYN_CC_02",
+      "name": "열폭주",
+      "requiredTraits": ["CT_COLD_RADIATION", "CT_HEAT_WALL"],
+      "resultTrait": "TSYN_CC_02",
+      "resultCategory": "전투",
+      "tier": 3,
+      "effect": "열 속성 데미지 대폭 증가, 자기 열 내성 감소",
+      "description": "열을 다루는 두 특성이 충돌하여 폭주한다. 열 데미지가 대폭 증가하지만 자신의 열 내성이 감소한다."
+    },
+    {
+      "id": "TSYN_CC_03",
+      "name": "기습연참",
+      "requiredTraits": ["CT_AMBUSH", "CT_FLASH_SLASH"],
+      "resultTrait": "TSYN_CC_03",
+      "resultCategory": "전투",
+      "tier": 3,
+      "effect": "선제 시 2연속 공격",
+      "description": "암습과 섬광이 결합된다. 선제 공격 성공 시 2연속 공격이 발동한다."
+    },
+    {
+      "id": "TSYN_CC_04",
+      "name": "완전속박",
+      "requiredTraits": ["CT_BINDING_THREAD", "CT_PARALYSIS_TENTACLE"],
+      "resultTrait": "TSYN_CC_04",
+      "resultCategory": "전투",
+      "tier": 4,
+      "effect": "적 1체 행동 불가 (AP 0) 1라운드",
+      "description": "실과 촉수가 합쳐져 완벽한 속박을 만든다. 적 1체의 AP를 0으로 만들어 1라운드 행동 불가."
+    },
+    {
+      "id": "TSYN_CC_05",
+      "name": "임계폭발",
+      "requiredTraits": ["CT_OVERLOAD", "CT_KARMIC_FLAME"],
+      "resultTrait": "TSYN_CC_05",
+      "resultCategory": "전투",
+      "tier": 4,
+      "effect": "AP 전소비 → 남은 AP×배율로 단일 데미지",
+      "description": "과부하와 업화가 임계점에서 폭발한다. 남은 AP를 전부 소비하여 AP×배율의 단일 데미지를 준다."
+    },
+    {
+      "id": "TSYN_CC_06",
+      "name": "해부학적 약점",
+      "requiredTraits": ["CT_DISASSEMBLE_ANALYZE", "CT_PRECISION_INCISION"],
+      "resultTrait": "TSYN_CC_06",
+      "resultCategory": "전투",
+      "tier": 4,
+      "effect": "적 방어 프로필 최저 슬롯 자동 타격",
+      "description": "분석과 절개가 합쳐져 약점을 정확히 파악한다. 적의 방어 프로필에서 가장 낮은 슬롯을 자동으로 타격한다."
+    },
+    {
+      "id": "TSYN_CC_07",
+      "name": "불괴",
+      "requiredTraits": ["CT_IRON_WALL", "CT_CRYSTAL_BARRIER"],
+      "resultTrait": "TSYN_CC_07",
+      "resultCategory": "전투",
+      "tier": 4,
+      "effect": "1라운드 물리 데미지 무효, 다음 라운드 방어 0",
+      "description": "철벽과 결정이 합쳐져 무적 상태가 된다. 1라운드 동안 물리 데미지를 무효화하지만 다음 라운드 방어가 0이 된다."
+    },
+    {
+      "id": "TSYN_CC_08",
+      "name": "영역부식",
+      "requiredTraits": ["CT_CORROSION_FIELD", "CT_CORAL_EROSION"],
+      "resultTrait": "TSYN_CC_08",
+      "resultCategory": "전투",
+      "tier": 3,
+      "effect": "식 속성 범위 + 매 라운드 범위 확대",
+      "description": "부식과 침식이 합쳐져 영역을 잠식한다. 식 속성 범위 공격이 매 라운드 확대된다."
+    },
+    {
+      "id": "TSYN_CC_09",
+      "name": "순수용해",
+      "requiredTraits": ["CT_DISSOLVE_FLUID", "CT_DISTILL"],
+      "resultTrait": "TSYN_CC_09",
+      "resultCategory": "전투",
+      "tier": 3,
+      "effect": "열 속성, 적 버프+방어 동시 감소",
+      "description": "용해와 증류가 결합하여 순수한 용해력을 만든다. 열 속성으로 적의 버프와 방어를 동시에 감소시킨다."
+    },
+    {
+      "id": "TSYN_CC_10",
+      "name": "치명독",
+      "requiredTraits": ["CT_POISON_MIST", "CT_PARALYSIS_POISON"],
+      "resultTrait": "TSYN_CC_10",
+      "resultCategory": "전투",
+      "tier": 4,
+      "effect": "식 속성, 적 전체 AP 1 감소 + 지속 데미지",
+      "description": "독무와 마비독이 결합하여 치명적인 독이 된다. 적 전체의 AP를 1 감소시키며 지속 데미지를 부여한다."
+    }
+  ],
+  "personalityPersonality": [
+    {
+      "id": "TSYN_PP_01",
+      "name": "광전사",
+      "requiredTraits": ["PT_FEARLESS", "PT_COMBATIVE"],
+      "resultTrait": "TSYN_PP_01",
+      "resultCategory": "전투",
+      "tier": 3,
+      "effect": "ATK+25%, 방어 행동 선택 불가",
+      "description": "두려움 없는 호전성이 광기로 변한다. 공격력이 25% 상승하지만 방어 행동을 선택할 수 없다."
+    },
+    {
+      "id": "TSYN_PP_02",
+      "name": "위기감지",
+      "requiredTraits": ["PT_TIMID", "PT_VIGILANT"],
+      "resultTrait": "TSYN_PP_02",
+      "resultCategory": "전투",
+      "tier": 3,
+      "effect": "기습 무효화 + 선제 확률 상승",
+      "description": "소심함과 경계심이 결합되어 위기를 미리 감지한다. 기습을 무효화하고 선제 확률이 상승한다."
+    },
+    {
+      "id": "TSYN_PP_03",
+      "name": "분리불안",
+      "requiredTraits": ["PT_DEPENDENT", "PT_CLINGY"],
+      "resultTrait": "TSYN_PP_03",
+      "resultCategory": "성격",
+      "tier": 3,
+      "effect": "파티에서 빠지면 호감도 하락, 파티 중 호감도 상승 2배",
+      "description": "의존과 밀착이 극단화된다. 파티에서 빠지면 호감도가 하락하지만 파티 중에는 호감도 상승이 2배가 된다."
+    },
+    {
+      "id": "TSYN_PP_04",
+      "name": "군림",
+      "requiredTraits": ["PT_DOMINATION", "PT_ARROGANT"],
+      "resultTrait": "TSYN_PP_04",
+      "resultCategory": "성격",
+      "tier": 4,
+      "effect": "도시 배치 시 해당 시설 효율 대폭 상승, 다른 유닛과의 관계 악화",
+      "description": "지배욕과 오만이 결합하여 군림한다. 도시 배치 시 시설 효율이 대폭 상승하지만 다른 유닛과의 관계가 악화된다."
+    },
+    {
+      "id": "TSYN_PP_05",
+      "name": "자기희생",
+      "requiredTraits": ["PT_PASSIVE", "PT_DEVOTED"],
+      "resultTrait": "TSYN_PP_05",
+      "resultCategory": "성인",
+      "tier": 3,
+      "effect": "조교 시 반감 상승 불가, 복종 상승 2배",
+      "description": "수동성과 헌신이 합쳐져 자기희생으로 발현된다. 조교 시 반감이 상승하지 않고 복종이 2배로 상승한다."
+    },
+    {
+      "id": "TSYN_PP_06",
+      "name": "은둔",
+      "requiredTraits": ["PT_INTROVERTED", "PT_SHY"],
+      "resultTrait": "TSYN_PP_06",
+      "resultCategory": "성격",
+      "tier": 3,
+      "effect": "도시 배치 시 소폭 효율 상승, 탐사 동행 시 호감도 상승 감소",
+      "description": "내향과 수줍음이 은둔으로 변한다. 도시에 배치하면 효율이 소폭 상승하지만 탐사 동행 시 호감도 상승이 줄어든다."
+    },
+    {
+      "id": "TSYN_PP_07",
+      "name": "연구광",
+      "requiredTraits": ["PT_CURIOUS", "PT_OBSERVANT"],
+      "resultTrait": "TSYN_PP_07",
+      "resultCategory": "성격",
+      "tier": 3,
+      "effect": "탐사 시 파편 로어 발견 확률 상승, 채집 보너스",
+      "description": "호기심과 관찰벽이 결합하여 연구에 몰두한다. 탐사 시 파편 로어 발견 확률이 상승하고 채집에 보너스가 붙는다."
+    },
+    {
+      "id": "TSYN_PP_08",
+      "name": "매혹술",
+      "requiredTraits": ["PT_CRAFTY", "PT_SEDUCTIVE"],
+      "resultTrait": "TSYN_PP_08",
+      "resultCategory": "전투",
+      "tier": 4,
+      "effect": "조우 시 교섭 성공률 대폭 상승",
+      "description": "교활함과 유혹이 결합하여 매혹술이 된다. 조우 시 교섭 성공률이 대폭 상승한다."
+    },
+    {
+      "id": "TSYN_PP_09",
+      "name": "충의",
+      "requiredTraits": ["PT_LOYAL_FAITHFUL", "PT_LOYAL"],
+      "resultTrait": "TSYN_PP_09",
+      "resultCategory": "성격",
+      "tier": 4,
+      "effect": "호감도 유대 이상 시 전투 ATK/DEF +15%, 호감도 하락 속도 0.5배",
+      "description": "충직과 의리가 합쳐져 진정한 충의가 된다. 호감도가 유대 이상이면 전투 ATK/DEF가 15% 상승하고 호감도 하락 속도가 0.5배가 된다."
+    },
+    {
+      "id": "TSYN_PP_10",
+      "name": "불굴",
+      "requiredTraits": ["PT_STUBBORN", "PT_CLEAN_FREAK"],
+      "resultTrait": "TSYN_PP_10",
+      "resultCategory": "전투",
+      "tier": 3,
+      "effect": "HP 30% 이하에서 DEF 2배",
+      "description": "완고함과 결벽이 불굴의 의지로 변한다. HP가 30% 이하일 때 DEF가 2배가 된다."
+    }
+  ],
+  "adultAdult": [
+    {
+      "id": "TSYN_AA_01",
+      "name": "각성",
+      "requiredTraits": ["AT_INEXPERIENCED", "AT_DISSOLVING_BODY"],
+      "resultTrait": "TSYN_AA_01",
+      "resultCategory": "성인",
+      "tier": 3,
+      "effect": "첫 감도 임계점 도달 시 전부위 감도 일괄 +10",
+      "description": "미경험 상태에서 감각이 녹아든다. 첫 감도 임계점 도달 시 전부위 감도가 일괄로 +10 상승한다."
+    },
+    {
+      "id": "TSYN_AA_02",
+      "name": "철벽감각",
+      "requiredTraits": ["AT_NUMB_CONSTITUTION", "AT_SLOW_CONSTITUTION"],
+      "resultTrait": "TSYN_AA_02",
+      "resultCategory": "성인",
+      "tier": 3,
+      "effect": "감도 상승 0.1배, 대신 한번 오르면 절대 하락 안 함",
+      "description": "둔감과 둔화가 합쳐져 철벽 같은 감각이 된다. 감도 상승이 0.1배이지만 한번 오르면 절대 하락하지 않는다."
+    },
+    {
+      "id": "TSYN_AA_03",
+      "name": "굴복",
+      "requiredTraits": ["AT_SADIST", "AT_SHAME_EXCESS"],
+      "resultTrait": "TSYN_AA_03",
+      "resultCategory": "성인",
+      "tier": 4,
+      "effect": "복종 50 이상 도달 시 반감 0으로 리셋, 이후 반감 상승 불가",
+      "description": "S기질과 수치심이 극점에서 굴복으로 전환된다. 복종이 50 이상에 도달하면 반감이 0으로 리셋되고 이후 상승 불가."
+    },
+    {
+      "id": "TSYN_AA_04",
+      "name": "폭주",
+      "requiredTraits": ["AT_HYPERSENSITIVITY", "AT_OBSESSIVE_BOND"],
+      "resultTrait": "TSYN_AA_04",
+      "resultCategory": "성인",
+      "tier": 4,
+      "effect": "음란 90 이상에서 감도 전부위 상승 속도 5배, 제어 불가",
+      "description": "과잉 감도와 집착이 결합하여 폭주한다. 음란 90 이상에서 감도 전부위 상승 속도가 5배가 되며 제어할 수 없다."
+    },
+    {
+      "id": "TSYN_AA_05",
+      "name": "완전개방",
+      "requiredTraits": ["AT_TRUST_UNLOCK", "AT_GUARD_RELEASE"],
+      "resultTrait": "TSYN_AA_05",
+      "resultCategory": "성인",
+      "tier": 3,
+      "effect": "호감도 유대에서 전부위 잠금 해제 + 감도 중간 시작",
+      "description": "신뢰와 보호벽 해제가 결합한다. 호감도가 유대에 도달하면 전부위 잠금이 해제되고 감도가 중간에서 시작한다."
+    },
+    {
+      "id": "TSYN_AA_06",
+      "name": "조건반사",
+      "requiredTraits": ["AT_PLASTICITY", "AT_LEARNING_RESPONSE"],
+      "resultTrait": "TSYN_AA_06",
+      "resultCategory": "성인",
+      "tier": 3,
+      "effect": "지정 부위+지정 행위 조합의 감도 상승 3배",
+      "description": "가소성과 학습이 결합하여 조건반사가 형성된다. 지정 부위와 지정 행위 조합의 감도 상승이 3배가 된다."
+    },
+    {
+      "id": "TSYN_AA_07",
+      "name": "감각폭풍",
+      "requiredTraits": ["AT_SENSORY_CONFUSION", "AT_FICKLE_SENSITIVITY"],
+      "resultTrait": "TSYN_AA_07",
+      "resultCategory": "성인",
+      "tier": 4,
+      "effect": "매 조교 시 전부위 감도 랜덤 재배정 + 음란 상승 2배",
+      "description": "감각 혼선과 변덕이 폭풍을 일으킨다. 매 조교 시 전부위 감도가 랜덤으로 재배정되며 음란 상승이 2배가 된다."
+    },
+    {
+      "id": "TSYN_AA_08",
+      "name": "유순",
+      "requiredTraits": ["AT_DEFENSELESS", "AT_FAINT_SENSE"],
+      "resultTrait": "TSYN_AA_08",
+      "resultCategory": "성격",
+      "tier": 3,
+      "effect": "반감/공포 상승 불가, 복종 상승 1.5배, 연모 상승 1.5배",
+      "description": "무방비와 희미한 감각이 합쳐져 유순해진다. 반감과 공포가 상승하지 않고 복종과 연모가 1.5배로 상승한다."
+    },
+    {
+      "id": "TSYN_AA_09",
+      "name": "완전분석",
+      "requiredTraits": ["AT_DISSECTION_SENSITIVITY", "AT_RECORD_CONSTITUTION"],
+      "resultTrait": "TSYN_AA_09",
+      "resultCategory": "전투",
+      "tier": 4,
+      "effect": "전투 시 적 스탯/트레잇 완전 공개, 약점 타격 데미지 1.5배",
+      "description": "해부 감각과 기록이 결합한다. 전투 시 적의 스탯과 트레잇이 완전히 공개되며 약점 타격 데미지가 1.5배가 된다."
+    },
+    {
+      "id": "TSYN_AA_10",
+      "name": "마비독체질",
+      "requiredTraits": ["AT_POISON_SENSITIVITY", "AT_ANESTHETIC_SENSITIVITY"],
+      "resultTrait": "TSYN_AA_10",
+      "resultCategory": "성인",
+      "tier": 4,
+      "effect": "조교 시 공포/반감 상승 불가, 음란 상승 0.5배, 감도 상승 2배",
+      "description": "독과 마취가 결합하여 마비독 체질이 된다. 조교 시 공포와 반감이 상승하지 않지만 음란 상승이 0.5배, 감도 상승이 2배가 된다."
+    }
+  ]
+}

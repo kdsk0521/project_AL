@@ -1,0 +1,1108 @@
+{
+  "floors": [
+    {
+      "floor": 1,
+      "name": "석굴 입문",
+      "nodeCount": 4,
+      "notes": "튜토리얼. 전투→채집 순서로 기본 루프 학습.",
+      "nodes": [
+        {
+          "id": "F1-A",
+          "floor": 1,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F1-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F1-B",
+          "floor": 1,
+          "zone": "석굴",
+          "type": "combat",
+          "connections": [
+            "F1-A",
+            "F1-C"
+          ],
+          "encounter": [
+            "UNIT_THORN_IMP",
+            "UNIT_SALT_SLIME"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F1-C",
+          "floor": 1,
+          "zone": "석굴",
+          "type": "collect",
+          "connections": [
+            "F1-B",
+            "F1-D"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_IRON_ORE",
+            "MAT_MAGIC_STONE"
+          ]
+        },
+        {
+          "id": "F1-D",
+          "floor": 1,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F1-C"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 2,
+      "name": "첫 분기",
+      "nodeCount": 5,
+      "notes": "첫 구역 선택. 석굴 루트(전투만, 빠른 통과) vs 수계 루트(전투+채집, 느리지만 재료).",
+      "nodes": [
+        {
+          "id": "F2-A",
+          "floor": 2,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F2-B",
+            "F2-C"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F2-B",
+          "floor": 2,
+          "zone": "석굴",
+          "type": "combat",
+          "connections": [
+            "F2-A",
+            "F2-E"
+          ],
+          "encounter": [
+            "UNIT_THORN_IMP",
+            "UNIT_SCORPION_GIRL"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F2-C",
+          "floor": 2,
+          "zone": "수계",
+          "type": "combat",
+          "connections": [
+            "F2-A",
+            "F2-D"
+          ],
+          "encounter": [
+            "UNIT_BUBBLE_SLIME",
+            "UNIT_MIST_JELLYFISH"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F2-D",
+          "floor": 2,
+          "zone": "수계",
+          "type": "collect",
+          "connections": [
+            "F2-C",
+            "F2-E"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_WATER",
+            "MAT_POISON_FISH"
+          ]
+        },
+        {
+          "id": "F2-E",
+          "floor": 2,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F2-B",
+            "F2-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 3,
+      "name": "독림 등장",
+      "nodeCount": 4,
+      "notes": "채집 노드 첫 등장. 수계 재료 확보 후 독림 전투.",
+      "nodes": [
+        {
+          "id": "F3-A",
+          "floor": 3,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F3-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F3-B",
+          "floor": 3,
+          "zone": "수계",
+          "type": "collect",
+          "connections": [
+            "F3-A",
+            "F3-C"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_WATER",
+            "MAT_POISON_FISH"
+          ]
+        },
+        {
+          "id": "F3-C",
+          "floor": 3,
+          "zone": "독림",
+          "type": "combat",
+          "connections": [
+            "F3-B",
+            "F3-D"
+          ],
+          "encounter": [
+            "UNIT_HERB_FAIRY"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F3-D",
+          "floor": 3,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F3-C"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 4,
+      "name": "결빙 등장, 3방향",
+      "nodeCount": 5,
+      "notes": "결빙 구역 최초 등장. 석굴 루트 우회 시 결빙 채집 가능.",
+      "nodes": [
+        {
+          "id": "F4-A",
+          "floor": 4,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F4-B",
+            "F4-C"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F4-B",
+          "floor": 4,
+          "zone": "석굴",
+          "type": "combat",
+          "connections": [
+            "F4-A",
+            "F4-D"
+          ],
+          "encounter": [
+            "UNIT_SCORPION_GIRL",
+            "UNIT_SALT_SLIME"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F4-C",
+          "floor": 4,
+          "zone": "독림",
+          "type": "combat",
+          "connections": [
+            "F4-A",
+            "F4-E"
+          ],
+          "encounter": [
+            "UNIT_HERB_FAIRY",
+            "UNIT_MOSS_WOLF"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F4-D",
+          "floor": 4,
+          "zone": "결빙",
+          "type": "collect",
+          "connections": [
+            "F4-B",
+            "F4-E"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_WATER",
+            "MAT_IRON_ORE"
+          ]
+        },
+        {
+          "id": "F4-E",
+          "floor": 4,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F4-C",
+            "F4-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 5,
+      "name": "첫 보스",
+      "nodeCount": 5,
+      "notes": "보스 전 휴식 노드 배치. 전투→회복→보스 패턴의 첫 도입. 격파 시 심부 구역 본격 해금.",
+      "nodes": [
+        {
+          "id": "F5-A",
+          "floor": 5,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F5-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F5-B",
+          "floor": 5,
+          "zone": "석굴 심부",
+          "type": "combat",
+          "connections": [
+            "F5-A",
+            "F5-C"
+          ],
+          "encounter": [
+            "UNIT_CRYSTAL_SPIDER",
+            "UNIT_FOSSIL_LIZARD"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F5-C",
+          "floor": 5,
+          "zone": null,
+          "type": "rest",
+          "connections": [
+            "F5-B",
+            "F5-D"
+          ],
+          "encounter": [],
+          "collect": [],
+          "note": "보스 전 준비 지점"
+        },
+        {
+          "id": "F5-D",
+          "floor": 5,
+          "zone": "석굴 심부",
+          "type": "boss",
+          "connections": [
+            "F5-C",
+            "F5-E"
+          ],
+          "encounter": [
+            "거대 슬라임"
+          ],
+          "collect": [],
+          "bossData": {
+            "name": "거대 슬라임",
+            "gimmick": "없음. 순수 스탯전(HP↑, 물리 특화)",
+            "drops": [
+              "MAT_SLIME_CORE",
+              "MAT_SPRING"
+            ]
+          }
+        },
+        {
+          "id": "F5-E",
+          "floor": 5,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F5-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 6,
+      "name": "심부 확장",
+      "nodeCount": 5,
+      "notes": "보스 격파 후 기관부 채집 루트 개방. 석굴심부를 거쳐야 기관부에 도달.",
+      "nodes": [
+        {
+          "id": "F6-A",
+          "floor": 6,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F6-B",
+            "F6-C"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F6-B",
+          "floor": 6,
+          "zone": "석굴 심부",
+          "type": "combat",
+          "connections": [
+            "F6-A",
+            "F6-D"
+          ],
+          "encounter": [
+            "UNIT_EROSION_SPIDER",
+            "UNIT_FOSSIL_LIZARD"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F6-C",
+          "floor": 6,
+          "zone": "수계",
+          "type": "combat",
+          "connections": [
+            "F6-A",
+            "F6-E"
+          ],
+          "encounter": [
+            "UNIT_BUBBLE_SLIME",
+            "UNIT_LOTUS_FAIRY"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F6-D",
+          "floor": 6,
+          "zone": "기관부",
+          "type": "collect",
+          "connections": [
+            "F6-B",
+            "F6-E"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_MAGIC_STONE",
+            "MAT_CATALYST_HERB"
+          ]
+        },
+        {
+          "id": "F6-E",
+          "floor": 6,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F6-C",
+            "F6-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 7,
+      "name": "기관부 본격 진입",
+      "nodeCount": 5,
+      "notes": "기관부 유닛+채집 본격 도입. 기관부 고유 재료(고대 부품) 첫 안정 파밍 지점.",
+      "nodes": [
+        {
+          "id": "F7-A",
+          "floor": 7,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F7-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F7-B",
+          "floor": 7,
+          "zone": "기관부",
+          "type": "combat",
+          "connections": [
+            "F7-A",
+            "F7-C"
+          ],
+          "encounter": [
+            "UNIT_MIRROR_FOX",
+            "UNIT_AMBER_SPIRIT"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F7-C",
+          "floor": 7,
+          "zone": "기관부",
+          "type": "collect",
+          "connections": [
+            "F7-B",
+            "F7-D"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_MAGIC_STONE",
+            "MAT_CATALYST_HERB"
+          ]
+        },
+        {
+          "id": "F7-D",
+          "floor": 7,
+          "zone": "독림",
+          "type": "combat",
+          "connections": [
+            "F7-C",
+            "F7-E"
+          ],
+          "encounter": [
+            "UNIT_SYMBIOTE_GIRL",
+            "UNIT_MOSS_WOLF"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F7-E",
+          "floor": 7,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F7-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 8,
+      "name": "조건 조우 등장",
+      "nodeCount": 5,
+      "notes": "칼날 여우 = 첫 조건 조우 유닛. 결빙 채집은 어느 루트든 경유.",
+      "nodes": [
+        {
+          "id": "F8-A",
+          "floor": 8,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F8-B",
+            "F8-C"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F8-B",
+          "floor": 8,
+          "zone": "기관부",
+          "type": "combat",
+          "connections": [
+            "F8-A",
+            "F8-D"
+          ],
+          "encounter": [
+            "UNIT_BLADE_FOX",
+            "UNIT_AMBER_SPIRIT"
+          ],
+          "collect": [],
+          "note": "칼날 여우는 조건 조우"
+        },
+        {
+          "id": "F8-C",
+          "floor": 8,
+          "zone": "수계",
+          "type": "combat",
+          "connections": [
+            "F8-A",
+            "F8-D"
+          ],
+          "encounter": [
+            "UNIT_LOTUS_FAIRY",
+            "UNIT_MIST_JELLYFISH"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F8-D",
+          "floor": 8,
+          "zone": "결빙",
+          "type": "collect",
+          "connections": [
+            "F8-B",
+            "F8-C",
+            "F8-E"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_WATER",
+            "MAT_IRON_ORE"
+          ]
+        },
+        {
+          "id": "F8-E",
+          "floor": 8,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F8-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 9,
+      "name": "심부 확대",
+      "nodeCount": 5,
+      "notes": "10층 보스 전 마지막 준비 층. 상자 노드(1회성 보상) + 이벤트 노드. 안전 노드 2개로 보스 전 여유 확보.",
+      "nodes": [
+        {
+          "id": "F9-A",
+          "floor": 9,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F9-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F9-B",
+          "floor": 9,
+          "zone": "독림 심부",
+          "type": "combat",
+          "connections": [
+            "F9-A",
+            "F9-C"
+          ],
+          "encounter": [
+            "UNIT_POISON_BUTTERFLY",
+            "UNIT_SYMBIOTE_GIRL"
+          ],
+          "collect": [],
+          "note": "독나비는 조건 조우"
+        },
+        {
+          "id": "F9-C",
+          "floor": 9,
+          "zone": "수계 심부",
+          "type": "chest",
+          "connections": [
+            "F9-B",
+            "F9-D"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_DEEP_WATER"
+          ],
+          "note": "1회성 보상 (심층수 등 고급 재료)"
+        },
+        {
+          "id": "F9-D",
+          "floor": 9,
+          "zone": "기관부",
+          "type": "event",
+          "connections": [
+            "F9-C",
+            "F9-E"
+          ],
+          "encounter": [],
+          "collect": [],
+          "note": "로어 이벤트 — 내용 미정"
+        },
+        {
+          "id": "F9-E",
+          "floor": 9,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F9-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 10,
+      "name": "중반 보스",
+      "nodeCount": 5,
+      "notes": "5층과 같은 패턴: 전투→휴식→보스. 경계 구역 첫 등장. 격파 시 위험 구역/경계 구역 본격 해금.",
+      "nodes": [
+        {
+          "id": "F10-A",
+          "floor": 10,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F10-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F10-B",
+          "floor": 10,
+          "zone": "석굴~기관부 경계",
+          "type": "combat",
+          "connections": [
+            "F10-A",
+            "F10-C"
+          ],
+          "encounter": [
+            "UNIT_CRYSTAL_KNIGHT",
+            "UNIT_MUMMY_SHRINE_MAIDEN"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F10-C",
+          "floor": 10,
+          "zone": null,
+          "type": "rest",
+          "connections": [
+            "F10-B",
+            "F10-D"
+          ],
+          "encounter": [],
+          "collect": [],
+          "note": "보스 전 준비 지점"
+        },
+        {
+          "id": "F10-D",
+          "floor": 10,
+          "zone": "석굴~기관부 경계",
+          "type": "boss",
+          "connections": [
+            "F10-C",
+            "F10-E"
+          ],
+          "encounter": [
+            "변이 슬라임"
+          ],
+          "collect": [],
+          "bossData": {
+            "name": "변이 슬라임",
+            "gimmick": "분열(HP 일정 이하→소형 2체)",
+            "drops": [
+              "MAT_SLIME_CORE",
+              "MAT_SPRING"
+            ]
+          }
+        },
+        {
+          "id": "F10-E",
+          "floor": 10,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F10-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 11,
+      "name": "위험 구역 개방",
+      "nodeCount": 5,
+      "notes": "위험 구역 최초 접근. 고레벨 유닛 등장. 위험 루트 = 채집 보너스.",
+      "nodes": [
+        {
+          "id": "F11-A",
+          "floor": 11,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F11-B",
+            "F11-C"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F11-B",
+          "floor": 11,
+          "zone": "위험 구역",
+          "type": "combat",
+          "connections": [
+            "F11-A",
+            "F11-D"
+          ],
+          "encounter": [
+            "UNIT_THUNDER_SPIRIT"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F11-C",
+          "floor": 11,
+          "zone": "기관부",
+          "type": "combat",
+          "connections": [
+            "F11-A",
+            "F11-E"
+          ],
+          "encounter": [
+            "UNIT_INCENSE_DOLL",
+            "UNIT_CRYSTAL_KNIGHT"
+          ],
+          "collect": [],
+          "note": "향로 인형은 조건 조우"
+        },
+        {
+          "id": "F11-D",
+          "floor": 11,
+          "zone": "독림 심부",
+          "type": "collect",
+          "connections": [
+            "F11-B",
+            "F11-E"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_HERB",
+            "MAT_CATALYST_HERB"
+          ]
+        },
+        {
+          "id": "F11-E",
+          "floor": 11,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F11-C",
+            "F11-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 12,
+      "name": "경계 혼합",
+      "nodeCount": 5,
+      "notes": "경계→결빙 순서. 채집 노드가 전투 사이에 끼어 있어서 잠깐 쉬는 구간 역할도 겸함.",
+      "nodes": [
+        {
+          "id": "F12-A",
+          "floor": 12,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F12-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F12-B",
+          "floor": 12,
+          "zone": "화산-수계 경계",
+          "type": "combat",
+          "connections": [
+            "F12-A",
+            "F12-C"
+          ],
+          "encounter": [
+            "UNIT_HOTSPRING_CRAB",
+            "UNIT_SALT_FLOWER"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F12-C",
+          "floor": 12,
+          "zone": "결빙",
+          "type": "collect",
+          "connections": [
+            "F12-B",
+            "F12-D"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_WATER",
+            "MAT_IRON_ORE"
+          ]
+        },
+        {
+          "id": "F12-D",
+          "floor": 12,
+          "zone": "결빙",
+          "type": "combat",
+          "connections": [
+            "F12-C",
+            "F12-E"
+          ],
+          "encounter": [
+            "UNIT_FROST_LIZARD_GIRL"
+          ],
+          "collect": [],
+          "note": "서리 도마뱀 소녀(강화)"
+        },
+        {
+          "id": "F12-E",
+          "floor": 12,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F12-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 13,
+      "name": "다중 경로",
+      "nodeCount": 5,
+      "notes": "전투 루트(기관부→경계, 전투 2회) vs 채집 루트(수계심부, 전투 0회). 리스크/리워드.",
+      "nodes": [
+        {
+          "id": "F13-A",
+          "floor": 13,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F13-B",
+            "F13-C"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F13-B",
+          "floor": 13,
+          "zone": "기관부",
+          "type": "combat",
+          "connections": [
+            "F13-A",
+            "F13-D"
+          ],
+          "encounter": [
+            "UNIT_MUMMY_SHRINE_MAIDEN",
+            "UNIT_INCENSE_DOLL"
+          ],
+          "collect": [],
+          "note": "향로 인형은 조건 조우"
+        },
+        {
+          "id": "F13-C",
+          "floor": 13,
+          "zone": "수계 심부",
+          "type": "collect",
+          "connections": [
+            "F13-A",
+            "F13-E"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_WATER",
+            "MAT_POISON_FISH"
+          ]
+        },
+        {
+          "id": "F13-D",
+          "floor": 13,
+          "zone": "석굴~기관부 경계",
+          "type": "combat",
+          "connections": [
+            "F13-B",
+            "F13-E"
+          ],
+          "encounter": [
+            "UNIT_TWIN_SERPENT"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F13-E",
+          "floor": 13,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F13-C",
+            "F13-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 14,
+      "name": "최종 준비",
+      "nodeCount": 5,
+      "notes": "15층 보스 직전. 이벤트 노드에서 보스 힌트. 경계 채집으로 최종 준비.",
+      "nodes": [
+        {
+          "id": "F14-A",
+          "floor": 14,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F14-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F14-B",
+          "floor": 14,
+          "zone": "위험 구역",
+          "type": "combat",
+          "connections": [
+            "F14-A",
+            "F14-C"
+          ],
+          "encounter": [
+            "UNIT_THUNDER_SPIRIT",
+            "UNIT_CRYSTAL_KNIGHT"
+          ],
+          "collect": []
+        },
+        {
+          "id": "F14-C",
+          "floor": 14,
+          "zone": "기관부",
+          "type": "event",
+          "connections": [
+            "F14-B",
+            "F14-D"
+          ],
+          "encounter": [],
+          "collect": [],
+          "note": "보스 예고 이벤트 — 내용 미정"
+        },
+        {
+          "id": "F14-D",
+          "floor": 14,
+          "zone": "화산-수계 경계",
+          "type": "collect",
+          "connections": [
+            "F14-C",
+            "F14-E"
+          ],
+          "encounter": [],
+          "collect": [
+            "MAT_MAGIC_STONE",
+            "MAT_POISON_FISH"
+          ]
+        },
+        {
+          "id": "F14-E",
+          "floor": 14,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F14-D"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    },
+    {
+      "floor": 15,
+      "name": "알파 최종 보스",
+      "nodeCount": 4,
+      "notes": "최종 보스 전 상자 노드로 마지막 보급. 1회성이라 반복 파밍 불가.",
+      "nodes": [
+        {
+          "id": "F15-A",
+          "floor": 15,
+          "zone": null,
+          "type": "entrance",
+          "connections": [
+            "F15-B"
+          ],
+          "encounter": [],
+          "collect": []
+        },
+        {
+          "id": "F15-B",
+          "floor": 15,
+          "zone": "위험 구역",
+          "type": "chest",
+          "connections": [
+            "F15-A",
+            "F15-C"
+          ],
+          "encounter": [],
+          "collect": [],
+          "note": "1회성 보상 (최종 보스 전 보급)"
+        },
+        {
+          "id": "F15-C",
+          "floor": 15,
+          "zone": "위험 구역",
+          "type": "boss",
+          "connections": [
+            "F15-B",
+            "F15-D"
+          ],
+          "encounter": [
+            "폭주 슬라임"
+          ],
+          "collect": [],
+          "bossData": {
+            "name": "폭주 슬라임",
+            "gimmick": "분열 + 속성 변화(라운드마다 내성 순환)",
+            "drops": [
+              "MAT_SLIME_CORE",
+              "MAT_SPRING"
+            ]
+          }
+        },
+        {
+          "id": "F15-D",
+          "floor": 15,
+          "zone": null,
+          "type": "exit",
+          "connections": [
+            "F15-C"
+          ],
+          "encounter": [],
+          "collect": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "project-al-mud",
+  "version": "0.1.0",
+  "description": "Text MUD Alpha - Dungeon Alchemy & City Management",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js --dev"
+  },
+  "dependencies": {
+    "electron": "^33.3.1"
+  }
+}
