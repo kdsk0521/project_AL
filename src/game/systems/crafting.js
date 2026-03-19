@@ -316,7 +316,9 @@ class CraftingSystem {
       name,
       tier: Math.min(tier, 4),
       tags: combinedTags,
-      category,
+      category,                                      // 레거시 호환
+      usages: this.determineUsages(combinedTags),    // v4.2 용도축
+      functions: this.determineFunctions(combinedTags), // v4.2 기능축
       source: `조합(${matA.name}+${matB.name})`,
       lore: this.generateLore(combinedTags),
       effect: this.generateEffect(combinedTags, tier)
@@ -334,38 +336,90 @@ class CraftingSystem {
     return count;
   }
 
-  determineCategory(tags) {
-    const func = tags.functions || [tags.function];
-    const form = tags.forms || [tags.form];
+  // ═══ v4.2: 2축 카테고리 시스템 ═══
 
-    if (func.includes('회복') && (form.includes('액체') || form.includes('식물'))) return 'consumable_potion';
-    if (func.includes('회복') && func.includes('보존')) return 'consumable_food';
-    if (func.includes('독성') || func.includes('분산')) return 'consumable_attack';
-    if (func.includes('공격') && (form.includes('광물') || form.includes('유기'))) return 'equipment_weapon';
-    if (func.includes('수호') && form.includes('광물')) return 'equipment_armor';
-    if (func.includes('부여')) return 'equipment_accessory';
-    if (func.includes('조련')) return 'tool_training';
-    if (func.includes('촉매') || func.includes('마력촉매')) return 'material_refined';
-    if (func.includes('억제')) return 'consumable_debuff';
+  // 용도축: 형태 태그에서 도출 (복수 가능)
+  determineUsages(tags) {
+    const form = tags.forms || (tags.form ? [tags.form] : []);
+    const func = tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : []);
+    const usages = [];
+
+    // 장비 판정: 광물/유기 + 공격/수호/부여
+    if (form.some(f => ['광물','유기','결정'].includes(f)) && func.some(f => ['공격','수호','부여'].includes(f))) {
+      usages.push('equipment');
+    }
+    // 소비재 판정: 액체/분말/기체 or 회복/독성/억제/분산
+    if (form.some(f => ['액체','분말','기체','식물'].includes(f)) || func.some(f => ['회복','독성','억제','분산'].includes(f))) {
+      usages.push('consumable');
+    }
+    // 도구 판정: 조련 태그
+    if (func.includes('조련')) {
+      usages.push('tool');
+    }
+    // 소재 판정: 촉매/마력촉매 or 재료성질만
+    if (func.some(f => ['촉매','마력촉매','경도','가공성','전도','보존'].includes(f))) {
+      usages.push('material');
+    }
+
+    return usages.length > 0 ? [...new Set(usages)] : ['material'];
+  }
+
+  // 기능축: 기능 태그에서 도출 (복수 가능)
+  determineFunctions(tags) {
+    const func = tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : []);
+    const functionMap = {
+      '공격': 'attack', '수호': 'defense', '회복': 'heal', '독성': 'poison',
+      '억제': 'debuff', '분산': 'aoe', '조련': 'training', '부여': 'enchant',
+      '촉매': 'catalyst', '마력촉매': 'magic_catalyst'
+    };
+    const result = [];
+    for (const f of func) {
+      if (functionMap[f]) result.push(functionMap[f]);
+    }
+    return result.length > 0 ? [...new Set(result)] : ['material'];
+  }
+
+  // 레거시 호환: 단일 카테고리 문자열 반환
+  determineCategory(tags) {
+    const usages = this.determineUsages(tags);
+    const functions = this.determineFunctions(tags);
+    // 레거시 매핑
+    if (usages.includes('equipment') && functions.includes('attack')) return 'equipment_weapon';
+    if (usages.includes('equipment') && functions.includes('defense')) return 'equipment_armor';
+    if (usages.includes('equipment') && functions.includes('enchant')) return 'equipment_accessory';
+    if (usages.includes('tool') && functions.includes('training')) return 'tool_training';
+    if (usages.includes('consumable') && functions.includes('heal')) {
+      const func = tags.functions || (tags.function ? [tags.function] : []);
+      if (func.includes('보존')) return 'consumable_food';
+      return 'consumable_potion';
+    }
+    if (usages.includes('consumable') && functions.includes('poison')) return 'consumable_attack';
+    if (usages.includes('consumable') && functions.includes('debuff')) return 'consumable_debuff';
     return 'material_refined';
   }
+
+  // ═══ 이름 생성 (중복 수정) ═══
 
   generateName(tags) {
     const parts = [];
 
-    // Element prefix
-    const elements = tags.elements || (tags.element ? [tags.element] : []);
+    // Element prefix (중복 제거)
+    const elements = [...new Set(tags.elements || (tags.element ? [tags.element] : []))].filter(Boolean);
     for (const el of elements) {
-      if (el && this.elementPrefixes[el]) parts.push(this.elementPrefixes[el]);
+      if (this.elementPrefixes[el]) parts.push(this.elementPrefixes[el]);
     }
 
-    // Material property adjective
-    const funcs = tags.functions || [tags.function];
+    // Material property adjective (중복 제거)
+    const funcs = [...new Set(tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : []))];
+    const addedProps = new Set();
     for (const f of funcs) {
-      if (this.materialPropertyNames[f]) parts.push(this.materialPropertyNames[f]);
+      if (this.materialPropertyNames[f] && !addedProps.has(this.materialPropertyNames[f])) {
+        parts.push(this.materialPropertyNames[f]);
+        addedProps.add(this.materialPropertyNames[f]);
+      }
     }
 
-    // Function keyword
+    // Function keyword (첫 번째만)
     for (const f of funcs) {
       if (this.functionNames[f]) {
         parts.push(this.functionNames[f]);
@@ -373,8 +427,8 @@ class CraftingSystem {
       }
     }
 
-    // Form suffix
-    const forms = tags.forms || [tags.form];
+    // Form suffix (첫 번째만)
+    const forms = [...new Set(tags.forms || (tags.form ? [tags.form] : []))].filter(Boolean);
     const primaryForm = forms[0];
     if (primaryForm && this.formSuffixes[primaryForm]) {
       const lastPart = parts[parts.length - 1] || '';
@@ -392,18 +446,30 @@ class CraftingSystem {
     return '연금술로 만들어진 물건이다.';
   }
 
-  generateEffect(tags, tier) {
-    const funcs = tags.functions || [tags.function];
-    const baseValue = 10 + tier * 8;
+  // ═══ 효과 생성 (복수 기능 대응) ═══
 
-    if (funcs.includes('회복')) return { type: 'heal', value: baseValue, desc: `HP ${baseValue} 회복` };
-    if (funcs.includes('독성')) return { type: 'damage', value: baseValue, element: '식', desc: `적에게 ${baseValue} 독 데미지` };
-    if (funcs.includes('공격')) return { type: 'atkUp', value: Math.floor(baseValue * 0.5), desc: `물리공격 +${Math.floor(baseValue * 0.5)}` };
-    if (funcs.includes('수호')) return { type: 'defUp', value: Math.floor(baseValue * 0.5), desc: `물리방어 +${Math.floor(baseValue * 0.5)}` };
-    if (funcs.includes('부여')) return { type: 'buff', value: Math.floor(baseValue * 0.3), desc: `스탯 +${Math.floor(baseValue * 0.3)}` };
-    if (funcs.includes('조련')) return { type: 'training', value: baseValue, desc: `육성 도구 (효율 ${baseValue})` };
-    if (funcs.includes('억제')) return { type: 'debuff', value: baseValue, desc: `적 디버프 (${baseValue})` };
-    return { type: 'material', value: 0, desc: '조합 재료' };
+  generateEffect(tags, tier) {
+    const funcs = tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : []);
+    const baseValue = 10 + tier * 8;
+    const effects = [];
+
+    // 각 기능 태그에서 효과 추출
+    if (funcs.includes('회복')) effects.push({ type: 'heal', value: baseValue, desc: `HP ${baseValue} 회복` });
+    if (funcs.includes('독성')) effects.push({ type: 'damage', value: baseValue, element: '식', desc: `${baseValue} 독 데미지` });
+    if (funcs.includes('공격')) effects.push({ type: 'atkUp', value: Math.floor(baseValue * 0.5), desc: `공격 +${Math.floor(baseValue * 0.5)}` });
+    if (funcs.includes('수호')) effects.push({ type: 'defUp', value: Math.floor(baseValue * 0.5), desc: `방어 +${Math.floor(baseValue * 0.5)}` });
+    if (funcs.includes('부여')) effects.push({ type: 'buff', value: Math.floor(baseValue * 0.3), desc: `스탯 +${Math.floor(baseValue * 0.3)}` });
+    if (funcs.includes('조련')) effects.push({ type: 'training', value: baseValue, desc: `조교 도구 (효율 ${baseValue})` });
+    if (funcs.includes('억제')) effects.push({ type: 'debuff', value: baseValue, desc: `디버프 (${baseValue})` });
+
+    if (effects.length === 0) return { type: 'material', value: 0, desc: '조합 재료' };
+    if (effects.length === 1) return effects[0];
+
+    // 복합 효과: 첫 번째를 주 효과로, 나머지를 desc에 병합
+    const primary = effects[0];
+    primary.desc = effects.map(e => e.desc).join(' + ');
+    primary.subEffects = effects.slice(1);
+    return primary;
   }
 
   // Get all craftable combinations for display

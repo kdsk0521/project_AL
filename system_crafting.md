@@ -1,4 +1,4 @@
-# 조합/제작 시스템 설계 (v4.0)
+# 조합/제작 시스템 설계 (v4.2)
 
 > 상위 문서: game_blueprint.md (코어 시스템 2축: 조합/제작)
 > 참조: world_setting.md (태그 체계, 재료 목록), system_unit_sigil.md (유닛 합체/트레잇 계승)
@@ -665,20 +665,68 @@ Tier 2+:   미결정 — 열 해방 / 광 주입 / 동 주입 / 식 주입 등 �
  → 독성+촉매+광+분말+식물 → 해치는+변환(거시)+방출+가루+유연 → 독 농축 소재
 ```
 
-### 결과물 카테고리
+### 결과물 카테고리 (2축 구조)
 
-| 카테고리 | 용도 | 핵심 효과 태그 |
-|---------|------|--------------|
-| consumable_potion | 탐사 중 사용, 즉발 | 회복, 독성, 억제 |
-| consumable_food | 탐사 중 사용, 버프 | 회복 + 보존 |
-| consumable_attack | 탐사 중 사용, 공격 | 독성/분산 |
-| equipment_weapon | 유닛 장착 | 공격 |
-| equipment_armor | 유닛 장착 | 수호 |
-| equipment_accessory | 유닛 장착 | 부여 |
-| tool_gathering | 채집 영향 | 특수 레시피 |
-| tool_training | 육성 영향 + **트레잇 접근 허가** | 조련 |
-| tool_crafting | 설비 | 특수 레시피 |
-| material_refined | 상위 조합 재료 | 촉매/마력촉매 |
+아이템 카테고리는 **용도축**과 **기능축** 두 개로 결정된다. 하나의 아이템이 복수의 용도/기능을 가질 수 있다.
+
+#### 용도축 — "이 물건을 어떻게 쓰는가"
+
+| 용도 | 설명 | 도출 조건 |
+|------|------|----------|
+| equipment | 유닛에 장착 가능 | 광물/유기 형태 + 기능 태그(공격/수호/부여/조련 등) |
+| consumable | 사용하면 소모됨 | 회복/독성 + 액체/식물/분말 형태 |
+| material | 조합 입력 재료 | 촉매/마력촉매, 또는 다른 용도 조건 미충족 시 기본값 |
+
+- 복수 용도 가능: equipment + consumable = 장착 가능하면서 먹을 수도 있음 (햄배트식)
+- 용도축은 주로 **형태 태그**에서 도출. 광물/유기 → equipment 가능, 액체/식물 → consumable 가능
+
+#### 기능축 — "이 물건이 뭘 하는가"
+
+| 기능 | 효과 방향 | 핵심 태그 |
+|------|----------|----------|
+| attack | 공격력 부여 | 공격 |
+| defense | 방어력 부여 | 수호 |
+| buff | 스탯 부여/강화 | 부여 |
+| training | 육성 도구 + **트레잇 접근 허가** | 조련 |
+| heal | HP/상태 회복 | 회복 |
+| poison | 대상에 독성 피해 | 독성/분산 |
+| catalyst | 상위 조합 재료 역할 | 촉매/마력촉매 |
+| gather | 채집량/접근 tier 증가. 기본 도구는 고정 지급, 상위 도구는 조합으로 업그레이드 | 특수 레시피 또는 태그 조합 |
+| facility | 설비 부품 | 특수 레시피 |
+
+- 복수 기능 가능: heal + catalyst = 회복 물약이면서 조합 재료로도 사용 가능
+- 기능축은 주로 **기능 태그**에서 도출
+
+#### 복합 카테고리 예시
+
+```
+고기 둔기:     용도 [equipment, consumable] / 기능 [attack, heal]
+→ 장착하면 무기. 먹으면 HP 회복. 보존 태그 없으면 시간 경과로 부패?
+
+하드택 방어구:  용도 [equipment, consumable] / 기능 [defense, heal(보존)]
+→ 장착하면 방어구. 긴급하면 먹을 수 있음. 보존 태그라 부패 안 함
+
+촉매 물약:     용도 [consumable, material] / 기능 [heal, catalyst]
+→ 마시면 회복. 조합에 넣으면 촉매 역할
+
+방어 조교도구:  용도 [equipment] / 기능 [training, defense]
+→ 조교 도구인데 방어 훈련 특화. 트레잇 접근 + 방어 계열 보너스
+```
+
+#### 레거시 카테고리 매핑 (하위 호환)
+
+| 구 카테고리 | → 용도축 | → 기능축 |
+|------------|---------|---------|
+| equipment_weapon | equipment | attack |
+| equipment_armor | equipment | defense |
+| equipment_accessory | equipment | buff |
+| tool_training | equipment | training |
+| tool_gathering | equipment | gather |
+| tool_crafting | material | facility |
+| consumable_potion | consumable | heal 또는 poison |
+| consumable_food | consumable | heal(보존) |
+| consumable_attack | consumable | poison |
+| material_refined | material | catalyst |
 
 ### 등급 체계 (단일 tier)
 
@@ -1037,3 +1085,53 @@ Tier 2+ 트레잇: 해당 도구가 있어야 경험치 풀 후보에 포함됨
 *v3.9 — 압축기(위주입+동해방) 가공 결과 확정. 기능변환: 회복→수호, 촉매→부여, 경도 유지, 독성→조련, 가공성→전도, 전도→보존. 형태 전부 결정("누르면 굳는다"). 동 해방으로 슬라임핵(동) 원소 제거. 가공 가능 여부 테이블 압축 컬럼 추가.*
 *v4.0 — 유닛 합체 트랙을 인(印) 15×15 테이블로 변경 (기존 종족×종족). 아이템 조합 판정과 유닛 합체 트레잇 판정의 문법 통일 명시 (특수/우선→일반→나머지). system_unit_sigil.md 참조 연결.*
 *v4.1 — 도구→트레잇 접근 시스템 추가. 조교 도구=상위 트레잇 잠금 해제 키. 도구 tier/종류가 접근 가능 트레잇 범위 결정. crafting↔training 구조적 연결 명시. tool_training 카테고리에 트레잇 접근 허가 역할 추가.*
+*v4.2 — 카테고리 시스템 2축 전환. 단일 카테고리 워터폴 → 용도축(equipment/consumable/material) + 기능축(attack/defense/training/heal/...) 분리. 복합 카테고리 허용 — 하나의 아이템이 복수 용도·기능 동시 보유 가능 (돈스타브 햄배트 레퍼런스). 레거시 카테고리 매핑 테이블 추가. 리팩토링 로드맵 3단계 재구성.*
+
+---
+
+## 리팩토링 로드맵: 카테고리 시스템 개편 (2축 전환)
+
+> 현재 문제: `determineCategory()`가 단일 카테고리 워터폴 구조.
+> 복합 기능 태그 아이템(회복+촉매, 조련+수호 등)에서 하위 우선순위 기능이 소실됨.
+> 목표: **용도축 + 기능축 2축 구조**로 전환. 하나의 아이템이 복수 용도/기능을 동시 보유.
+
+### 1단계: determineCategory() → determineUsages() + determineFunctions() 분리
+
+`determineCategory()`를 두 함수로 분리. 각각 배열을 반환.
+
+```javascript
+// AS-IS (단일 카테고리 워터폴)
+category: 'equipment_armor'
+
+// TO-BE (2축 배열)
+usages: ['equipment'],              // 용도축: 형태 태그에서 도출
+functions: ['defense', 'training']  // 기능축: 기능 태그에서 도출
+```
+
+- `determineUsages(tags)`: 형태 태그(광물/유기/액체/식물/분말/결정/기체)로 용도 판정. 복수 해당 시 복수 반환
+- `determineFunctions(tags)`: 기능 태그(공격/수호/조련/회복/독성/촉매 등)로 기능 판정. 해당하는 것 전부 반환
+- 레거시 호환: `category` getter를 남겨서 `usages[0]_functions[0]` 형태로 구 카테고리 문자열 반환
+- 변경 범위: `determineCategory()` → 2함수 분리 + 아이템 데이터 구조 변경 + `generateEffect()` 복수 기능 대응
+
+### 2단계: UI/시스템 복수 카테고리 대응
+
+- 인벤토리: 용도별 탭(장비/소비/소재) + 기능 필터(공격/방어/조련/회복...)
+- 장착 시스템: `usages.includes('equipment')` 체크로 장착 가능 여부 판정
+- 소비 시스템: `usages.includes('consumable')` 체크로 사용 가능 여부 판정
+- 납품/도시 요청: 기능축 매칭 (`functions.includes('heal')` 등)
+- 조교 시스템: `functions.includes('training')` 체크로 조교도구 감지 (현재 hasTrainingTool() 리팩토링)
+
+### 3단계: 복합 용도 상호작용 (선택)
+
+- equipment + consumable 복합 아이템의 게임플레이:
+  - 장착 중 "먹기" 액션 → 장비 해제 + 소비 효과 발동 + 아이템 소멸 (햄배트식)
+  - 보존 태그 유무로 부패 여부 결정
+- 카테고리 간 시너지 효과:
+  - training + defense = 방어 훈련 보너스
+  - heal + catalyst = 사용 시 회복 + 잔여물이 촉매로 남음
+- 이 단계는 밸런싱 후 필요 시 도입
+
+### 병행: 이름 중복 버그 수정
+
+- `generateName()`에서 중복 태그를 deduplicate하지 않아 수식어 중복 발생
+- 이름 조립 전 elements/functions/forms 배열을 Set 처리로 중복 제거

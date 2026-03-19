@@ -1753,11 +1753,17 @@ class App {
       if (tagStr) this.print(`  태그: ${tagStr}`, 'dim');
     }
     this.printBlank();
-    this.setActions([{key:'0', label:'돌아가기'}]);
+    this.printOption('1', '  [공방으로]');
+    this.setActions([{key:'1', label:'공방으로'}]);
+    this.currentScreen = 'crafting'; // 공방 핸들러로 전환
     this.updateStatus();
 
-    // Return to crafting process select
-    this.showCraftingProcess();
+    const self = this;
+    const origHandler = this.handleCrafting.bind(this);
+    this.handleCrafting = function(_c) {
+      self.handleCrafting = origHandler;
+      self.showCrafting();
+    };
   }
 
   showCraftingCombine() {
@@ -1877,12 +1883,17 @@ class App {
     }
 
     this.printBlank();
-    this.setActions([{key:'0', label:'돌아가기'}]);
+    this.printOption('1', '  [공방으로]');
+    this.currentScreen = 'crafting';
+    this.setActions([{key:'1', label:'공방으로'}]);
     this.updateStatus();
 
-    // Return to crafting menu
-    this.currentScreen = 'crafting';
-    this.printOption('0', '  0. 돌아가기 / 번호 입력으로 계속');
+    const self = this;
+    const origHandler = this.handleCrafting.bind(this);
+    this.handleCrafting = function(_c) {
+      self.handleCrafting = origHandler;
+      self.showCrafting();
+    };
   }
 
   showRecipeList() {
@@ -3048,36 +3059,27 @@ class App {
     this.print(`  스태미나: ${this.engine.state.stamina}/${this.engine.state.maxStamina}`, 'system');
     this.printSeparator();
 
-    // ── Actions: [부위코드][행위번호] 형태로 입력 ──
-    // 부위: m=입, c=가슴, v=V, k=C, a=애널, s=피부
-    const partKeys = { mouth:'m', chest:'c', v:'v', c:'k', anal:'a', skin:'s' };
-    const partKeyNames = { m:'입', c:'가슴', v:'V', k:'C', a:'애널', s:'피부' };
-
-    this.print('  행위 (부위키+번호 입력. 예: s1 = 피부 애무)', 'system');
-    this.print(`  부위키: ${Object.entries(partKeyNames).map(([k,n]) => `${k}=${n}`).join(' | ')}`, 'dim');
-    this.printBlank();
-
-    // Show actions with unlock status (use first unlocked part for reference)
-    const refPart = parts.find(p => !p.locked)?.id || 'skin';
-    const actions = this.training.getAvailableActions(unit, refPart);
+    // ── 행위 목록 (번호만 입력) ──
+    const actions = this.training.getAvailableActions(unit);
     this._trainingActions = actions;
 
-    // Display actions in grid
-    const cols = 4;
+    this.print('  행위 (번호 입력)', 'system');
+    const cols = 3;
     let row = '  ';
-    let actionBtns = [];
-    actions.forEach((a, i) => {
-      const num = i + 1;
+    const actionBtns = [];
+    actions.forEach((a) => {
       if (a.locked) {
-        row += `${num}.${a.name}[잠금]`.padEnd(18);
+        row += `${String(a.id).padStart(2)}.${a.name}[X]`.padEnd(22);
       } else {
-        row += `${num}.${a.name}(${'★'.repeat(a.intensity)})`.padEnd(18);
-        // Add quick buttons for skin (most common)
-        actionBtns.push({ key: `s${num}`, label: `피부/${a.name}` });
+        row += `${String(a.id).padStart(2)}.${a.name}`.padEnd(22);
+        actionBtns.push({ key: `${a.id}`, label: a.name });
       }
-      if ((i + 1) % cols === 0) { this.print(row, 'dim'); row = '  '; }
+      if (actionBtns.length % cols === 0 || a.locked) {
+        // Check if row is getting long
+      }
+      if (row.length > 60) { this.print(row, 'dim'); row = '  '; }
     });
-    if (row.trim()) this.print(row, 'dim');
+    if (row.trim().length > 2) this.print(row, 'dim');
 
     this.printBlank();
     this.printOption('0', '  0. 돌아가기');
@@ -3086,37 +3088,17 @@ class App {
     this.updateStatus();
   }
 
-  // Unified handler: parse [partKey][actionNum] commands
+  // ERA식 handler: 번호만 입력
   handleTrainingAction(cmd) {
     if (cmd === '0') { this.showTrainingMenu(); return; }
 
     const unit = this._trainingUnit;
-    const partKeyMap = { m:'mouth', c:'chest', v:'v', k:'c', a:'anal', s:'skin' };
+    const actionId = parseInt(cmd);
 
-    // Parse command: first char = part key, rest = action number
-    let partId, actionIdx;
-    if (cmd.length >= 2 && partKeyMap[cmd[0]]) {
-      partId = partKeyMap[cmd[0]];
-      actionIdx = parseInt(cmd.substring(1));
-    } else {
-      this.print('입력 형식: [부위키][행위번호] (예: s1=피부애무, v3=V자극)', 'error');
-      this.print('부위키: m=입, c=가슴, v=V, k=C, a=애널, s=피부', 'dim');
-      return;
-    }
-
-    // Validate part
-    const parts = this.training.getAvailableParts(unit);
-    const part = parts.find(p => p.id === partId);
-    if (!part) { this.print('존재하지 않는 부위입니다.', 'error'); return; }
-    if (part.locked) { this.print(`${part.name}은(는) 잠겨있습니다.`, 'error'); return; }
-
-    // Validate action
-    const actions = this.training.getAvailableActions(unit, partId);
-    if (isNaN(actionIdx) || actionIdx < 1 || actionIdx > actions.length) {
-      this.print('올바른 행위 번호를 입력하세요.', 'error');
-      return;
-    }
-    const action = actions[actionIdx - 1];
+    // Find action by ID
+    const actions = this.training.getAvailableActions(unit);
+    const action = actions.find(a => a.id === actionId);
+    if (!action) { this.print('올바른 번호를 입력하세요.', 'error'); return; }
     if (action.locked) { this.print(`잠금: ${action.lockReason}`, 'error'); return; }
 
     const hasTool = this.training.hasTrainingTool();
@@ -3130,17 +3112,18 @@ class App {
       return;
     }
 
-    // Execute
-    const result = this.training.execute(unit, partId, action.id, hasTool);
+    // Execute (ERA식: actionId만 전달)
+    const result = this.training.execute(unit, actionId, hasTool);
 
-    // Show result briefly, then redraw full screen
+    // Show result, then redraw
     this.clearOutput();
 
-    // Result message at top
-    this.print(`▸ ${unit.name}의 ${this.training.PART_NAMES[partId]}을(를) ${action.name}했다.`, 'unit');
-    if (result.senGain > 0) {
-      const mulText = result.matrixMul !== 1.0 ? ` (×${result.matrixMul.toFixed(1)})` : '';
-      this.print(`  감도 +${result.senGain}${mulText} | 숙련 +${result.partExpGain}【${result.partMilestone}】`, 'success');
+    // 행위 결과
+    this.print(`▸ ${action.name}`, 'unit');
+    // 부위별 감도 변화 표시
+    if (result.partResults && result.partResults.length > 0) {
+      const partStr = result.partResults.map(pr => `${pr.partName}+${pr.gain}`).join(' | ');
+      this.print(`  감도: ${partStr}`, 'success');
     }
     const changes = [];
     if (result.lewdGain) changes.push(`음란+${result.lewdGain}`);
@@ -3180,17 +3163,15 @@ class App {
     this.print(`  애무${String(de2.caress||0).padStart(3)} 자극${String(de2.stimulate||0).padStart(3)} 핥기${String(de2.lick||0).padStart(3)} 키스${String(de2.kiss||0).padStart(3)} 삽입${String(de2.insert||0).padStart(3)} 도구${String(de2.toy||0).padStart(3)} 절정${String(de2.orgasm||0).padStart(3)} 봉사${String(de2.service||0).padStart(3)}`, 'dim');
     this.printSeparator();
 
-    const partKeyNames = { m:'입', c:'가슴', v:'V', k:'C', a:'애널', s:'피부' };
-    this.print(`  부위키: ${Object.entries(partKeyNames).map(([k,n]) => `${k}=${n}`).join(' | ')}  | 0=돌아가기`, 'dim');
-    const actionsRef = this.training.getAvailableActions(unit, partId);
-    this._trainingActions = actionsRef;
-    let row = '  ';
-    actionsRef.forEach((a, i) => {
-      const num = i + 1;
-      row += (a.locked ? `${num}.${a.name}[X]` : `${num}.${a.name}`).padEnd(16);
-      if ((i + 1) % 5 === 0) { this.print(row, 'dim'); row = '  '; }
+    // 행위 목록 (번호=ID)
+    const actionsRef = this.training.getAvailableActions(unit);
+    let row2 = '  ';
+    actionsRef.forEach((a) => {
+      row2 += (a.locked ? `${String(a.id).padStart(2)}.${a.name}[X]` : `${String(a.id).padStart(2)}.${a.name}`).padEnd(20);
+      if (row2.length > 58) { this.print(row2, 'dim'); row2 = '  '; }
     });
-    if (row.trim()) this.print(row, 'dim');
+    if (row2.trim().length > 2) this.print(row2, 'dim');
+    this.print('  0=돌아가기', 'dim');
 
     this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
