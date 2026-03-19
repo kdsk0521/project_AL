@@ -81,6 +81,51 @@
     .output-line.error    { color: #ff4444; }
     .output-line.dim      { color: #666; }
 
+    /* ── Progress Bar Component ── */
+    .progress-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 1px 0;
+    }
+    .progress-bar .bar-label {
+      min-width: 36px;
+      color: #999;
+      font-size: 12px;
+    }
+    .progress-bar .bar-bg {
+      position: relative;
+      width: 140px;
+      height: 14px;
+      background: #1a1a2e;
+      border: 1px solid #333;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar .bar-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 1px;
+    }
+    .progress-bar .bar-text {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #ddd;
+      text-shadow: 0 0 2px #000;
+    }
+
+    /* ── Column Grid ── */
+    .output-columns {
+      display: grid;
+      gap: 4px 12px;
+      margin: 2px 0;
+      padding: 0 8px;
+    }
+
     /* ── Action Bar (고정 선택지) ── */
     #action-bar {
       display: flex;

@@ -4,6 +4,14 @@
 class GameEngine {
   constructor() {
     this.state = null;
+
+    // Balance CSV loader
+    const BalanceLoader = require('./balance/loader');
+    this.balance = new BalanceLoader();
+
+    // Color constants
+    this.colors = require('./data/colors.json');
+
     // Load and normalize data from JSON files
     const rawUnits = require('./data/units.json');
     const rawDungeon = require('./data/dungeonMap.json');
@@ -28,6 +36,10 @@ class GameEngine {
       ],
       traitSynthesis: this._flattenSynthesis(rawSynthesis)
     };
+
+    // Event queue
+    const EventQueue = require('./systems/eventQueue');
+    this.eventQueue = new EventQueue(this);
 
     // Fusion table: 7x7 alpha (sigil A + sigil B -> result sigil)
     // Rule: (A + B) mod 7, if 0 then 7, if result == A or B then +1
@@ -83,10 +95,75 @@ class GameEngine {
 
       // Workshop equipment
       equipment: {
-        furnace: true,   // \uAC00\uB9C8 - available from start
-        crusher: true,   // \uBD84\uC1C4\uAE30 - available from start
-        compressor: false // \uC555\uCD95\uAE30 - needs to be crafted
+        furnace: true,
+        crusher: true,
+        compressor: false
       },
+
+      // 도구 7종 + 부품 3슬롯 (system_tool_upgrade.md v0.1)
+      tools: {
+        // 채집 도구 (3종)
+        pickaxe: {
+          name: '곡괭이', type: 'gather', gatherZone: '광맥',
+          parts: [
+            { slot: '머리', suffix: null, tier: 0 },
+            { slot: '자루', suffix: null, tier: 0 },
+            { slot: '손잡이', suffix: null, tier: 0 }
+          ]
+        },
+        rod: {
+          name: '낚시대', type: 'gather', gatherZone: '수계',
+          parts: [
+            { slot: '바늘', suffix: null, tier: 0 },
+            { slot: '줄', suffix: null, tier: 0 },
+            { slot: '막대', suffix: null, tier: 0 }
+          ]
+        },
+        staff: {
+          name: '채집봉', type: 'gather', gatherZone: '수풀',
+          parts: [
+            { slot: '끝장식', suffix: null, tier: 0 },
+            { slot: '봉체', suffix: null, tier: 0 },
+            { slot: '보석', suffix: null, tier: 0 }
+          ]
+        },
+        // 육성 도구 (2종)
+        dummy: {
+          name: '타격 인형', type: 'training_combat',
+          parts: [
+            { slot: '팔', suffix: null, tier: 0 },
+            { slot: '몸통', suffix: null, tier: 0 },
+            { slot: '받침대', suffix: null, tier: 0 }
+          ]
+        },
+        treadmill: {
+          name: '달리기 기구', type: 'training_body',
+          parts: [
+            { slot: '벨트', suffix: null, tier: 0 },
+            { slot: '프레임', suffix: null, tier: 0 },
+            { slot: '바퀴', suffix: null, tier: 0 }
+          ]
+        },
+        // 조교 도구 (2종)
+        rotor: {
+          name: '로터', type: 'training_adult',
+          parts: [
+            { slot: '모터', suffix: null, tier: 0 },
+            { slot: '표면', suffix: null, tier: 0 },
+            { slot: '손잡이', suffix: null, tier: 0 }
+          ]
+        },
+        textbook: {
+          name: '교본', type: 'training_personality',
+          parts: [
+            { slot: '표지', suffix: null, tier: 0 },
+            { slot: '내지', suffix: null, tier: 0 },
+            { slot: '잠금장치', suffix: null, tier: 0 }
+          ]
+        }
+      },
+      // 부품 인벤토리 (탈착한 부품 보관)
+      partInventory: [],
 
       // Dungeon progress
       dungeon: {
@@ -249,6 +326,49 @@ class GameEngine {
   addMaterial(matId, qty) {
     if (!this.state.inventory[matId]) this.state.inventory[matId] = 0;
     this.state.inventory[matId] += qty;
+  }
+
+  // === 도구 시스템 헬퍼 ===
+
+  // 도구의 게이팅 값 (전 부품 tier 합계 ÷ 3, 버림)
+  getToolGating(toolKey) {
+    const tool = this.state.tools[toolKey];
+    if (!tool) return 0;
+    const totalTier = tool.parts.reduce((sum, p) => sum + (p.tier || 0), 0);
+    return Math.floor(totalTier / 3);
+  }
+
+  // 채집 보너스 (구역 → 해당 도구 게이팅 기반)
+  getGatherBonus(zone) {
+    const zoneToolMap = {
+      '석굴': 'pickaxe', '석굴 심부': 'pickaxe', '결빙': 'pickaxe',
+      '독림': 'staff', '독림 심부': 'staff',
+      '수계': 'rod', '수계 심부': 'rod',
+      '기관부': 'pickaxe', '위험 구역': 'pickaxe',
+      '화산-수계 경계': 'rod', '석굴~기관부 경계': 'pickaxe'
+    };
+    const toolKey = zoneToolMap[zone];
+    if (!toolKey) return 1.0;
+    const gating = this.getToolGating(toolKey);
+    return 1.0 + gating * 0.3; // gating 0=×1.0, 1=×1.3, 2=×1.6, 3=×1.9...
+  }
+
+  // 육성 도구 효율 (훈련 시 경험치 보정)
+  getTrainingBonus(type) {
+    // type: 'combat'→타격인형, 'body'→달리기기구, 'adult'→로터, 'personality'→교본
+    const toolMap = { combat: 'dummy', body: 'treadmill', adult: 'rotor', personality: 'textbook' };
+    const toolKey = toolMap[type];
+    if (!toolKey) return 1.0;
+    const gating = this.getToolGating(toolKey);
+    return 1.0 + gating * 0.2; // gating 0=×1.0, 1=×1.2, 2=×1.4...
+  }
+
+  // 조교 도구 여부 (로터 or 교본의 게이팅 > 0)
+  hasTrainingToolForType(type) {
+    const toolMap = { adult: 'rotor', personality: 'textbook' };
+    const toolKey = toolMap[type];
+    if (!toolKey) return false;
+    return this.getToolGating(toolKey) >= 0; // t0이라도 있으면 true
   }
 
   removeMaterial(matId, qty) {

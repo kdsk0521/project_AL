@@ -170,24 +170,26 @@ class DungeonSystem {
     };
   }
 
-  // Get collectible materials for a collect node
+  // Get collectible materials for a collect node (도구 보정 적용)
   getCollectibles(node) {
     const materials = node.collect || [];
     const results = [];
+    const gatherBonus = this.engine.getGatherBonus(node.zone);
 
     for (const matId of materials) {
-      // Each material has a chance to be found
       if (Math.random() < 0.7) {
-        const qty = 1 + Math.floor(Math.random() * 2);
+        const baseQty = 1 + Math.floor(Math.random() * 2);
+        const qty = Math.max(1, Math.floor(baseQty * gatherBonus));
         results.push({ id: matId, qty, name: this.engine.getMaterialName(matId) });
       }
     }
 
     // Always get at least 1 item
     if (results.length === 0 && materials.length > 0) {
+      const qty = Math.max(1, Math.floor(1 * gatherBonus));
       results.push({
         id: materials[0],
-        qty: 1,
+        qty,
         name: this.engine.getMaterialName(materials[0])
       });
     }

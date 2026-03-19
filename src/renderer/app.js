@@ -91,6 +91,40 @@ class App {
     this.outputEl.scrollTop = this.outputEl.scrollHeight;
   }
 
+  // Progress bar (CSS 기반)
+  printProgress(label, value, max, color = '#4a9eff', width = 140) {
+    const pct = Math.min(100, Math.max(0, (value / max) * 100));
+    const el = document.createElement('div');
+    el.className = 'output-line';
+    el.innerHTML = `<div class="progress-bar">
+      <span class="bar-label">${label}</span>
+      <div class="bar-bg" style="width:${width}px">
+        <div class="bar-fill" style="width:${pct}%;background:${color}"></div>
+        <span class="bar-text">${value}/${max}</span>
+      </div>
+    </div>`;
+    this.outputEl.appendChild(el);
+    this.outputEl.scrollTop = this.outputEl.scrollHeight;
+  }
+
+  // Column grid (칼럼 레이아웃)
+  // cols: [{content, width, align, color, className}] — width는 1~24 (24=100%)
+  printColumns(cols) {
+    const el = document.createElement('div');
+    el.className = 'output-columns';
+    el.style.gridTemplateColumns = cols.map(c => `${((c.width || 12) / 24 * 100).toFixed(1)}%`).join(' ');
+    for (const col of cols) {
+      const cell = document.createElement('div');
+      cell.className = col.className || '';
+      cell.style.textAlign = col.align || 'left';
+      if (col.color) cell.style.color = col.color;
+      cell.innerHTML = col.content || '';
+      el.appendChild(cell);
+    }
+    this.outputEl.appendChild(el);
+    this.outputEl.scrollTop = this.outputEl.scrollHeight;
+  }
+
   // Clickable menu option — highlights on hover, executes command on click
   printOption(cmd, text, className = 'menu') {
     const line = document.createElement('div');
@@ -249,6 +283,9 @@ class App {
       case 'facility_assign':    this.handleFacilityAssign(cmd);    break;
       case 'compendium':         this.handleCompendium(cmd);        break;
       case 'inventory':          this.handleInventory(cmd);         break;
+      case 'tool_manage':        this.handleToolManagement(cmd);    break;
+      case 'tool_detail':        this.handleToolDetail(cmd);        break;
+      case 'tool_upgrade':       this.handleToolUpgrade(cmd);       break;
       case 'training_select':    this.handleTrainingSelect(cmd);    break;
       case 'training_menu':      this.handleTrainingMenu(cmd);      break;
       case 'training_part':      this.handleTrainingPart(cmd);      break;
@@ -572,6 +609,7 @@ class App {
     this.printOption('5', '  5. 도시 시설    — 시설을 관리한다');
     this.printOption('6', '  6. 전서         — 유닛을 구매/등록한다');
     this.printOption('7', '  7. 인벤토리     — 소지품을 확인한다');
+    this.printOption('t', '  t. 도구 관리    — 도구를 확인/업그레이드한다');
     this.printOption('8', '  8. 하루 넘기기');
     this.printOption('9', '  9. 저장');
     const p = this.engine.state.player;
@@ -582,7 +620,7 @@ class App {
     this.setActions([
       {key:'1', label:'탐사'}, {key:'2', label:'가공/연구'}, {key:'3', label:'유닛'},
       {key:'4', label:'조교소'}, {key:'5', label:'시설'}, {key:'6', label:'전서'},
-      {key:'7', label:'인벤토리'}, {key:'8', label:'넘기기'}, {key:'9', label:'저장'},
+      {key:'7', label:'인벤토리'}, {key:'t', label:'도구'}, {key:'8', label:'넘기기'}, {key:'9', label:'저장'},
       ...(p.hp < p.maxHp ? [{key:'0', label:'회복'}] : [])
     ]);
     this.updateStatus();
@@ -602,6 +640,7 @@ class App {
       case '5': this.showCityFacilities();  break;
       case '6': this.showCompendium();      break;
       case '7': this.showInventory();       break;
+      case 't': this.showToolManagement();  break;
       case '8': this.doAdvanceDay();        break;
       case '9': this.doSaveGame();          break;
       case '0': this.doHealPlayer();        break;
@@ -1882,6 +1921,23 @@ class App {
       this.print('  주의: 이제부터 월간 유지비가 발생합니다.', 'error');
     }
 
+    // 채집 도구 업그레이드 자동 장착
+    const toolUpgrades = {
+      'TOOL_PICKAXE_2': { key: 'pickaxe', tier: 2, name: '단단한 곡괭이' },
+      'TOOL_SICKLE_2':  { key: 'sickle',  tier: 2, name: '날카로운 낫' },
+      'TOOL_FISHING_ROD_2': { key: 'rod', tier: 2, name: '튼튼한 낚시대' },
+    };
+    const upgrade = toolUpgrades[result.result.id];
+    if (upgrade) {
+      this.engine.removeMaterial(result.result.id, 1);
+      const tool = this.engine.state.gatherTools[upgrade.key];
+      tool.id = result.result.id;
+      tool.tier = upgrade.tier;
+      tool.name = upgrade.name;
+      this.printBlank();
+      this.print(`★ ${upgrade.name} 장착! 채집량 ×${1 + (upgrade.tier - 1) * 0.5}`, 'success');
+    }
+
     this.printBlank();
     this.printOption('1', '  [공방으로]');
     this.currentScreen = 'crafting';
@@ -1952,8 +2008,18 @@ class App {
       this.engine.state.milestones.compressorBuilt = true;
       this.printBlank();
       this.print('★ 압축기가 공방에 설치되었다!', 'success');
-      this.print('  새로운 가공 경로 개방: 압축 (위 주입 + 동 해방)', 'lore');
-      this.print('  주의: 이제부터 월간 유지비가 발생합니다.', 'error');
+    }
+
+    // 채집 도구 자동 장착
+    const toolUp = { 'TOOL_PICKAXE_2':{key:'pickaxe',tier:2}, 'TOOL_SICKLE_2':{key:'sickle',tier:2}, 'TOOL_FISHING_ROD_2':{key:'rod',tier:2} };
+    const tu = toolUp[result.result.id];
+    if (tu) {
+      this.engine.removeMaterial(result.result.id, 1);
+      const tool = this.engine.state.gatherTools[tu.key];
+      tool.id = result.result.id;
+      tool.tier = tu.tier;
+      tool.name = result.result.name;
+      this.print(`★ ${result.result.name} 장착!`, 'success');
     }
 
     this.printBlank();
@@ -2746,75 +2812,329 @@ class App {
   }
 
   // ============================================================
+  //  SCREEN: Tool Management (도구 관리)
+  // ============================================================
+  showToolManagement() {
+    this.currentScreen = 'tool_manage';
+    this.clearOutput();
+    this.printSeparator();
+    this.print('【 도구 관리 】', 'location');
+    this.printBlank();
+
+    const tools = this.engine.state.tools;
+    const categories = {
+      gather: { label: '채집 도구', keys: ['pickaxe', 'rod', 'staff'] },
+      training: { label: '육성 도구', keys: ['dummy', 'treadmill'] },
+      adult: { label: '조교 도구', keys: ['rotor', 'textbook'] }
+    };
+
+    let idx = 1;
+    this._toolList = [];
+    for (const [catKey, cat] of Object.entries(categories)) {
+      this.print(`  [${cat.label}]`, 'system');
+      for (const key of cat.keys) {
+        const tool = tools[key];
+        if (!tool) continue;
+        const gating = this.engine.getToolGating(key);
+        const partsStr = tool.parts.map(p => {
+          const suffix = p.suffix ? `${p.suffix}` : '기본';
+          return `${p.slot}(${suffix} t${p.tier})`;
+        }).join(' | ');
+        this._toolList.push(key);
+        this.printOption(`${idx}`, `  ${idx}. ${tool.name} [게이팅:${gating}] — ${partsStr}`);
+        idx++;
+      }
+      this.printBlank();
+    }
+
+    this.printOption('0', '  0. 돌아가기');
+    this.setActions([{key:'0', label:'돌아가기'}]);
+    this.updateStatus();
+  }
+
+  handleToolManagement(cmd) {
+    if (cmd === '0') { this.showTownMenu(); return; }
+    const idx = parseInt(cmd);
+    if (isNaN(idx) || idx < 1 || idx > this._toolList.length) {
+      this.print('번호를 입력하세요.', 'error');
+      return;
+    }
+    this._selectedToolKey = this._toolList[idx - 1];
+    this.showToolDetail();
+  }
+
+  showToolDetail() {
+    this.currentScreen = 'tool_detail';
+    const toolKey = this._selectedToolKey;
+    const tool = this.engine.state.tools[toolKey];
+    if (!tool) { this.showToolManagement(); return; }
+
+    this.clearOutput();
+    this.printSeparator();
+    const gating = this.engine.getToolGating(toolKey);
+    this.print(`【 ${tool.name} 】 게이팅: ${gating}`, 'location');
+    this.printBlank();
+
+    // 부품 상세
+    this.print('  부품 구성:', 'system');
+    tool.parts.forEach((p, i) => {
+      const suffix = p.suffix || '없음';
+      const bar = '█'.repeat(Math.min(10, p.tier)) + '·'.repeat(Math.max(0, 10 - p.tier));
+      this.printOption(`${i + 1}`, `  ${i + 1}. [${p.slot}] 접미사: ${suffix} | tier: ${p.tier} [${bar}]`);
+    });
+    this.printBlank();
+
+    // 게이팅 효과 설명
+    if (tool.type === 'gather') {
+      const bonus = this.engine.getGatherBonus(tool.gatherZone || '석굴');
+      this.print(`  채집 효과: ${tool.gatherZone} 채집량 ×${bonus.toFixed(1)}`, 'dim');
+    } else {
+      const typeMap = { training_combat:'combat', training_body:'body', training_adult:'adult', training_personality:'personality' };
+      const bonus = this.engine.getTrainingBonus(typeMap[tool.type] || 'combat');
+      this.print(`  효율 보정: ×${bonus.toFixed(1)}`, 'dim');
+    }
+    this.printBlank();
+
+    this.printOption('u', '  u. 부품 업그레이드 (솥 — 재료 투입)');
+    this.printOption('0', '  0. 돌아가기');
+    this.setActions([{key:'u', label:'업그레이드'}, {key:'0', label:'돌아가기'}]);
+  }
+
+  handleToolDetail(cmd) {
+    if (cmd === '0') { this.showToolManagement(); return; }
+    if (cmd === 'u') { this.showToolUpgrade(); return; }
+    // 부품 번호 선택 시에도 업그레이드로
+    const idx = parseInt(cmd);
+    if (idx >= 1 && idx <= 3) {
+      this._selectedPartIdx = idx - 1;
+      this.showToolUpgrade();
+    }
+  }
+
+  showToolUpgrade() {
+    this.currentScreen = 'tool_upgrade';
+    const toolKey = this._selectedToolKey;
+    const tool = this.engine.state.tools[toolKey];
+    const partIdx = this._selectedPartIdx || 0;
+    const part = tool.parts[partIdx];
+
+    this.clearOutput();
+    this.printSeparator();
+    this.print(`【 부품 업그레이드: ${tool.name} — ${part.slot} 】`, 'location');
+    this.print(`  현재: 접미사 ${part.suffix || '없음'} / tier ${part.tier}`, 'dim');
+    this.printBlank();
+
+    // 재료 선택 (인벤토리에서)
+    this.print('  투입할 재료를 선택하세요:', 'system');
+    const inv = this.engine.state.inventory;
+    const matIds = Object.keys(inv).filter(id => inv[id] > 0 && id.startsWith('MAT_'));
+    this._upgradeMatList = matIds;
+
+    if (matIds.length === 0) {
+      this.print('  투입할 재료가 없습니다.', 'dim');
+    } else {
+      matIds.forEach((matId, i) => {
+        const mat = this.engine.data.materials.find(m => m.id === matId);
+        const name = mat ? mat.name : matId;
+        // 접미사 미리보기
+        let suffixPreview = '';
+        if (mat && mat.tags) {
+          const prop = mat.tags.function || '';
+          const elem = mat.tags.element || '';
+          if (prop && elem) suffixPreview = ` → [${prop}×${elem}]`;
+          else if (prop) suffixPreview = ` → [${prop}]`;
+        }
+        this.printOption(`${i + 1}`, `  ${i + 1}. ${name} ×${inv[matId]}${suffixPreview}`);
+      });
+    }
+    this.printBlank();
+
+    // 부품 선택 (1~3)
+    this.print(`  부품: ${tool.parts.map((p, i) => `${i+1}.${p.slot}(t${p.tier})${i === partIdx ? '◀' : ''}`).join('  ')}`, 'dim');
+    this.printOption('0', '  0. 돌아가기');
+    this.setActions([{key:'0', label:'돌아가기'}]);
+  }
+
+  handleToolUpgrade(cmd) {
+    if (cmd === '0') { this.showToolDetail(); return; }
+    // 부품 전환 (1~3)
+    if (['1','2','3'].includes(cmd) && this._upgradeMatList && cmd <= this._upgradeMatList.length) {
+      // 재료 투입
+      const matId = this._upgradeMatList[parseInt(cmd) - 1];
+      const mat = this.engine.data.materials.find(m => m.id === matId);
+      if (!mat || !this.engine.hasMaterial(matId)) {
+        this.print('재료가 부족합니다.', 'error');
+        return;
+      }
+
+      this.engine.removeMaterial(matId, 1);
+
+      const tool = this.engine.state.tools[this._selectedToolKey];
+      const partIdx = this._selectedPartIdx || 0;
+      const part = tool.parts[partIdx];
+
+      // 접미사 결정: 재료의 기능태그 × 원소태그
+      const prop = mat.tags?.function || null;
+      const elem = mat.tags?.element || null;
+      let newSuffix = null;
+      if (prop && elem) newSuffix = `${prop}×${elem}`;
+      else if (prop) newSuffix = prop;
+      else if (elem) newSuffix = elem;
+
+      // 같은 접미사면 tier 상승, 다르면 접미사 교체 + tier 1
+      if (newSuffix && newSuffix === part.suffix) {
+        part.tier++;
+        this.print(`${part.slot}의 tier 상승! → t${part.tier}`, 'success');
+      } else if (newSuffix) {
+        part.suffix = newSuffix;
+        part.tier = Math.max(1, part.tier);
+        if (part.tier === 0) part.tier = 1;
+        this.print(`${part.slot}에 접미사 [${newSuffix}] 부여! (t${part.tier})`, 'success');
+      } else {
+        part.tier++;
+        this.print(`${part.slot}의 tier 상승! → t${part.tier}`, 'success');
+      }
+
+      this.printBlank();
+      this.updateStatus();
+      this.showToolUpgrade();
+      return;
+    }
+
+    this.print('재료 번호를 입력하세요.', 'error');
+  }
+
+  // ============================================================
   //  SCREEN: Inventory
   // ============================================================
-  showInventory() {
+  showInventory(tab = 'raw') {
     this.currentScreen = 'inventory';
+    this._invTab = tab;
     this.clearOutput();
     this.printSeparator();
     this.print('【 인벤토리 】', 'location');
     this.printBlank();
 
+    // 탭 표시
+    const tabs = [
+      { key: 'r', id: 'raw', name: '원재료' },
+      { key: 'p', id: 'processed', name: '가공품' },
+      { key: 'c', id: 'crafted', name: '제작품' },
+      { key: 'e', id: 'equip', name: '장비/도구' }
+    ];
+    const tabLine = tabs.map(t =>
+      t.id === tab ? `【${t.name}】` : `  ${t.name}  `
+    ).join('|');
+    this.print(`  ${tabLine}`, 'system');
+    this.printBlank();
+
+    // 아이템 분류
     const inv = this.engine.state.inventory;
-    const matIds = Object.keys(inv).filter(id => inv[id] > 0);
+    const allItems = Object.keys(inv).filter(id => inv[id] > 0).map(id => {
+      const mat = this.engine.data.materials.find(m => m.id === id);
+      return { id, name: (mat && mat.name) || id, qty: inv[id], mat };
+    });
 
-    if (matIds.length === 0) {
-      this.print('  소지품이 없습니다.', 'dim');
+    let filtered;
+    switch (tab) {
+      case 'raw':
+        filtered = allItems.filter(i => i.id.startsWith('MAT_') && !i.id.includes('_FIRED') && !i.id.includes('_CRUSHED') && !i.id.includes('_COMPRESSED'));
+        break;
+      case 'processed':
+        filtered = allItems.filter(i => i.id.includes('_FIRED') || i.id.includes('_CRUSHED') || i.id.includes('_COMPRESSED') || i.id.startsWith('CRAFT_'));
+        break;
+      case 'crafted':
+        filtered = allItems.filter(i => i.id.startsWith('ITEM_') && !['equipment_weapon','equipment_armor','equipment_accessory','tool_training','tool_crafting'].includes(i.mat?.category));
+        break;
+      case 'equip':
+        filtered = allItems.filter(i => i.mat && ['equipment_weapon','equipment_armor','equipment_accessory','tool_training','tool_crafting'].includes(i.mat.category));
+        break;
+      default:
+        filtered = allItems;
+    }
+
+    this._inventoryItems = filtered;
+
+    if (filtered.length === 0) {
+      this.print('  (없음)', 'dim');
     } else {
-      // Group by source/type
-      const groups = {};
-      for (const matId of matIds) {
-        const mat = this.engine.data.materials.find(m => m.id === matId);
-        let source = '기타';
-        if (mat && mat.source) source = mat.source;
-        else if (matId.startsWith('MAT_')) source = '기본 재료';
-        else if (matId.startsWith('ITEM_')) source = '제작품';
-        else if (matId.startsWith('CRAFT_')) source = '조합품';
-        else if (matId.startsWith('PROC_')) source = '가공품';
-        if (!groups[source]) groups[source] = [];
-        const displayName = (mat && mat.name) ? mat.name : matId;
-        groups[source].push({ id: matId, name: displayName, qty: inv[matId], mat });
-      }
-
-      for (const [source, items] of Object.entries(groups)) {
-        this.print(`  [${source}]`, 'system');
-        for (const item of items) {
-          let tagStr = '';
-          if (item.mat && item.mat.tags) {
-            const tags = item.mat.tags;
-            const parts = [];
-            if (tags.function) parts.push(tags.function);
-            if (tags.element) parts.push(tags.element);
-            if (tags.form) parts.push(tags.form);
-            if (parts.length > 0) tagStr = ` (${parts.join('/')})`;
-          }
-          this.print(`    ${item.name} x${item.qty}${tagStr}`, 'dim');
+      filtered.forEach((item, i) => {
+        const mat = item.mat;
+        let info = '';
+        if (mat && mat.effect) {
+          const desc = typeof mat.effect === 'string' ? mat.effect : (mat.effect.desc || '');
+          if (desc) info = ` — ${desc}`;
         }
-      }
-    }
-
-    // Also show crafted items
-    if (this.engine.state.craftedItems && this.engine.state.craftedItems.length > 0) {
-      this.printBlank();
-      this.print('  [제작 아이템]', 'system');
-      for (const item of this.engine.state.craftedItems) {
-        this.print(`    ${item.name}`, 'lore');
-      }
+        // 태그 요약
+        if (!info && mat && mat.tags) {
+          const tags = mat.tags;
+          const parts = [];
+          const funcs = tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : []);
+          const elems = tags.elements || (tags.element ? [tags.element] : []);
+          parts.push(...funcs.filter(Boolean), ...elems.filter(Boolean));
+          if (parts.length) info = ` (${parts.join('/')})`;
+        }
+        this.printOption(`${i + 1}`, `  ${i + 1}. ${item.name} ×${item.qty}${info}`);
+      });
     }
 
     this.printBlank();
+
+    // 탭 전환 + 돌아가기
+    const actions = tabs.map(t => ({ key: t.key, label: t.name }));
+    actions.push({ key: '0', label: '돌아가기' });
+    this.print(`  탭 전환: ${tabs.map(t => `${t.key}=${t.name}`).join(' | ')}`, 'dim');
     this.printOption('0', '  0. 돌아가기');
-    this.printBlank();
-    this.setActions([{key:'0', label:'돌아가기'}]);
+    this.setActions(actions);
     this.updateStatus();
   }
 
   handleInventory(cmd) {
-    if (cmd === '0') {
-      this.showTownMenu();
-    } else {
-      this.print('0을 입력하여 돌아갈 수 있습니다.', 'dim');
+    if (cmd === '0') { this.showTownMenu(); return; }
+
+    // 탭 전환
+    const tabMap = { r: 'raw', p: 'processed', c: 'crafted', e: 'equip' };
+    if (tabMap[cmd]) { this.showInventory(tabMap[cmd]); return; }
+
+    // 아이템 상세
+    const idx = parseInt(cmd);
+    if (isNaN(idx) || idx < 1 || !this._inventoryItems || idx > this._inventoryItems.length) {
+      return;
     }
+
+    const item = this._inventoryItems[idx - 1];
+    const mat = item.mat;
+    this.printBlank();
+    this.printSeparator();
+    this.print(`【 ${item.name} 】 ×${item.qty}`, 'lore');
+
+    if (mat) {
+      if (mat.tier) this.print(`  Tier: ${mat.tier}`, 'dim');
+      if (mat.lore) this.print(`  "${mat.lore}"`, 'dim');
+
+      const tags = mat.tags || {};
+      const funcs = (tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : [])).filter(Boolean);
+      const elements = (tags.elements || (tags.element ? [tags.element] : [])).filter(Boolean);
+      const forms = (tags.forms || (tags.form ? [tags.form] : [])).filter(Boolean);
+
+      if (funcs.length) this.print(`  기능: ${funcs.join(', ')}`, 'system');
+      if (elements.length) this.print(`  원소: ${elements.join(', ')}`, 'system');
+      if (forms.length) this.print(`  형태: ${forms.join(', ')}`, 'system');
+
+      if (mat.effect) {
+        const desc = typeof mat.effect === 'string' ? mat.effect : (mat.effect.desc || '');
+        if (desc) this.print(`  효과: ${desc}`, 'success');
+      }
+
+      const catNames = {
+        'consumable_potion':'물약', 'consumable_food':'식량', 'consumable_attack':'공격소비재',
+        'consumable_debuff':'디버프', 'equipment_weapon':'무기', 'equipment_armor':'방어구',
+        'equipment_accessory':'장신구', 'tool_training':'조교도구', 'tool_crafting':'제작도구',
+        'material_refined':'정제소재'
+      };
+      if (mat.category) this.print(`  분류: ${catNames[mat.category] || mat.category}`, 'dim');
+    }
+    this.printSeparator();
   }
 
   // ============================================================

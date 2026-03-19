@@ -110,48 +110,68 @@ class CraftingSystem {
   }
 
   applyProcessingRules(mat, equipmentId) {
-    const tags = { ...mat.tags };
-    let newFunction = tags.function;
-    let newForm = tags.form;
-    let newElement = tags.element;
+    // 태그를 배열로 정규화 (복수 태그 대응)
+    const tags = mat.tags || {};
+    let funcs = tags.functions || (tags.function ? (Array.isArray(tags.function) ? [...tags.function] : [tags.function]) : []);
+    let elems = tags.elements || (tags.element ? (Array.isArray(tags.element) ? [...tags.element] : [tags.element]) : []);
+    let forms = tags.forms || (tags.form ? (Array.isArray(tags.form) ? [...tags.form] : [tags.form]) : []);
+    funcs = funcs.filter(Boolean);
+    elems = elems.filter(Boolean);
+    forms = forms.filter(Boolean);
+
+    const furnaceMap = { '회복':'보존', '촉매':'억제', '경도':'공격', '독성':'가공성', '전도':'수호', '가공성':'가공성' };
+    const compressMap = { '회복':'수호', '촉매':'부여', '독성':'조련', '전도':'보존', '가공성':'전도', '경도':'경도' };
 
     if (equipmentId === 'furnace') {
-      // 가마: 열 주입 (기능 변환) + 광 해방 (원소 제거)
-      const furnaceMap = {
-        '회복': '보존', '촉매': '억제', '경도': '공격',
-        '독성': '가공성', '전도': '수호', '가공성': '가공성'
-      };
-      if (furnaceMap[newFunction]) newFunction = furnaceMap[newFunction];
-      if (tags.form === '액체') newForm = '기체';
-      if (newElement === '광') newElement = null;
+      // 가마: 열 주입 (기능 전부 변환) + 광 해방 (광 원소 전부 제거)
+      funcs = funcs.map(f => furnaceMap[f] || f);
+      forms = forms.map(f => f === '액체' ? '기체' : f);
+      elems = elems.filter(e => e !== '광'); // 광 제거
     } else if (equipmentId === 'crusher') {
-      // 분쇄기: 위 해방 (형태→분말) + 식 해방 (원소 제거)
-      newForm = '분말';
-      if (newElement === '식') newElement = null;
+      // 분쇄기: 위 해방 (형태 전부 → 분말) + 식 해방 (식 원소 전부 제거)
+      forms = forms.map(() => '분말');
+      elems = elems.filter(e => e !== '식'); // 식 제거
     } else if (equipmentId === 'compressor') {
-      // 압축기: 위 주입 (기능 변환) + 동 해방 (원소 제거)
-      const compressMap = {
-        '회복': '수호', '촉매': '부여', '독성': '조련',
-        '전도': '보존', '가공성': '전도', '경도': '경도'
-      };
-      if (compressMap[newFunction]) newFunction = compressMap[newFunction];
-      newForm = '결정';
-      if (newElement === '동') newElement = null;
+      // 압축기: 위 주입 (기능 전부 변환) + 동 해방 (동 원소 전부 제거)
+      funcs = funcs.map(f => compressMap[f] || f);
+      forms = forms.map(() => '결정');
+      elems = elems.filter(e => e !== '동'); // 동 제거
     }
 
-    // ID format matches recipe expectations: MAT_XXX_FIRED / MAT_XXX_CRUSHED / MAT_XXX_COMPRESSED
+    // 중복 제거
+    funcs = [...new Set(funcs)];
+    elems = [...new Set(elems)];
+    forms = [...new Set(forms)];
+
+    const resultTags = {
+      function: funcs.length === 1 ? funcs[0] : funcs,
+      element: elems.length === 0 ? null : (elems.length === 1 ? elems[0] : elems),
+      form: forms.length === 1 ? forms[0] : forms,
+      // 배열 버전 유지
+      functions: funcs, elements: elems, forms: forms
+    };
+
+    // ID format
     const suffixMap = { furnace: '_FIRED', crusher: '_CRUSHED', compressor: '_COMPRESSED' };
     const resultId = `${mat.id}${suffixMap[equipmentId] || '_PROC'}`;
-    const resultName = this.generateName({ function: newFunction, element: newElement, form: newForm });
+    const resultName = this.generateName(resultTags);
 
     // Register as a material if not already exists
+    // 가공 결과의 tier도 태그 밀도로 재계산
+    const allProcTags = [...funcs, ...elems, ...forms].filter(Boolean);
+    const procCounts = {};
+    allProcTags.forEach(t => { procCounts[t] = (procCounts[t] || 0) + 1; });
+    const procTotalTier = Object.values(procCounts).reduce((s, v) => s + v, 0);
+    const procUnique = Object.keys(procCounts).length;
+    const resultTier = procUnique > 0 ? Math.max(1, Math.floor(procTotalTier / procUnique)) : mat.tier;
+
     const existing = this.engine.data.materials.find(m => m.id === resultId);
     if (!existing) {
       this.engine.data.materials.push({
         id: resultId,
         name: resultName,
-        tier: mat.tier,
-        tags: { function: newFunction, element: newElement, form: newForm },
+        tier: resultTier,
+        tags: resultTags,
         source: `가공(${mat.name})`,
         lore: `${mat.name}을(를) 가공한 결과물.`
       });
@@ -160,8 +180,8 @@ class CraftingSystem {
     return {
       id: resultId,
       name: resultName,
-      tags: { function: newFunction, element: newElement, form: newForm },
-      tier: mat.tier
+      tags: resultTags,
+      tier: resultTier
     };
   }
 
@@ -297,7 +317,7 @@ class CraftingSystem {
   }
 
   createCombinedItem(matA, matB, combinedTags, contradictions) {
-    const tier = Math.floor((matA.tier + matB.tier) / 2) + (this.countDuplicates(matA.tags, matB.tags) > 0 ? 1 : 0);
+    const tier = this.calcTier(matA, matB, combinedTags);
     const name = this.generateName(combinedTags);
     const category = this.determineCategory(combinedTags);
     // Deterministic ID: same inputs always produce same ID (so items stack)
@@ -334,6 +354,32 @@ class CraftingSystem {
       if (tagsA[key] && tagsA[key] === tagsB[key]) count++;
     }
     return count;
+  }
+
+  // ═══ Tier 계산: 태그 중복 = 집중 = 고tier, 태그 분산 = 다양 = 저tier ═══
+  calcTier(matA, matB, combinedTags) {
+    // 모든 태그를 풀어서 중복 카운트
+    const allTags = [];
+    for (const mat of [matA, matB]) {
+      const tags = mat.tags || {};
+      const funcs = tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : []);
+      const elems = tags.elements || (tags.element ? [tags.element] : []);
+      const forms = tags.forms || (tags.form ? [tags.form] : []);
+      allTags.push(...funcs.filter(Boolean), ...elems.filter(Boolean), ...forms.filter(Boolean));
+    }
+
+    if (allTags.length === 0) return 1;
+
+    // 태그별 중복 횟수 = 해당 태그의 tier
+    const counts = {};
+    allTags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+
+    // 전체 tier 합 ÷ 고유 태그 수 (버림)
+    const totalTier = Object.values(counts).reduce((s, v) => s + v, 0);
+    const uniqueTags = Object.keys(counts).length;
+    const result = Math.floor(totalTier / uniqueTags);
+
+    return Math.max(1, Math.min(result, 5)); // 최소 1, 최대 5
   }
 
   // ═══ v4.2: 2축 카테고리 시스템 ═══

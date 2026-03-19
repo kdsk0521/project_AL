@@ -748,26 +748,22 @@ class TrainingSystem {
     return 5;                       // 헌신
   }
 
+  // 조교 도구: 로터가 있으면 true (도구 시스템 v0.1)
   hasTrainingTool() {
-    const inv = this.engine.state.inventory;
-    for (const [matId, qty] of Object.entries(inv)) {
-      if (qty <= 0) continue;
-      // Check by ID pattern
-      if (matId.includes('ROTOR') || matId.includes('TOOL_TRAIN') || matId.includes('조교')) return true;
-      const mat = this.engine.data.materials.find(m => m.id === matId);
-      if (!mat) continue;
-      // v4.2: 2축 체크
-      if (mat.usages && mat.usages.includes('tool')) return true;
-      if (mat.functions && mat.functions.includes('training')) return true;
-      // 레거시 체크
-      if (mat.category === 'tool_training') return true;
-      if ((mat.name || '').includes('로터') || (mat.name || '').includes('조교')) return true;
-      if (mat.tags) {
-        const funcs = mat.tags.functions || (mat.tags.function ? (Array.isArray(mat.tags.function) ? mat.tags.function : [mat.tags.function]) : []);
-        if (funcs.includes('조련')) return true;
-      }
-    }
-    return false;
+    // 로터가 도구 목록에 있고 부품이 하나라도 있으면 사용 가능
+    const rotor = this.engine.state.tools?.rotor;
+    return rotor != null; // 기본 지급이므로 항상 true
+  }
+
+  // 교본 도구 여부
+  hasTextbook() {
+    const textbook = this.engine.state.tools?.textbook;
+    return textbook != null;
+  }
+
+  // 도구 게이팅 기반 조교 효율
+  getToolEfficiency() {
+    return this.engine.getTrainingBonus('adult');
   }
 
   getSigilMul(sigil) {

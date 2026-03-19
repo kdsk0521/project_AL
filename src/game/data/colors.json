@@ -1,0 +1,66 @@
+{
+  "elements": {
+    "열": "#ff6b35",
+    "위": "#a0522d",
+    "동": "#4169e1",
+    "광": "#ffd700",
+    "식": "#9932cc"
+  },
+  "stats": {
+    "hp": "#ff4444",
+    "stamina": "#44cc44",
+    "soulPower": "#4a9eff",
+    "atk": "#ff6b6b",
+    "def": "#6b9fff",
+    "spd": "#6bffb3"
+  },
+  "affection": {
+    "경계": "#ff4444",
+    "인지": "#ff8c00",
+    "친밀": "#ffd700",
+    "신뢰": "#44ff44",
+    "유대": "#4a9eff",
+    "헌신": "#ff69b4"
+  },
+  "sensitivity": {
+    "미개발": "#666666",
+    "민감": "#ffaa00",
+    "익숙": "#ff8c00",
+    "개발됨": "#ff4444",
+    "과민": "#ff69b4",
+    "조교완료": "#ff00ff"
+  },
+  "globalState": {
+    "love": "#ff69b4",
+    "submission": "#9370db",
+    "lewdness": "#ff4444",
+    "fear": "#555555",
+    "resentment": "#8b0000"
+  },
+  "category": {
+    "요괴": "#ff6b6b",
+    "정령": "#6bff6b",
+    "인조": "#6b9fff",
+    "야수": "#ffaa44",
+    "환상": "#c084fc"
+  },
+  "sigil": {
+    "백양": "#ff4444",
+    "금우": "#8b6914",
+    "거해": "#4169e1",
+    "처녀": "#44aa44",
+    "천갈": "#8b008b",
+    "쌍어": "#20b2aa",
+    "염": "#c0c0c0"
+  },
+  "ui": {
+    "system": "#4a9eff",
+    "combat": "#ff6b6b",
+    "success": "#6bff6b",
+    "lore": "#ffd700",
+    "unit": "#c084fc",
+    "error": "#ff4444",
+    "dim": "#666666",
+    "menu": "#c8c8c8"
+  }
+}

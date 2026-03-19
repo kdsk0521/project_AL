@@ -186,36 +186,6 @@
       "resultId": "ITEM_BASIC_FOOD"
     },
     {
-      "id": "RECIPE_BASIC_TRAINING_TOOL",
-      "name": "기초 조교도구",
-      "tier": 1,
-      "category": "tool_training",
-      "stage": 3,
-      "materials": [
-        "MAT_SLIME_CORE_CRUSHED",
-        "MAT_HERB"
-      ],
-      "processingRequired": "슬라임핵→[분쇄]→슬라임분말",
-      "resultTags": {
-        "function": [
-          "조련",
-          "회복"
-        ],
-        "element": [
-          "동",
-          "식"
-        ],
-        "form": [
-          "분말",
-          "식물"
-        ]
-      },
-      "effect": "유닛 조교/육성 도구. T1 성인 트레잇 후보 개방",
-      "knownFromStart": true,
-      "lore": "말랑한 분말과 약초의 조합. 자극과 치유를 동시에.",
-      "resultId": "ITEM_BASIC_TRAINING_TOOL"
-    },
-    {
       "id": "RECIPE_BASIC_NEGOTIATE",
       "name": "기초 교섭재료",
       "tier": 1,
@@ -243,35 +213,6 @@
       "knownFromStart": true,
       "lore": "마력 반응을 중개하는 소재. 대화의 물꼬를 틔운다.",
       "resultId": "ITEM_BASIC_NEGOTIATE"
-    },
-    {
-      "id": "RECIPE_BASIC_ROTOR",
-      "name": "기초 로터",
-      "tier": 1,
-      "category": "tool_training",
-      "stage": 3,
-      "materials": [
-        "MAT_SLIME_CORE_CRUSHED",
-        "MAT_SLIME_CORE"
-      ],
-      "processingRequired": "슬라임핵→[분쇄]→슬라임분말",
-      "resultTags": {
-        "function": [
-          "조련",
-          "전도"
-        ],
-        "element": [
-          "동"
-        ],
-        "form": [
-          "분말",
-          "유기"
-        ]
-      },
-      "effect": "유닛 조교 도구. 진동 계열",
-      "knownFromStart": true,
-      "lore": "떨리는 구슬 위에 가루를 얹으면 멈추지 않는다.",
-      "resultId": "ITEM_BASIC_ROTOR"
     }
   ],
   "hidden": [

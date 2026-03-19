@@ -254,9 +254,10 @@ class UnitSystem {
     if (unit.isKnockedOut) return { success: false, reason: '기절 상태의 유닛은 훈련할 수 없습니다.' };
     if (!this.engine.useStamina(2)) return { success: false, reason: '스태미나가 부족합니다.' };
 
-    // Combat exp gain (primary)
+    // Combat exp gain (primary) — 도구 효율 적용
     const sigilMultiplier = this.getSigilExpMultiplier(unit.sigil, 'combat');
-    const expGain = Math.floor(20 * sigilMultiplier);
+    const toolBonus = this.engine.getTrainingBonus('combat');
+    const expGain = Math.floor(20 * sigilMultiplier * toolBonus);
     unit.exp.combat += expGain;
 
     // Body exp gain (secondary, smaller)
