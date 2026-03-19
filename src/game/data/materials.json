@@ -94,5 +94,771 @@
     },
     "source": "보스드랍",
     "lore": "보스 고유 소재. 2티어 제작기 재료."
+  },
+  {
+    "id": "MAT_IRON_ORE_FIRED",
+    "name": "공격광물(철)",
+    "tier": 1,
+    "tags": {
+      "function": "공격",
+      "element": "위",
+      "form": "광물"
+    },
+    "source": "가공(철광석→가마)"
+  },
+  {
+    "id": "MAT_IRON_ORE_CRUSHED",
+    "name": "철가루",
+    "tier": 1,
+    "tags": {
+      "function": "경도",
+      "element": "위",
+      "form": "분말"
+    },
+    "source": "가공(철광석→분쇄)"
+  },
+  {
+    "id": "MAT_SLIME_CORE_FIRED",
+    "name": "경화슬라임",
+    "tier": 1,
+    "tags": {
+      "function": "수호",
+      "element": "동",
+      "form": "유기"
+    },
+    "source": "가공(슬라임핵→가마)"
+  },
+  {
+    "id": "MAT_SLIME_CORE_CRUSHED",
+    "name": "슬라임분말",
+    "tier": 1,
+    "tags": {
+      "function": "전도",
+      "element": "동",
+      "form": "분말"
+    },
+    "source": "가공(슬라임핵→분쇄)"
+  },
+  {
+    "id": "MAT_POISON_FISH_FIRED",
+    "name": "식재료(해독어)",
+    "tier": 1,
+    "tags": {
+      "function": "가공성",
+      "element": null,
+      "form": "유기"
+    },
+    "source": "가공(독물고기→가마)"
+  },
+  {
+    "id": "MAT_MAGIC_STONE_FIRED",
+    "name": "마력촉매석",
+    "tier": 1,
+    "tags": {
+      "function": "마력촉매",
+      "element": "열",
+      "form": "광물"
+    },
+    "source": "가공(마력석→가마)"
+  },
+  {
+    "id": "MAT_MAGIC_STONE_CRUSHED",
+    "name": "마력석분말",
+    "tier": 1,
+    "tags": {
+      "function": "촉매",
+      "element": "열",
+      "form": "분말"
+    },
+    "source": "가공(마력석→분쇄)"
+  },
+  {
+    "id": "MAT_CATALYST_HERB_FIRED",
+    "name": "억제초",
+    "tier": 1,
+    "tags": {
+      "function": "억제",
+      "element": null,
+      "form": "식물"
+    },
+    "source": "가공(촉매초→가마)"
+  },
+  {
+    "id": "MAT_HERB_FIRED",
+    "name": "보존허브",
+    "tier": 1,
+    "tags": {
+      "function": "보존",
+      "element": "식",
+      "form": "식물"
+    },
+    "source": "가공(약초→가마)"
+  },
+  {
+    "id": "MAT_WATER_FIRED",
+    "name": "증기",
+    "tier": 1,
+    "tags": {
+      "function": "가공성",
+      "element": null,
+      "form": "기체"
+    },
+    "source": "가공(물→가마)"
+  },
+  {
+    "id": "ITEM_BASIC_HEAL_POTION",
+    "name": "기초 회복 물약",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "회복",
+        "가공성"
+      ],
+      "element": [
+        "식"
+      ],
+      "form": [
+        "식물",
+        "액체"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": {
+      "type": "heal",
+      "value": 25,
+      "desc": "HP 25 회복 (전투 중 사용 가능)"
+    },
+    "source": "특수 레시피",
+    "lore": "가장 기본적인 회복약. 쓴맛이 나지만 듣긴 든다."
+  },
+  {
+    "id": "ITEM_BASIC_POISON_POTION",
+    "name": "기초 독물약",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "독성",
+        "가공성"
+      ],
+      "element": [
+        "광"
+      ],
+      "form": [
+        "유기",
+        "액체"
+      ]
+    },
+    "category": "consumable_attack",
+    "effect": {
+      "type": "damage",
+      "value": 20,
+      "desc": "적에게 20 독 데미지 (전투 중 사용)"
+    },
+    "source": "특수 레시피",
+    "lore": "위험한 액체. 잘못 흘리면 바닥이 녹는다."
+  },
+  {
+    "id": "ITEM_BASIC_BATTERY",
+    "name": "기초 배터리",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "촉매",
+        "전도"
+      ],
+      "element": [
+        "열",
+        "동"
+      ],
+      "form": [
+        "광물",
+        "유기"
+      ]
+    },
+    "category": "material_refined",
+    "effect": "상위 조합 재료. 마력 동력원",
+    "source": "특수 레시피",
+    "lore": "마력석의 반응과 슬라임핵의 전도가 결합된 작은 동력원."
+  },
+  {
+    "id": "ITEM_BASIC_WEAPON",
+    "name": "기초 무기",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "공격",
+        "전도"
+      ],
+      "element": [
+        "위",
+        "동"
+      ],
+      "form": [
+        "광물",
+        "유기"
+      ]
+    },
+    "category": "equipment_weapon",
+    "effect": "유닛 장착. 물리공격 상승",
+    "source": "특수 레시피",
+    "lore": "슬라임핵이 진동을 전달해 날을 세운다."
+  },
+  {
+    "id": "ITEM_BASIC_ARMOR",
+    "name": "기초 방어구",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "수호",
+        "경도"
+      ],
+      "element": [
+        "동",
+        "위"
+      ],
+      "form": [
+        "유기",
+        "광물"
+      ]
+    },
+    "category": "equipment_armor",
+    "effect": "유닛 장착. 물리방어 상승",
+    "source": "특수 레시피",
+    "lore": "경화된 슬라임이 충격을 흡수한다."
+  },
+  {
+    "id": "ITEM_BASIC_FOOD",
+    "name": "기초 식량(스프)",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "가공성"
+      ],
+      "element": [
+        "광"
+      ],
+      "form": [
+        "유기",
+        "액체"
+      ]
+    },
+    "category": "consumable_food",
+    "effect": {
+      "type": "heal",
+      "value": 50,
+      "desc": "HP 50 회복 (전투 밖에서만 사용)"
+    },
+    "source": "특수 레시피",
+    "lore": "독을 빼고 끓인 생선 수프. 영양가는 있다."
+  },
+  {
+    "id": "ITEM_BASIC_TRAINING_TOOL",
+    "name": "기초 조교도구",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "조련",
+        "회복"
+      ],
+      "element": [
+        "동",
+        "식"
+      ],
+      "form": [
+        "분말",
+        "식물"
+      ]
+    },
+    "category": "tool_training",
+    "effect": "유닛 조교/육성 도구. T1 성인 트레잇 후보 개방",
+    "source": "특수 레시피",
+    "lore": "말랑한 분말과 약초의 조합. 자극과 치유를 동시에."
+  },
+  {
+    "id": "ITEM_BASIC_NEGOTIATE",
+    "name": "기초 교섭재료",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "전도",
+        "촉매"
+      ],
+      "element": [
+        "동"
+      ],
+      "form": [
+        "분말",
+        "식물"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": "던전 유닛 교섭/영입 시 성공률 상승",
+    "source": "특수 레시피",
+    "lore": "마력 반응을 중개하는 소재. 대화의 물꼬를 틔운다."
+  },
+  {
+    "id": "ITEM_BASIC_ROTOR",
+    "name": "기초 로터",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "조련",
+        "전도"
+      ],
+      "element": [
+        "동"
+      ],
+      "form": [
+        "분말",
+        "유기"
+      ]
+    },
+    "category": "tool_training",
+    "effect": "유닛 조교 도구. 진동 계열",
+    "source": "특수 레시피",
+    "lore": "떨리는 구슬 위에 가루를 얹으면 멈추지 않는다."
+  },
+  {
+    "id": "ITEM_ANTIDOTE",
+    "name": "해독제",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "회복",
+        "독성"
+      ],
+      "element": [
+        "식",
+        "광"
+      ],
+      "form": [
+        "식물",
+        "유기"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": "독 상태 해제",
+    "source": "특수 레시피",
+    "lore": "독과 약은 한끗 차이."
+  },
+  {
+    "id": "ITEM_PURIFIED_WATER",
+    "name": "정화수",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "촉매",
+        "가공성"
+      ],
+      "element": [],
+      "form": [
+        "식물",
+        "액체"
+      ]
+    },
+    "category": "material_refined",
+    "effect": "술의 베이스 (중간재)",
+    "source": "특수 레시피",
+    "lore": "촉매초가 불순물을 걸러낸 깨끗한 물."
+  },
+  {
+    "id": "ITEM_SWEET_WINE_BASE",
+    "name": "감로주 중간재",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "회복",
+        "촉매"
+      ],
+      "element": [
+        "식"
+      ],
+      "form": [
+        "식물"
+      ]
+    },
+    "category": "material_refined",
+    "effect": "감로주 재료",
+    "source": "특수 레시피",
+    "lore": "약초와 촉매초의 추출물. 달콤한 향이 난다."
+  },
+  {
+    "id": "ITEM_DREAM_WINE_BASE",
+    "name": "몽환주 중간재",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "회복",
+        "억제"
+      ],
+      "element": [
+        "식"
+      ],
+      "form": [
+        "식물"
+      ]
+    },
+    "category": "material_refined",
+    "effect": "몽환주 재료",
+    "source": "특수 레시피",
+    "lore": "의식의 경계를 흐리는 향기가 서린다."
+  },
+  {
+    "id": "ITEM_MAGIC_STEEL",
+    "name": "마법강철",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "경도",
+        "촉매"
+      ],
+      "element": [
+        "위",
+        "열"
+      ],
+      "form": [
+        "분말",
+        "광물"
+      ]
+    },
+    "category": "material_refined",
+    "effect": "상위 무기/장비 소재. 압축기 제작 재료",
+    "source": "특수 레시피",
+    "lore": "마력이 침투한 강철. 미세하게 떨리며 빛난다."
+  },
+  {
+    "id": "ITEM_MAGIC_POWDER_SOLUTION",
+    "name": "마력 분말 용액",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "촉매",
+        "가공성"
+      ],
+      "element": [
+        "열"
+      ],
+      "form": [
+        "분말",
+        "액체"
+      ]
+    },
+    "category": "material_refined",
+    "effect": "공격 계열 포션 베이스",
+    "source": "특수 레시피",
+    "lore": "물리적 변환을 촉진하는 용액."
+  },
+  {
+    "id": "ITEM_MAGIC_CATALYST_SOLUTION",
+    "name": "마력 촉매 용액",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "마력촉매",
+        "가공성"
+      ],
+      "element": [
+        "열"
+      ],
+      "form": [
+        "광물",
+        "액체"
+      ]
+    },
+    "category": "material_refined",
+    "effect": "방어 계열 포션 베이스",
+    "source": "특수 레시피",
+    "lore": "화학적 변환을 촉진하는 용액."
+  },
+  {
+    "id": "ITEM_LEATHER_MATERIAL",
+    "name": "가죽소재",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "수호",
+        "촉매"
+      ],
+      "element": [
+        "동"
+      ],
+      "form": [
+        "유기",
+        "식물"
+      ]
+    },
+    "category": "material_refined",
+    "effect": "방어구/천/양피지 소재",
+    "source": "특수 레시피",
+    "lore": "경화된 슬라임과 촉매초의 조합. 유연하고 질기다."
+  },
+  {
+    "id": "ITEM_SMOKE_BOMB",
+    "name": "연막탄",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "가공성",
+        "억제"
+      ],
+      "element": [],
+      "form": [
+        "기체",
+        "식물"
+      ]
+    },
+    "category": "consumable_attack",
+    "effect": "도주용. 전투 이탈 성공률 대폭 상승",
+    "source": "특수 레시피",
+    "lore": "뿌옇게 터지는 연기 속에 억제력이 깃들었다."
+  },
+  {
+    "id": "ITEM_HEAL_SOUP",
+    "name": "회복 스프",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "회복",
+        "가공성"
+      ],
+      "element": [
+        "식",
+        "광"
+      ],
+      "form": [
+        "식물",
+        "유기"
+      ]
+    },
+    "category": "consumable_food",
+    "effect": {
+      "type": "heal",
+      "value": 80,
+      "desc": "HP 80 회복 (전투 밖에서만 사용)"
+    },
+    "source": "특수 레시피",
+    "lore": "약초를 띄운 생선 스프. 몸이 따뜻해진다."
+  },
+  {
+    "id": "ITEM_PRESERVED_FOOD",
+    "name": "보존식량",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "보존",
+        "가공성"
+      ],
+      "element": [
+        "식",
+        "광"
+      ],
+      "form": [
+        "식물",
+        "유기"
+      ]
+    },
+    "category": "consumable_food",
+    "effect": {
+      "type": "heal",
+      "value": 60,
+      "desc": "HP 60 회복 + 오래 보존됨 (전투 밖에서만)"
+    },
+    "source": "특수 레시피",
+    "lore": "건조 허브와 생선의 조합. 며칠이 지나도 먹을 수 있다."
+  },
+  {
+    "id": "ITEM_STATUS_CLEAR_FOOD",
+    "name": "상태이상 해제 식량",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "가공성",
+        "억제"
+      ],
+      "element": [
+        "광"
+      ],
+      "form": [
+        "유기",
+        "식물"
+      ]
+    },
+    "category": "consumable_food",
+    "effect": {
+      "type": "heal",
+      "value": 30,
+      "desc": "HP 30 회복 + 상태이상 해제 (전투 밖에서만)"
+    },
+    "source": "특수 레시피",
+    "lore": "억제 허브를 곁들인 담백한 요리."
+  },
+  {
+    "id": "ITEM_ATK_BUFF_POTION",
+    "name": "공격 강화 포션",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "촉매",
+        "가공성",
+        "공격"
+      ],
+      "element": [
+        "열",
+        "위"
+      ],
+      "form": [
+        "분말",
+        "액체",
+        "광물"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": "아군 유닛 물리공격 일시 상승",
+    "source": "특수 레시피",
+    "lore": "마력이 신체를 관통하며 힘을 끌어올린다."
+  },
+  {
+    "id": "ITEM_DEF_BUFF_POTION",
+    "name": "방어 강화 포션",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "마력촉매",
+        "가공성",
+        "수호"
+      ],
+      "element": [
+        "열",
+        "동"
+      ],
+      "form": [
+        "광물",
+        "액체",
+        "유기"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": "아군 유닛 물리방어 일시 상승",
+    "source": "특수 레시피",
+    "lore": "몸의 표면이 순간적으로 경화된다."
+  },
+  {
+    "id": "ITEM_ATK_DEBUFF_POTION",
+    "name": "공격 약화 포션",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "촉매",
+        "가공성",
+        "억제"
+      ],
+      "element": [
+        "열"
+      ],
+      "form": [
+        "분말",
+        "액체",
+        "식물"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": "적 유닛 물리공격 일시 하락 (투척)",
+    "source": "특수 레시피",
+    "lore": "뿌리면 근력이 빠진다."
+  },
+  {
+    "id": "ITEM_DEF_DEBUFF_POTION",
+    "name": "방어 약화 포션",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "마력촉매",
+        "가공성",
+        "독성"
+      ],
+      "element": [
+        "열",
+        "광"
+      ],
+      "form": [
+        "광물",
+        "액체",
+        "유기"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": "적 유닛 물리방어 일시 하락 (투척)",
+    "source": "특수 레시피",
+    "lore": "방어막을 부식시키는 용액."
+  },
+  {
+    "id": "ITEM_SWEET_WINE",
+    "name": "감로주",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "회복",
+        "촉매",
+        "가공성"
+      ],
+      "element": [
+        "식"
+      ],
+      "form": [
+        "식물",
+        "액체"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": "호감도/영입용. 조교 시 반감 감소 보조",
+    "source": "특수 레시피",
+    "lore": "달콤하고 맑은 술. 마음을 풀어놓게 만든다."
+  },
+  {
+    "id": "ITEM_DREAM_WINE",
+    "name": "몽환주",
+    "tier": 1,
+    "tags": {
+      "function": [
+        "회복",
+        "억제",
+        "가공성"
+      ],
+      "element": [
+        "식"
+      ],
+      "form": [
+        "식물",
+        "액체"
+      ]
+    },
+    "category": "consumable_potion",
+    "effect": "조교 단계 하락용. ERA 핵심 도구",
+    "source": "특수 레시피",
+    "lore": "한 모금이면 의식이 풀어진다. 깨어나면 기억이 어렴풋하다."
+  },
+  {
+    "id": "ITEM_COMPRESSOR",
+    "name": "압축기",
+    "tier": 2,
+    "tags": {
+      "function": [
+        "전도",
+        "경도",
+        "촉매"
+      ],
+      "element": [
+        "동",
+        "위",
+        "열"
+      ],
+      "form": [
+        "광물"
+      ]
+    },
+    "category": "tool_crafting",
+    "effect": "2티어 가공 설비. 위 주입 + 동 해방 가공 가능",
+    "source": "특수 레시피",
+    "lore": "보스의 동력과 마력 강철이 만나 태어난 기계. 누르면 본질이 바뀐다."
   }
 ]

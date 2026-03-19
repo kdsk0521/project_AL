@@ -113,13 +113,13 @@ class UnitSystem {
     }, null);
   }
 
-  // Trait inheritance: 3 routes
+  // Trait inheritance: 3 routes (합성 발동 → 직접 계승 → 잠재력 계승)
   performTraitInheritance(unitA, unitB, resultInstance, resultDef) {
     const allTraitsA = [...(unitA.traits || [])];
     const allTraitsB = [...(unitB.traits || [])];
-    const allTraits = [...allTraitsA, ...allTraitsB];
 
-    // Route 1: Synthesis (highest priority)
+    // ═══ Route 1: 합성 발동 (최우선) ═══
+    // 소재 A+B의 트레잇이 합성 조건을 충족하면 합성 트레잇 생성
     const synthesized = this.checkTraitSynthesis(allTraitsA, allTraitsB);
     const usedInSynthesis = new Set();
     const synthResults = [];
@@ -131,43 +131,79 @@ class UnitSystem {
       }
     }
 
-    // Route 2: Direct inheritance (remaining slots)
-    const remaining = allTraits.filter(t => !usedInSynthesis.has(t));
-    let directSlots = 3; // base direct inheritance slots
+    // ═══ Route 2: 직접 계승 (남은 슬롯, 성장도 높은 순) ═══
+    const allTraits = [...allTraitsA, ...allTraitsB];
+    const remaining = [...new Set(allTraits.filter(t => !usedInSynthesis.has(t)))];
 
+    // 성장도 기반 정렬: exp가 높은 트레잇이 먼저
+    // 전투 트레잇 → 전투 exp, 성격 트레잇 → 성격 exp로 가중
+    const getTraitGrowth = (traitId, unit) => {
+      const traitDef = this.engine.data.traits.find(t => t.id === traitId);
+      if (!traitDef) return 0;
+      if (traitDef.category === '전투') return unit.exp.combat || 0;
+      if (traitDef.category === '성격') return unit.exp.personality || 0;
+      return (unit.exp.adult || 0) + (unit.exp.body || 0);
+    };
+
+    // 각 트레잇에 소재 유닛의 성장도를 매핑
+    const traitGrowths = remaining.map(tid => {
+      const growthA = allTraitsA.includes(tid) ? getTraitGrowth(tid, unitA) : 0;
+      const growthB = allTraitsB.includes(tid) ? getTraitGrowth(tid, unitB) : 0;
+      return { id: tid, growth: Math.max(growthA, growthB) };
+    });
+
+    // 성장도 높은 순 정렬
+    traitGrowths.sort((a, b) => b.growth - a.growth);
+
+    let directSlots = 3;
     // 염(Salt) bonus: +1 slot
-    if (unitA.sigil === 7 || unitB.sigil === 7) {
-      directSlots += 1;
-    }
+    if (unitA.sigil === 7 || unitB.sigil === 7) directSlots += 1;
 
-    // Select by growth (we don't have growth data, so random selection)
-    const directInherited = remaining.slice(0, directSlots);
+    const directInherited = traitGrowths.slice(0, directSlots).map(t => t.id);
 
-    // Route 3: Potential (everything else)
-    const potentialTraits = remaining.slice(directSlots);
+    // ═══ Route 3: 잠재력 계승 (나머지 → 임계점 인하) ═══
+    const potentialTraits = traitGrowths.slice(directSlots);
     const potential = {};
-    for (const traitId of potentialTraits) {
-      // Reduce threshold for this trait by 20%
-      potential[traitId] = 0.8;
+    for (const t of potentialTraits) {
+      // 성장도에 비례하여 임계점 인하 (기본 20%, 성장도 높으면 최대 50%)
+      const reduction = Math.min(0.5, 0.2 + (t.growth / 500) * 0.3);
+      potential[t.id] = 1 - reduction; // 0.5 ~ 0.8 배율로 임계점 감소
     }
 
-    // 유황(Sulfur) bonus: potential reduction doubled
-    if (unitA.sigil === 7 || unitB.sigil === 7) {
-      // Actually sulfur is not in alpha, but we check anyway
+    // ═══ 경험치 인자 계승 ═══
+    // 소재의 미해금 경험치가 결과물의 풀 임계점을 낮춤
+    const expInheritance = {};
+    const pools = ['combat', 'body', 'personality', 'adult'];
+    for (const pool of pools) {
+      const expA = unitA.exp[pool] || 0;
+      const expB = unitB.exp[pool] || 0;
+      const totalExp = expA + expB;
+      if (totalExp > 0) {
+        // 소재 경험치의 30%를 결과물에 인자로 전달
+        expInheritance[pool] = Math.floor(totalExp * 0.3);
+      }
     }
 
-    // Merge all traits, normalize to IDs
+    // 결과 유닛에 잠재력/인자 적용
+    resultInstance.potential = potential;
+    resultInstance.expInheritance = expInheritance;
+
+    // 인자 경험치를 초기 경험치로 부여 (빠르게 트레잇 해금 가능)
+    for (const [pool, exp] of Object.entries(expInheritance)) {
+      resultInstance.exp[pool] = (resultInstance.exp[pool] || 0) + exp;
+    }
+
+    // 최종 트레잇: 합성 + 직접 계승 + 결과 유닛 기본 트레잇
     const defTraits = (resultDef.combatTraits || []).map(t => typeof t === 'object' ? t.id : t).filter(Boolean);
-    const final = [...synthResults, ...directInherited, ...defTraits];
-    // Remove duplicates
-    const uniqueFinal = [...new Set(final)];
+    const final = [...new Set([...synthResults, ...directInherited, ...defTraits])];
 
     return {
       synthesized: synthResults,
       direct: directInherited,
-      potentialTraits,
+      potentialTraits: potentialTraits.map(t => t.id),
       potential,
-      final: uniqueFinal
+      expInheritance,
+      final
     };
   }
 
@@ -175,17 +211,34 @@ class UnitSystem {
     const synthRecipes = this.engine.data.traitSynthesis;
     if (!synthRecipes || !Array.isArray(synthRecipes)) return [];
 
+    // 합체 시: 서로 다른 유닛의 트레잇끼리 합성 가능
+    const setA = new Set(traitsA);
+    const setB = new Set(traitsB);
     const allTraits = new Set([...traitsA, ...traitsB]);
     const results = [];
+    const usedTraits = new Set();
 
     for (const recipe of synthRecipes) {
       const required = recipe.requiredTraits || [];
-      if (required.every(t => allTraits.has(t))) {
+      if (required.length === 0) continue;
+
+      // 모든 필요 트레잇이 합산 풀에 있는지
+      if (required.every(t => allTraits.has(t) && !usedTraits.has(t))) {
+        // 최소 하나는 크로스 (A에서 하나, B에서 하나) → 합체의 의미
+        const fromA = required.filter(t => setA.has(t));
+        const fromB = required.filter(t => setB.has(t));
+        const isCross = fromA.length > 0 && fromB.length > 0;
+        // 같은 유닛에서 모든 조건 충족도 허용 (단일 육성에서도 발동)
+
+        const resultTraitId = recipe.resultTrait || recipe.id;
         results.push({
-          result: recipe.id || recipe.resultTrait,
+          result: resultTraitId,
           name: recipe.name,
-          consumed: required
+          consumed: required,
+          isCross
         });
+        // 사용된 트레잇 마킹
+        for (const t of required) usedTraits.add(t);
       }
     }
 
@@ -241,13 +294,15 @@ class UnitSystem {
     const affGain = 2 + Math.floor(Math.random() * 3);
     unit.affection = Math.min(100, unit.affection + affGain);
 
-    // Check trait unlock
+    // Check trait unlock + level up
     const unlocked = this.checkTraitUnlock(unit, 'personality');
+    const leveled = this.checkLevelUp(unit);
 
     return {
       success: true,
       expGain,
       affGain,
+      leveled,
       unlocked,
       message: `${unit.name}과(와) 교류했다. (호감도 +${affGain})`
     };
@@ -346,28 +401,47 @@ class UnitSystem {
   }
 
   // Check if a trait unlocks from experience
+  // 잠재력 계승이 있으면 임계점이 낮아짐
   checkTraitUnlock(unit, pool) {
-    const threshold = 50; // base threshold
+    let threshold = 50; // base threshold
     const exp = unit.exp[pool] || 0;
 
     if (exp < threshold) return null;
 
     // Probability increases with excess exp
     const excess = exp - threshold;
-    const chance = Math.min(0.5, 0.1 + excess * 0.005);
-
-    if (Math.random() > chance) return null;
+    let chance = Math.min(0.5, 0.1 + excess * 0.005);
 
     // Get candidate traits for this pool
     const candidates = this.getTraitCandidates(pool, unit);
     if (candidates.length === 0) return null;
 
-    const picked = candidates[Math.floor(Math.random() * candidates.length)];
+    // 잠재력 보정: 합체로 받은 잠재력이 있으면 특정 트레잇의 확률 상승
+    const potential = unit.potential || {};
+    const boostedCandidates = candidates.map(c => {
+      let weight = 1;
+      if (potential[c.id]) {
+        weight = 1 + (1 - potential[c.id]) * 3; // 잠재력 0.5 → weight 2.5
+      }
+      return { ...c, weight };
+    });
+
+    if (Math.random() > chance) return null;
+
+    // 가중치 기반 랜덤 선택
+    const totalWeight = boostedCandidates.reduce((s, c) => s + c.weight, 0);
+    let roll = Math.random() * totalWeight;
+    let picked = boostedCandidates[0];
+    for (const c of boostedCandidates) {
+      roll -= c.weight;
+      if (roll <= 0) { picked = c; break; }
+    }
 
     // Add trait if not already owned
     if (!unit.traits.includes(picked.id)) {
       unit.traits.push(picked.id);
-      return { traitId: picked.id, traitName: picked.name, pool };
+      const fromPotential = potential[picked.id] ? ' (잠재력 발현!)' : '';
+      return { traitId: picked.id, traitName: picked.name, pool, fromPotential };
     }
 
     return null;

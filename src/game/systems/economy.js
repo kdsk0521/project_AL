@@ -6,11 +6,13 @@ class EconomySystem {
     this.engine = engine;
   }
 
-  // Build or upgrade a facility
+  // Build or upgrade a facility (max level 3)
   buildFacility(facilityKey) {
+    const MAX_FACILITY_LEVEL = 3;
     const state = this.engine.state;
     const facility = state.facilities[facilityKey];
     if (!facility) return { success: false, reason: '시설을 찾을 수 없습니다.' };
+    if (facility.level >= MAX_FACILITY_LEVEL) return { success: false, reason: `이미 최대 레벨(${MAX_FACILITY_LEVEL})입니다.` };
 
     const cost = this.getFacilityCost(facilityKey, facility.level + 1);
 
@@ -82,7 +84,7 @@ class EconomySystem {
         fishery: '독물고기를 자동으로 수급할 수 있다.',
         greenhouse: '촉매초를 자동으로 수급할 수 있다.',
         expeditionHQ: '전멸 시 유실물 회수 + 탐사 보급.',
-        workshop: '가공 작업을 위임할 수 있다.'
+        workshop: '유닛 배치 시 월말 자동 가공. 레벨↑ = 가공 횟수↑ + 장비 범위↑'
       };
       return descs[key] || '';
     }
@@ -97,7 +99,7 @@ class EconomySystem {
       fishery: `독물고기 ×${2 * level}`,
       greenhouse: `촉매초 ×${2 * level}`,
       expeditionHQ: `회수율 ${25 * level}%`,
-      workshop: `자동가공 ${level}회/월`
+      workshop: `자동가공 ${level * 2}회/월 (Lv1:가마 | Lv2:+분쇄 | Lv3:+압축)`
     };
     return prod[key] || '—';
   }

@@ -6,7 +6,7 @@
       "category": "전투",
       "tier": 1,
       "apCost": 1,
-      "damageMultiplier": 1.0,
+      "damageMultiplier": 1,
       "element": "위",
       "target": "single",
       "description": "위 속성 기본 공격. 단일 대상 찌르기.",
@@ -69,7 +69,7 @@
       "category": "전투",
       "tier": 2,
       "apCost": 3,
-      "damageMultiplier": 2.0,
+      "damageMultiplier": 2,
       "element": "위",
       "target": "single",
       "effect": "AP 1 추가 소비로 데미지 증폭",
@@ -380,7 +380,7 @@
       "category": "전투",
       "tier": 1,
       "apCost": 2,
-      "damageMultiplier": 2.0,
+      "damageMultiplier": 2,
       "element": "동",
       "target": "single",
       "effect": "선제 공격 시 데미지 2배",
@@ -458,7 +458,7 @@
       "category": "전투",
       "tier": 2,
       "apCost": 3,
-      "damageMultiplier": 2.0,
+      "damageMultiplier": 2,
       "element": "위",
       "target": "single",
       "effect": "방어 무시 고데미지 단일",
@@ -724,6 +724,210 @@
       "effect": "적 트레잇 봉인",
       "description": "광 속성. 적의 트레잇을 봉인한다.",
       "owner": "봉인의 서기관"
+    },
+    {
+      "id": "CT_TERRITORY_CONTROL",
+      "name": "영역장악",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "식",
+      "target": "single",
+      "description": "범위 지배 보정",
+      "owner": "산호 마녀"
+    },
+    {
+      "id": "CT_IMMOVABLE",
+      "name": "부동",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "동",
+      "target": "single",
+      "description": "선제 포기 대신 받는 데미지 대폭 감소",
+      "owner": "현무"
+    },
+    {
+      "id": "CT_EARTHQUAKE",
+      "name": "지진",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "동",
+      "target": "single",
+      "description": "동 속성 범위",
+      "owner": "현무"
+    },
+    {
+      "id": "CT_MOONLIGHT_DISSOLVE",
+      "name": "월광용해",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "광",
+      "target": "single",
+      "description": "광+식 복합, 적 방어를 서서히 녹임",
+      "owner": "인 해월"
+    },
+    {
+      "id": "CT_FORM_INSTABILITY",
+      "name": "형태 불안정",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "광",
+      "target": "single",
+      "description": "매 라운드 스탯 소폭 변동",
+      "owner": "인 해월"
+    },
+    {
+      "id": "CT_DEEP_PRESSURE",
+      "name": "심압",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "위",
+      "target": "single",
+      "description": "위 속성, 적 전체 AP 감소",
+      "owner": "심해 용궁녀"
+    },
+    {
+      "id": "CT_DRAGON_SCALE",
+      "name": "용린",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "위",
+      "target": "single",
+      "description": "물리 내성 대폭 상승",
+      "owner": "심해 용궁녀"
+    },
+    {
+      "id": "CT_DECODE",
+      "name": "해독",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "광",
+      "target": "single",
+      "description": "파편 로어 해독 보정",
+      "owner": "봉인의 서기관"
+    },
+    {
+      "id": "CT_PRECISION_ALCHEMY",
+      "name": "정밀연성",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "열",
+      "target": "single",
+      "description": "열 속성, 크리티컬 확률 대폭 상승",
+      "owner": "백은의 연금술사"
+    },
+    {
+      "id": "CT_INSIGHT",
+      "name": "간파",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "열",
+      "target": "single",
+      "description": "적 행동 예측 보정",
+      "owner": "백은의 연금술사"
+    },
+    {
+      "id": "CT_DUAL_BODY",
+      "name": "이중체",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "위",
+      "target": "single",
+      "description": "이중 존재 보정",
+      "owner": "쌍두사"
+    },
+    {
+      "id": "CT_FATE_EDIT",
+      "name": "운명편집",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "광",
+      "target": "single",
+      "description": "특수 보정 효과",
+      "owner": "인과의 직공"
+    },
+    {
+      "id": "CT_ECHO",
+      "name": "잔향",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "동",
+      "target": "single",
+      "description": "동 속성, 아군 전체 버프 — 다음 행동 데미지 증폭",
+      "owner": "잔향의 인어"
+    },
+    {
+      "id": "CT_REQUIEM",
+      "name": "진혼가",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "동",
+      "target": "single",
+      "description": "특수 지원 효과",
+      "owner": "잔향의 인어"
+    },
+    {
+      "id": "CT_MANA_AMPLIFY",
+      "name": "마력 증폭",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "위",
+      "target": "single",
+      "description": "아군 마력 보정",
+      "owner": "결계석"
+    },
+    {
+      "id": "CT_EARTH_BLESSING",
+      "name": "대지의 축복",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "동",
+      "target": "single",
+      "description": "동 속성, 아군 전체 내구 보정",
+      "owner": "대지모"
+    },
+    {
+      "id": "CT_NATURAL_HEAL",
+      "name": "자연치유",
+      "category": "전투",
+      "tier": 2,
+      "apCost": 2,
+      "damageMultiplier": 1.2,
+      "element": "동",
+      "target": "single",
+      "description": "자연 회복 효과",
+      "owner": "대지모"
     }
   ],
   "personality": [
@@ -732,7 +936,11 @@
       "name": "겁없음",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.3, "defendBias": 0.7, "fleeBias": 0.3 },
+      "aiWeights": {
+        "attackBias": 1.3,
+        "defendBias": 0.7,
+        "fleeBias": 0.3
+      },
       "description": "위험을 두려워하지 않는다. 공격 행동을 선호하고 도주를 꺼린다.",
       "owner": "가시 임프"
     },
@@ -741,7 +949,11 @@
       "name": "호전적",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.5, "defendBias": 0.5, "fleeBias": 0.2 },
+      "aiWeights": {
+        "attackBias": 1.5,
+        "defendBias": 0.5,
+        "fleeBias": 0.2
+      },
       "description": "싸움을 즐긴다. 공격 행동을 강하게 선호한다.",
       "owner": "전갈 소녀"
     },
@@ -750,7 +962,11 @@
       "name": "소심",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.7, "defendBias": 1.3, "fleeBias": 1.2 },
+      "aiWeights": {
+        "attackBias": 0.7,
+        "defendBias": 1.3,
+        "fleeBias": 1.2
+      },
       "description": "겁이 많다. 방어 행동과 도주를 선호한다.",
       "owner": "약초 요정"
     },
@@ -759,7 +975,11 @@
       "name": "야성",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.2, "defendBias": 0.8, "fleeBias": 0.8 },
+      "aiWeights": {
+        "attackBias": 1.2,
+        "defendBias": 0.8,
+        "fleeBias": 0.8
+      },
       "description": "야생의 본능으로 행동한다.",
       "owner": "서리 도마뱀 소녀"
     },
@@ -768,7 +988,11 @@
       "name": "둔감",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.0, "defendBias": 1.2, "fleeBias": 0.5 },
+      "aiWeights": {
+        "attackBias": 1,
+        "defendBias": 1.2,
+        "fleeBias": 0.5
+      },
       "description": "반응이 느리다. 방어적이지만 도주하지 않는다.",
       "owner": "슬래그 골렘"
     },
@@ -777,7 +1001,11 @@
       "name": "허영",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.1, "defendBias": 0.9, "fleeBias": 0.7 },
+      "aiWeights": {
+        "attackBias": 1.1,
+        "defendBias": 0.9,
+        "fleeBias": 0.7
+      },
       "description": "자신을 과시하려 한다.",
       "owner": "칼날 여우"
     },
@@ -786,7 +1014,11 @@
       "name": "감정폭발",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.4, "defendBias": 0.6, "fleeBias": 0.5 },
+      "aiWeights": {
+        "attackBias": 1.4,
+        "defendBias": 0.6,
+        "fleeBias": 0.5
+      },
       "description": "감정이 폭발하면 공격적으로 변한다.",
       "owner": "폭뢰 정령"
     },
@@ -795,7 +1027,11 @@
       "name": "무심",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.0, "defendBias": 1.0, "fleeBias": 1.0 },
+      "aiWeights": {
+        "attackBias": 1,
+        "defendBias": 1,
+        "fleeBias": 1
+      },
       "description": "관심이 없다. 균형잡힌 행동 패턴.",
       "owner": "잿빛 무녀"
     },
@@ -804,7 +1040,11 @@
       "name": "지배욕",
       "category": "성격",
       "tier": 2,
-      "aiWeights": { "attackBias": 1.4, "defendBias": 0.8, "fleeBias": 0.2 },
+      "aiWeights": {
+        "attackBias": 1.4,
+        "defendBias": 0.8,
+        "fleeBias": 0.2
+      },
       "description": "지배하려 한다. 공격 선호, 도주 거부.",
       "owner": "뇌각 장수"
     },
@@ -813,7 +1053,11 @@
       "name": "수동적",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.6, "defendBias": 1.3, "fleeBias": 1.0 },
+      "aiWeights": {
+        "attackBias": 0.6,
+        "defendBias": 1.3,
+        "fleeBias": 1
+      },
       "description": "스스로 행동하기보다 상황에 따른다.",
       "owner": "진흙 인형"
     },
@@ -822,7 +1066,11 @@
       "name": "경계심",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.8, "defendBias": 1.4, "fleeBias": 0.9 },
+      "aiWeights": {
+        "attackBias": 0.8,
+        "defendBias": 1.4,
+        "fleeBias": 0.9
+      },
       "description": "항상 경계한다. 방어적 행동을 선호한다.",
       "owner": "이끼 늑대"
     },
@@ -831,7 +1079,11 @@
       "name": "소유욕",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.2, "defendBias": 1.1, "fleeBias": 0.4 },
+      "aiWeights": {
+        "attackBias": 1.2,
+        "defendBias": 1.1,
+        "fleeBias": 0.4
+      },
       "description": "가진 것을 지키려 한다.",
       "owner": "수정 거미"
     },
@@ -840,7 +1092,11 @@
       "name": "신중",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.8, "defendBias": 1.3, "fleeBias": 0.8 },
+      "aiWeights": {
+        "attackBias": 0.8,
+        "defendBias": 1.3,
+        "fleeBias": 0.8
+      },
       "description": "신중하게 행동한다.",
       "owner": "호박 정령"
     },
@@ -849,7 +1105,11 @@
       "name": "의무감",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.9, "defendBias": 1.4, "fleeBias": 0.3 },
+      "aiWeights": {
+        "attackBias": 0.9,
+        "defendBias": 1.4,
+        "fleeBias": 0.3
+      },
       "description": "의무를 다하려 한다. 방어적이고 도주하지 않는다.",
       "owner": "철벽 기사"
     },
@@ -858,7 +1118,11 @@
       "name": "의존",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.7, "defendBias": 1.1, "fleeBias": 1.1 },
+      "aiWeights": {
+        "attackBias": 0.7,
+        "defendBias": 1.1,
+        "fleeBias": 1.1
+      },
       "description": "누군가에게 의존하려 한다.",
       "owner": "거품 슬라임"
     },
@@ -867,7 +1131,11 @@
       "name": "관찰벽",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.9, "defendBias": 1.1, "fleeBias": 0.8 },
+      "aiWeights": {
+        "attackBias": 0.9,
+        "defendBias": 1.1,
+        "fleeBias": 0.8
+      },
       "description": "관찰하고 분석하려 한다.",
       "owner": "야드 스파이더"
     },
@@ -876,7 +1144,11 @@
       "name": "내향",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.7, "defendBias": 1.2, "fleeBias": 1.0 },
+      "aiWeights": {
+        "attackBias": 0.7,
+        "defendBias": 1.2,
+        "fleeBias": 1
+      },
       "description": "안으로 향한다. 방어적 행동 선호.",
       "owner": "수련 요정"
     },
@@ -885,7 +1157,11 @@
       "name": "유혹",
       "category": "성격",
       "tier": 2,
-      "aiWeights": { "attackBias": 0.8, "defendBias": 0.8, "fleeBias": 0.6 },
+      "aiWeights": {
+        "attackBias": 0.8,
+        "defendBias": 0.8,
+        "fleeBias": 0.6
+      },
       "description": "유혹적으로 행동한다.",
       "owner": "해파리 무희"
     },
@@ -894,7 +1170,11 @@
       "name": "의리",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.0, "defendBias": 1.3, "fleeBias": 0.3 },
+      "aiWeights": {
+        "attackBias": 1,
+        "defendBias": 1.3,
+        "fleeBias": 0.3
+      },
       "description": "의리를 지킨다. 도주하지 않는다.",
       "owner": "온천 대게"
     },
@@ -903,7 +1183,11 @@
       "name": "호기심",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.0, "defendBias": 0.9, "fleeBias": 0.8 },
+      "aiWeights": {
+        "attackBias": 1,
+        "defendBias": 0.9,
+        "fleeBias": 0.8
+      },
       "description": "호기심이 강하다.",
       "owner": "가시 임프"
     },
@@ -912,7 +1196,11 @@
       "name": "교활",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.1, "defendBias": 1.0, "fleeBias": 1.1 },
+      "aiWeights": {
+        "attackBias": 1.1,
+        "defendBias": 1,
+        "fleeBias": 1.1
+      },
       "description": "교활하게 행동한다.",
       "owner": "칼날 여우"
     },
@@ -921,7 +1209,11 @@
       "name": "충직",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.0, "defendBias": 1.2, "fleeBias": 0.3 },
+      "aiWeights": {
+        "attackBias": 1,
+        "defendBias": 1.2,
+        "fleeBias": 0.3
+      },
       "description": "충직하게 따른다.",
       "owner": "철벽 기사"
     },
@@ -930,7 +1222,11 @@
       "name": "완고",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.0, "defendBias": 1.3, "fleeBias": 0.4 },
+      "aiWeights": {
+        "attackBias": 1,
+        "defendBias": 1.3,
+        "fleeBias": 0.4
+      },
       "description": "쉽게 물러서지 않는다.",
       "owner": "이끼 늑대"
     },
@@ -939,7 +1235,11 @@
       "name": "결벽",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.9, "defendBias": 1.3, "fleeBias": 0.6 },
+      "aiWeights": {
+        "attackBias": 0.9,
+        "defendBias": 1.3,
+        "fleeBias": 0.6
+      },
       "description": "불순한 것을 거부한다.",
       "owner": "결정 기사"
     },
@@ -948,7 +1248,11 @@
       "name": "오만",
       "category": "성격",
       "tier": 2,
-      "aiWeights": { "attackBias": 1.3, "defendBias": 0.7, "fleeBias": 0.2 },
+      "aiWeights": {
+        "attackBias": 1.3,
+        "defendBias": 0.7,
+        "fleeBias": 0.2
+      },
       "description": "자신이 가장 우월하다고 여긴다.",
       "owner": "백은의 연금술사"
     },
@@ -957,7 +1261,11 @@
       "name": "밀착",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.7, "defendBias": 1.1, "fleeBias": 0.9 },
+      "aiWeights": {
+        "attackBias": 0.7,
+        "defendBias": 1.1,
+        "fleeBias": 0.9
+      },
       "description": "가까이 붙어있으려 한다.",
       "owner": "공생균 소녀"
     },
@@ -966,7 +1274,11 @@
       "name": "헌신",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.7, "defendBias": 1.3, "fleeBias": 0.4 },
+      "aiWeights": {
+        "attackBias": 0.7,
+        "defendBias": 1.3,
+        "fleeBias": 0.4
+      },
       "description": "상대를 위해 헌신한다.",
       "owner": "향로 인형"
     },
@@ -975,7 +1287,11 @@
       "name": "수줍음",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.6, "defendBias": 1.2, "fleeBias": 1.1 },
+      "aiWeights": {
+        "attackBias": 0.6,
+        "defendBias": 1.2,
+        "fleeBias": 1.1
+      },
       "description": "쉽게 부끄러워한다.",
       "owner": "소금꽃"
     },
@@ -984,7 +1300,11 @@
       "name": "천연",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.9, "defendBias": 0.9, "fleeBias": 1.0 },
+      "aiWeights": {
+        "attackBias": 0.9,
+        "defendBias": 0.9,
+        "fleeBias": 1
+      },
       "description": "자연스럽고 꾸밈이 없다.",
       "owner": "소금 슬라임"
     },
@@ -993,7 +1313,11 @@
       "name": "기분파",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.1, "defendBias": 0.9, "fleeBias": 1.0 },
+      "aiWeights": {
+        "attackBias": 1.1,
+        "defendBias": 0.9,
+        "fleeBias": 1
+      },
       "description": "기분에 따라 행동이 바뀐다.",
       "owner": "그림자 고양이"
     },
@@ -1002,7 +1326,11 @@
       "name": "집착",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.2, "defendBias": 1.0, "fleeBias": 0.4 },
+      "aiWeights": {
+        "attackBias": 1.2,
+        "defendBias": 1,
+        "fleeBias": 0.4
+      },
       "description": "한 가지에 집착한다.",
       "owner": "침식 거미"
     },
@@ -1011,7 +1339,11 @@
       "name": "탐구적",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.9, "defendBias": 1.0, "fleeBias": 0.7 },
+      "aiWeights": {
+        "attackBias": 0.9,
+        "defendBias": 1,
+        "fleeBias": 0.7
+      },
       "description": "모든 것을 탐구하려 한다.",
       "owner": "해부인형"
     },
@@ -1020,7 +1352,11 @@
       "name": "무표정",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.0, "defendBias": 1.0, "fleeBias": 0.8 },
+      "aiWeights": {
+        "attackBias": 1,
+        "defendBias": 1,
+        "fleeBias": 0.8
+      },
       "description": "표정 변화가 거의 없다.",
       "owner": "석상 소녀"
     },
@@ -1029,7 +1365,11 @@
       "name": "체념",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 0.6, "defendBias": 1.0, "fleeBias": 0.5 },
+      "aiWeights": {
+        "attackBias": 0.6,
+        "defendBias": 1,
+        "fleeBias": 0.5
+      },
       "description": "체념하고 있다.",
       "owner": "화석 도마뱀"
     },
@@ -1038,7 +1378,11 @@
       "name": "달관",
       "category": "성격",
       "tier": 2,
-      "aiWeights": { "attackBias": 0.8, "defendBias": 1.0, "fleeBias": 0.6 },
+      "aiWeights": {
+        "attackBias": 0.8,
+        "defendBias": 1,
+        "fleeBias": 0.6
+      },
       "description": "세상의 이치를 달관했다.",
       "owner": "미이라 무녀"
     },
@@ -1047,7 +1391,11 @@
       "name": "흉내쟁이",
       "category": "성격",
       "tier": 1,
-      "aiWeights": { "attackBias": 1.0, "defendBias": 1.0, "fleeBias": 0.9 },
+      "aiWeights": {
+        "attackBias": 1,
+        "defendBias": 1,
+        "fleeBias": 0.9
+      },
       "description": "상대의 행동을 따라한다.",
       "owner": "거울 여우"
     },
@@ -1056,9 +1404,184 @@
       "name": "양면성",
       "category": "성격",
       "tier": 2,
-      "aiWeights": { "attackBias": 1.1, "defendBias": 1.1, "fleeBias": 0.8 },
+      "aiWeights": {
+        "attackBias": 1.1,
+        "defendBias": 1.1,
+        "fleeBias": 0.8
+      },
       "description": "두 가지 면을 가지고 있다.",
       "owner": "쌍두사"
+    },
+    {
+      "id": "PT_HOARDER",
+      "name": "수집벽",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "수집벽",
+      "owner": "산호 마녀"
+    },
+    {
+      "id": "PT_DETACHED",
+      "name": "초연",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "초연",
+      "owner": "현무"
+    },
+    {
+      "id": "PT_EMBRACE",
+      "name": "포용",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "포용",
+      "owner": "인 해월"
+    },
+    {
+      "id": "PT_NOBLE",
+      "name": "고고",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "고고",
+      "owner": "심해 용궁녀"
+    },
+    {
+      "id": "PT_OBSERVANT_2",
+      "name": "관찰벽",
+      "category": "성격",
+      "description": "관찰벽",
+      "owner": "렌즈 도롱뇽"
+    },
+    {
+      "id": "PT_EMOTIONLESS_SURFACE",
+      "name": "무감정(표면)",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "무감정(표면)",
+      "owner": "증류기 인형"
+    },
+    {
+      "id": "PT_SADISTIC",
+      "name": "가학적",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "가학적",
+      "owner": "독나비"
+    },
+    {
+      "id": "PT_DETACHED_2",
+      "name": "초연",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "초연",
+      "owner": "봉인의 서기관"
+    },
+    {
+      "id": "PT_DOMINEERING",
+      "name": "지배적",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "지배적",
+      "owner": "백은의 연금술사"
+    },
+    {
+      "id": "PT_MERCILESS",
+      "name": "냉혹",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "냉혹",
+      "owner": "독무 무용수"
+    },
+    {
+      "id": "PT_MANIACAL_RESEARCH",
+      "name": "광적 탐구",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "광적 탐구",
+      "owner": "해골 외과의"
+    },
+    {
+      "id": "PT_TENACITY",
+      "name": "집념",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "집념",
+      "owner": "업화의 인살"
+    },
+    {
+      "id": "PT_PASSIVE_2",
+      "name": "수동적",
+      "category": "성격",
+      "description": "수동적",
+      "owner": "안개 해파리"
+    },
+    {
+      "id": "PT_TRANSCENDENT",
+      "name": "초탈",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "초탈",
+      "owner": "인과의 직공"
+    },
+    {
+      "id": "PT_SELF_SACRIFICE",
+      "name": "자기희생",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "자기희생",
+      "owner": "잔향의 인어"
+    },
+    {
+      "id": "PT_INTROVERTED_2",
+      "name": "내향",
+      "category": "성격",
+      "description": "내향",
+      "owner": "소금꽃"
+    },
+    {
+      "id": "PT_SILENT",
+      "name": "침묵",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "침묵",
+      "owner": "결계석"
+    },
+    {
+      "id": "PT_EMBRACE_2",
+      "name": "포용",
+      "category": "성격",
+      "attackBias": 40,
+      "defendBias": 30,
+      "fleeBias": 30,
+      "description": "포용",
+      "owner": "대지모"
     }
   ]
 }

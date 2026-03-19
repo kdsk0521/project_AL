@@ -23,7 +23,11 @@
           "액체"
         ]
       },
-      "effect": "전투 중 HP 소량 회복",
+      "effect": {
+        "type": "heal",
+        "value": 25,
+        "desc": "HP 25 회복 (전투 중 사용 가능)"
+      },
       "knownFromStart": true,
       "lore": "가장 기본적인 회복약. 쓴맛이 나지만 듣긴 든다.",
       "resultId": "ITEM_BASIC_HEAL_POTION"
@@ -51,7 +55,11 @@
           "액체"
         ]
       },
-      "effect": "전투 중 투척. 적 단일 독 데미지",
+      "effect": {
+        "type": "damage",
+        "value": 20,
+        "desc": "적에게 20 독 데미지 (전투 중 사용)"
+      },
       "knownFromStart": true,
       "lore": "위험한 액체. 잘못 흘리면 바닥이 녹는다.",
       "resultId": "ITEM_BASIC_POISON_POTION"
@@ -168,7 +176,11 @@
           "액체"
         ]
       },
-      "effect": "전투 이후 유닛 컨디션 회복",
+      "effect": {
+        "type": "heal",
+        "value": 50,
+        "desc": "HP 50 회복 (전투 밖에서만 사용)"
+      },
       "knownFromStart": true,
       "lore": "독을 빼고 끓인 생선 수프. 영양가는 있다.",
       "resultId": "ITEM_BASIC_FOOD"
@@ -186,7 +198,7 @@
       "processingRequired": "슬라임핵→[분쇄]→슬라임분말",
       "resultTags": {
         "function": [
-          "전도",
+          "조련",
           "회복"
         ],
         "element": [
@@ -245,6 +257,7 @@
       "processingRequired": "슬라임핵→[분쇄]→슬라임분말",
       "resultTags": {
         "function": [
+          "조련",
           "전도"
         ],
         "element": [
@@ -531,7 +544,11 @@
           "유기"
         ]
       },
-      "effect": "전투 이후 HP 회복 식량",
+      "effect": {
+        "type": "heal",
+        "value": 80,
+        "desc": "HP 80 회복 (전투 밖에서만 사용)"
+      },
       "knownFromStart": false,
       "lore": "약초를 띄운 생선 스프. 몸이 따뜻해진다.",
       "resultId": "ITEM_HEAL_SOUP"
@@ -560,7 +577,11 @@
           "유기"
         ]
       },
-      "effect": "전투 이후 식량. 오래 보존됨",
+      "effect": {
+        "type": "heal",
+        "value": 60,
+        "desc": "HP 60 회복 + 오래 보존됨 (전투 밖에서만)"
+      },
       "knownFromStart": false,
       "lore": "건조 허브와 생선의 조합. 며칠이 지나도 먹을 수 있다.",
       "resultId": "ITEM_PRESERVED_FOOD"
@@ -588,7 +609,11 @@
           "식물"
         ]
       },
-      "effect": "전투 이후 상태이상 해제",
+      "effect": {
+        "type": "heal",
+        "value": 30,
+        "desc": "HP 30 회복 + 상태이상 해제 (전투 밖에서만)"
+      },
       "knownFromStart": false,
       "lore": "억제 허브를 곁들인 담백한 요리.",
       "resultId": "ITEM_STATUS_CLEAR_FOOD"
@@ -599,7 +624,7 @@
       "tier": 1,
       "category": "consumable_potion",
       "materials": [
-        "RECIPE_MAGIC_POWDER_SOLUTION",
+        "ITEM_MAGIC_POWDER_SOLUTION",
         "MAT_IRON_ORE_FIRED"
       ],
       "processingRequired": "마력 분말 용액 + 철광석→[가마]→공격광물",
@@ -630,7 +655,7 @@
       "tier": 1,
       "category": "consumable_potion",
       "materials": [
-        "RECIPE_MAGIC_CATALYST_SOLUTION",
+        "ITEM_MAGIC_CATALYST_SOLUTION",
         "MAT_SLIME_CORE_FIRED"
       ],
       "processingRequired": "마력 촉매 용액 + 슬라임핵→[가마]→수호체",
@@ -661,7 +686,7 @@
       "tier": 1,
       "category": "consumable_potion",
       "materials": [
-        "RECIPE_MAGIC_POWDER_SOLUTION",
+        "ITEM_MAGIC_POWDER_SOLUTION",
         "MAT_CATALYST_HERB_FIRED"
       ],
       "processingRequired": "마력 분말 용액 + 촉매초→[가마]→억제초",
@@ -691,7 +716,7 @@
       "tier": 1,
       "category": "consumable_potion",
       "materials": [
-        "RECIPE_MAGIC_CATALYST_SOLUTION",
+        "ITEM_MAGIC_CATALYST_SOLUTION",
         "MAT_POISON_FISH"
       ],
       "processingRequired": "마력 촉매 용액 + 독물고기",
@@ -722,8 +747,8 @@
       "tier": 1,
       "category": "consumable_potion",
       "materials": [
-        "RECIPE_SWEET_WINE_BASE",
-        "RECIPE_PURIFIED_WATER"
+        "ITEM_SWEET_WINE_BASE",
+        "ITEM_PURIFIED_WATER"
       ],
       "processingRequired": "감로주 중간재 + 정화수",
       "resultTags": {
@@ -751,8 +776,8 @@
       "tier": 1,
       "category": "consumable_potion",
       "materials": [
-        "RECIPE_DREAM_WINE_BASE",
-        "RECIPE_PURIFIED_WATER"
+        "ITEM_DREAM_WINE_BASE",
+        "ITEM_PURIFIED_WATER"
       ],
       "processingRequired": "몽환주 중간재 + 정화수",
       "resultTags": {
@@ -781,7 +806,7 @@
       "category": "tool_crafting",
       "materials": [
         "MAT_SPRING",
-        "RECIPE_MAGIC_STEEL"
+        "ITEM_MAGIC_STEEL"
       ],
       "processingRequired": "스프링(보스드랍) + 마법강철",
       "resultTags": {

@@ -56,7 +56,8 @@ class GameEngine {
         def: 10,
         spd: 10,
         traits: [],
-        equipment: { weapon: null, armor: null, accessory: null }
+        equipment: { weapon: null, armor: null, accessory: null },
+        recoveryDays: 0  // 0 = 탐사 가능, >0 = 부상으로 탐사 불가
       },
 
       // Units owned by player
@@ -195,6 +196,21 @@ class GameEngine {
       // Potential (from fusion inheritance)
       potential: {},
 
+      // 세분화 경험치 (ERA식)
+      detailedExp: {
+        kiss: 0,         // 키스경험 (입 행위)
+        caress: 0,       // 애무경험 (애무/간지럼 행위)
+        stimulate: 0,    // 자극경험 (자극/압박 행위)
+        lick: 0,         // 핥기경험
+        insert: 0,       // 삽입경험 (V/A 삽입)
+        toy: 0,          // 도구경험
+        orgasm: 0,       // 절정횟수
+        service: 0,      // 봉사경험 (복종 높을 때 조교)
+        discipline: 0,   // 조련경험
+        exposure: 0,     // 노출경험 (음란 높을 때)
+        totalSessions: 0 // 총 조교 횟수
+      },
+
       // Equipment
       equipment: { weapon: null, armor: null, accessory: null },
 
@@ -246,6 +262,21 @@ class GameEngine {
     return (this.state.inventory[matId] || 0) >= qty;
   }
 
+  // Heal player with item or amount
+  healPlayer(amount) {
+    const p = this.state.player;
+    const before = p.hp;
+    p.hp = Math.min(p.maxHp, p.hp + amount);
+    return { healed: p.hp - before, hp: p.hp, maxHp: p.maxHp };
+  }
+
+  // Check if player can explore
+  canExplore() {
+    if (this.state.player.hp <= 0) return { ok: false, reason: '체력이 없어 탐사할 수 없습니다.' };
+    if (this.state.player.recoveryDays > 0) return { ok: false, reason: `부상 회복 중입니다. (${this.state.player.recoveryDays}일 남음)` };
+    return { ok: true };
+  }
+
   getMaterialName(matId) {
     const mat = this.data.materials.find(m => m.id === matId);
     return mat ? mat.name : matId;
@@ -255,6 +286,17 @@ class GameEngine {
   advanceDay() {
     this.state.day++;
     this.state.stamina = this.state.maxStamina; // reset stamina
+
+    // Player natural HP recovery (30% per day)
+    const player = this.state.player;
+    if (player.hp < player.maxHp) {
+      const heal = Math.floor(player.maxHp * 0.3);
+      player.hp = Math.min(player.maxHp, player.hp + heal);
+    }
+    // Player injury recovery
+    if (player.recoveryDays > 0) {
+      player.recoveryDays--;
+    }
 
     // Recover knocked out units
     for (const unit of this.state.ownedUnits) {
@@ -314,6 +356,44 @@ class GameEngine {
     if (fac.slimeFarm.level > 0) this.addMaterial('MAT_SLIME_CORE', 2 * fac.slimeFarm.level);
     if (fac.fishery.level > 0) this.addMaterial('MAT_POISON_FISH', 2 * fac.fishery.level);
     if (fac.greenhouse.level > 0) this.addMaterial('MAT_CATALYST_HERB', 2 * fac.greenhouse.level);
+
+    // 가공소: 자동 가공 (레벨 × 횟수만큼 인벤토리 재료를 가공)
+    if (fac.workshop.level > 0 && fac.workshop.unitId) {
+      this.state._workshopResults = this.processWorkshopAuto(fac.workshop.level);
+    }
+  }
+
+  // 가공소 자동 가공: 인벤토리에서 원재료를 가마로 가공
+  processWorkshopAuto(level) {
+    const results = [];
+    const maxProcesses = level * 2; // Lv1=2회, Lv2=4회, Lv3=6회
+    const processable = ['MAT_HERB', 'MAT_CATALYST_HERB', 'MAT_IRON_ORE', 'MAT_MAGIC_STONE', 'MAT_POISON_FISH', 'MAT_SLIME_CORE'];
+
+    // Lv1: 가마만, Lv2: 가마+분쇄, Lv3: 가마+분쇄+압축
+    const availEquip = ['furnace'];
+    if (level >= 2) availEquip.push('crusher');
+    if (level >= 3 && this.state.equipment.compressor) availEquip.push('compressor');
+
+    let processed = 0;
+    for (const matId of processable) {
+      if (processed >= maxProcesses) break;
+      const qty = this.state.inventory[matId] || 0;
+      if (qty <= 1) continue; // 최소 1개는 남김
+
+      // 가공할 장비 선택 (순서대로)
+      const equipId = availEquip[processed % availEquip.length];
+      const suffixMap = { furnace: '_FIRED', crusher: '_CRUSHED', compressor: '_COMPRESSED' };
+      const resultId = `${matId}${suffixMap[equipId]}`;
+      const resultMat = this.data.materials.find(m => m.id === resultId);
+
+      if (resultMat) {
+        this.removeMaterial(matId, 1);
+        this.addMaterial(resultId, 1);
+        results.push({ from: this.getMaterialName(matId), to: resultMat.name, equipment: equipId });
+        processed++;
+      }
+    }
+    return results;
   }
 
   updateActiveSignals() {
@@ -418,20 +498,30 @@ class GameEngine {
     return value;
   }
 
-  // Save / Load stubs
-  saveGame() {
+  // Save / Load — 3 slots + auto save
+  saveGame(slot = 0) {
     try {
       const saveData = JSON.stringify(this.state);
-      localStorage.setItem('project_al_save', saveData);
+      const meta = {
+        slot,
+        date: `${this.state.year}년 ${this.state.month}월 ${this.state.day}일`,
+        soulPower: this.state.soulPower,
+        units: this.state.ownedUnits.length,
+        floor: this.state.dungeon.maxFloorReached,
+        realTime: new Date().toLocaleString('ko-KR'),
+        playerHp: `${this.state.player.hp}/${this.state.player.maxHp}`
+      };
+      localStorage.setItem(`project_al_save_${slot}`, saveData);
+      localStorage.setItem(`project_al_meta_${slot}`, JSON.stringify(meta));
       return true;
     } catch(e) {
       return false;
     }
   }
 
-  loadGame() {
+  loadGame(slot = 0) {
     try {
-      const saveData = localStorage.getItem('project_al_save');
+      const saveData = localStorage.getItem(`project_al_save_${slot}`);
       if (saveData) {
         this.state = JSON.parse(saveData);
         return true;
@@ -440,6 +530,34 @@ class GameEngine {
     } catch(e) {
       return false;
     }
+  }
+
+  // Auto save (slot 0)
+  autoSave() {
+    return this.saveGame(0);
+  }
+
+  // Get save slot info for display
+  getSaveSlots() {
+    const slots = [];
+    for (let i = 0; i <= 2; i++) {
+      try {
+        const meta = localStorage.getItem(`project_al_meta_${i}`);
+        if (meta) {
+          slots.push({ slot: i, ...JSON.parse(meta) });
+        } else {
+          slots.push({ slot: i, empty: true });
+        }
+      } catch(e) {
+        slots.push({ slot: i, empty: true });
+      }
+    }
+    return slots;
+  }
+
+  deleteSave(slot) {
+    localStorage.removeItem(`project_al_save_${slot}`);
+    localStorage.removeItem(`project_al_meta_${slot}`);
   }
 
   // ===== Data normalization helpers =====

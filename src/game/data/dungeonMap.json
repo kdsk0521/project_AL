@@ -628,7 +628,7 @@
           "encounter": [],
           "collect": [
             "MAT_WATER",
-            "MAT_VENOMFISH",
+            "MAT_POISON_FISH",
             "MAT_HERB"
           ],
           "note": "1회성 보상 (물, 독물고기, 약초 등 복합)"
@@ -1068,7 +1068,12 @@
             "F15-C"
           ],
           "encounter": [],
-          "collect": [],
+          "collect": [
+            "MAT_HERB",
+            "MAT_MAGIC_STONE",
+            "MAT_SLIME_CORE",
+            "MAT_IRON_ORE"
+          ],
           "note": "1회성 보상 (최종 보스 전 보급)"
         },
         {

@@ -207,26 +207,30 @@ class DungeonSystem {
     return { success: true, items: collectibles };
   }
 
-  // Open chest (one-time)
+  // Open chest (repeatable — bonus loot based on floor)
   openChest(node) {
-    if (this.engine.state.dungeon.visitedChests.includes(node.id)) {
-      return { empty: true, message: '상자는 이미 비어있다.' };
-    }
-
-    this.engine.state.dungeon.visitedChests.push(node.id);
-
-    // Generate chest loot based on floor
     const loot = [];
     const floor = node.floor;
 
-    if (floor <= 5) {
-      loot.push({ id: 'MAT_IRON_ORE', qty: 3, name: '철광석' });
-      loot.push({ id: 'MAT_HERB', qty: 3, name: '약초' });
-    } else if (floor <= 10) {
-      loot.push({ id: 'MAT_WATER', qty: 2, name: '물' });
-      loot.push({ id: 'MAT_MAGIC_STONE', qty: 2, name: '마력석' });
+    // Node has predefined collect data → use it
+    if (node.collect && node.collect.length > 0) {
+      for (const matId of node.collect) {
+        const qty = 1 + Math.floor(Math.random() * 2);
+        loot.push({ id: matId, qty, name: this.engine.getMaterialName(matId) });
+      }
     } else {
-      loot.push({ id: 'MAT_CATALYST_GRASS', qty: 2, name: '촉매초' });
+      // Fallback: floor-based random loot
+      const pool = ['MAT_HERB', 'MAT_IRON_ORE', 'MAT_MAGIC_STONE', 'MAT_WATER', 'MAT_CATALYST_HERB', 'MAT_SLIME_CORE', 'MAT_POISON_FISH'];
+      const count = 2 + Math.floor(floor / 5);
+      for (let i = 0; i < count; i++) {
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        const qty = 1 + Math.floor(Math.random() * (1 + Math.floor(floor / 3)));
+        loot.push({ id: pick, qty, name: this.engine.getMaterialName(pick) });
+      }
+    }
+
+    // Bonus: deeper floors give more
+    if (floor >= 10 && Math.random() < 0.3) {
       loot.push({ id: 'MAT_MAGIC_STONE', qty: 2, name: '마력석' });
     }
 
@@ -264,7 +268,20 @@ class DungeonSystem {
 
   // Event node
   triggerEvent(node) {
-    // Simple event system - return flavor text based on floor
+    // Event text based on floor/node
+    if (node.id === 'F9-D') {
+      return {
+        text: '기관부의 벽에 고대 문자가 빼곡히 새겨져 있다.',
+        lore: '(알파 버전 — 로어 이벤트 내용 준비 중)'
+      };
+    }
+    if (node.id === 'F14-C') {
+      return {
+        text: '깊은 곳에서 거대한 진동이 느껴진다. 무언가... 기다리고 있다.',
+        lore: '(알파 버전 — 보스 예고 이벤트 준비 중)'
+      };
+    }
+
     const events = [
       '벽면에 오래된 문양이 새겨져 있다. 전임자의 것인지도 모른다.',
       '어디선가 기계 소리가 들려온다. 대연성기의 잔향일까.',

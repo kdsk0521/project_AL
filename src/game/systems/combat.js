@@ -7,17 +7,18 @@ class CombatSystem {
     this.battleState = null;
   }
 
-  // Initialize a battle
-  startBattle(playerParty, enemies) {
+  // Initialize a battle — commander system
+  // allies = units only (not the player). Player is the commander who uses items.
+  startBattle(allies, enemies) {
     this.battleState = {
       round: 0,
-      allies: playerParty.map(u => this.toBattleUnit(u, true)),
+      allies: allies.map(u => this.toBattleUnit(u, true)),
       enemies: enemies.map(u => this.toBattleUnit(u, false)),
       log: [],
       finished: false,
       result: null // 'win', 'lose', 'flee'
     };
-    this.battleState.log.push({ type: 'start', text: '전투 시작!' });
+    this.battleState.log.push({ type: 'start', text: '전투 시작! 연금술사가 지휘한다.' });
     return this.battleState;
   }
 
@@ -41,7 +42,12 @@ class CombatSystem {
       defenseProfile: unit.defenseProfile || { physical: 10, 열: 10, 위: 10, 동: 10, 광: 10, 식: 10 },
       isKO: false,
       buffs: [],
-      category: unit.category || '요괴'
+      category: unit.category || '요괴',
+      // Preserve special flags
+      isBoss: unit.isBoss || false,
+      isSlime: unit.isSlime || false,
+      canSplit: unit.canSplit || false,
+      elementShift: unit.elementShift || false
     };
   }
 
@@ -70,11 +76,11 @@ class CombatSystem {
       log.push(action.logEntry);
     }
 
-    // Apply damage
+    // Apply damage (skip already KO'd targets)
     for (const action of allActions) {
-      if (action.target && action.damage > 0) {
+      if (action.target && action.damage > 0 && !action.target.isKO) {
         action.target.hp = Math.max(0, action.target.hp - action.damage);
-        if (action.target.hp <= 0) {
+        if (action.target.hp <= 0 && !action.target.isKO) {
           action.target.isKO = true;
           log.push({ type: 'ko', text: `${action.target.name}이(가) 쓰러졌다!` });
         }
@@ -175,8 +181,9 @@ class CombatSystem {
     const skillTrait = this.findUsableSkill(unit, remainingAp);
 
     if (actionType === 'attack' || actionType === 'skill') {
-      const target = opponents[Math.floor(Math.random() * opponents.length)];
-      if (!target || target.isKO) return null;
+      const alive = opponents.filter(o => !o.isKO);
+      if (alive.length === 0) return null;
+      const target = alive[Math.floor(Math.random() * alive.length)];
 
       if (skillTrait && actionType === 'skill') {
         return this.executeSkill(unit, target, skillTrait);
@@ -299,13 +306,17 @@ class CombatSystem {
       // Calculate exp
       results.expGained = this.battleState.enemies.reduce((sum, e) => sum + (e.maxHp / 5), 0);
 
-      // Apply exp to party
+      // Apply exp to party + check level up
+      results.levelUps = [];
       for (const ally of this.battleState.allies) {
         if (!ally.isKO && ally.isAlly) {
           const unit = this.engine.getUnitInstance(ally.instanceId);
           if (unit) {
             unit.exp.combat += Math.floor(results.expGained);
             unit.exp.body += Math.floor(results.expGained * 0.3);
+            // Level up check
+            const levelResult = this.checkUnitLevelUp(unit);
+            if (levelResult) results.levelUps.push({ name: unit.name, newLevel: levelResult.newLevel });
           }
         }
       }
@@ -324,10 +335,12 @@ class CombatSystem {
       }
     }
 
-    // Player HP
-    const playerBattle = this.battleState.allies[0];
-    if (playerBattle) {
-      this.engine.state.player.hp = Math.max(0, playerBattle.hp);
+    // Commander system: player doesn't take direct damage in combat
+    // But if all units are KO'd (loss), player takes injury
+    if (!results.won) {
+      const injury = Math.floor(this.engine.state.player.maxHp * 0.2);
+      this.engine.state.player.hp = Math.max(0, this.engine.state.player.hp - injury);
+      results.playerInjury = injury;
     }
 
     return results;
@@ -423,6 +436,29 @@ class CombatSystem {
       sigil: unitDef.sigil,
       acquisition: unitDef.acquisition
     };
+  }
+
+  // Level up check (same logic as unit.js)
+  checkUnitLevelUp(unit) {
+    const totalExp = Object.values(unit.exp).reduce((s, v) => s + v, 0);
+    const threshold = unit.level * 100;
+    if (totalExp < threshold) return null;
+
+    unit.level++;
+    const catStats = {
+      '요괴': { hp: 5, atk: 3, def: 2, spd: 2 },
+      '정령': { hp: 5, atk: 2, def: 2, spd: 2 },
+      '인조': { hp: 6, atk: 2, def: 3, spd: 1 },
+      '야수': { hp: 4, atk: 2, def: 1, spd: 3 },
+      '환상': { hp: 3, atk: 2, def: 2, spd: 2 }
+    };
+    const growth = catStats[unit.category] || catStats['정령'];
+    unit.maxHp += growth.hp;
+    unit.hp = unit.maxHp;
+    unit.atk += growth.atk;
+    unit.def += growth.def;
+    unit.spd += growth.spd;
+    return { leveled: true, newLevel: unit.level };
   }
 
   // Create slime enemy (non-negotiable)

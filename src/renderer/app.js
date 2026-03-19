@@ -24,12 +24,14 @@ class App {
     this.inputEl  = document.getElementById('command-input');
 
     // Engine + Systems (REAL — no stubs)
+    const TrainingSystem = require('../game/systems/training');
     this.engine   = new GameEngine();
     this.combat   = new CombatSystem(this.engine);
     this.dungeon  = new DungeonSystem(this.engine);
     this.crafting = new CraftingSystem(this.engine);
     this.unit     = new UnitSystem(this.engine);
     this.economy  = new EconomySystem(this.engine);
+    this.training = new TrainingSystem(this.engine);
 
     // Dungeon needs a combat reference
     this.dungeon.combat = this.combat;
@@ -167,8 +169,23 @@ class App {
     safe('hp-display', `${s.player.hp}/${s.player.maxHp}`);
     safe('stamina-display', `${s.stamina}/${s.maxStamina}`);
     safe('soulpower-display', s.soulPower);
-    safe('gold-display', s.soulPower); // 영혼력 alias for the "금화" slot in HTML
-    safe('materials-display', Object.keys(s.inventory || {}).length + '종');
+    // 재료 현황 — 주요 재료 수량 표시
+    const matEl = document.getElementById('materials-display');
+    if (matEl) {
+      const inv = s.inventory || {};
+      const keyMats = [
+        ['MAT_HERB','약초'], ['MAT_CATALYST_HERB','촉매초'], ['MAT_IRON_ORE','철광석'],
+        ['MAT_MAGIC_STONE','마력석'], ['MAT_POISON_FISH','독물고기'], ['MAT_WATER','물'],
+        ['MAT_SLIME_CORE','슬라임핵'], ['MAT_SPRING','스프링']
+      ];
+      const lines = keyMats
+        .filter(([id]) => (inv[id] || 0) > 0)
+        .map(([id, name]) => `${name}:${inv[id]}`);
+      // Count crafted items
+      const craftedCount = Object.keys(inv).filter(id => !id.startsWith('MAT_') && (inv[id] || 0) > 0).length;
+      if (craftedCount > 0) lines.push(`제작품:${craftedCount}종`);
+      matEl.innerHTML = lines.join(' | ') || '없음';
+    }
 
     // Bars
     safeStyle('hp-bar', 'width', `${(s.player.hp / s.player.maxHp) * 100}%`);
@@ -198,8 +215,15 @@ class App {
   processCommand(cmd) {
     this.print(`> ${cmd}`, 'command');
 
+    // Debug commands (prefix: /)
+    if (cmd.startsWith('/')) {
+      this.handleDebug(cmd);
+      return;
+    }
+
     switch (this.currentScreen) {
       case 'main_menu':          this.handleMainMenu(cmd);          break;
+      case 'new_game_slot':      this.handleNewGameSlot(cmd);       break;
       case 'intro':              this.handleIntro(cmd);             break;
       case 'town':               this.handleTown(cmd);              break;
       case 'dungeon_prep':       this.handleDungeonPrep(cmd);       break;
@@ -213,6 +237,7 @@ class App {
       case 'crafting_process_eq':this.handleCraftingProcessEq(cmd); break;
       case 'crafting_combine':   this.handleCraftingCombine(cmd);   break;
       case 'crafting_combine_b': this.handleCraftingCombineB(cmd);  break;
+      case 'recipe_list':        this.handleRecipeList(cmd);       break;
       case 'unit_management':    this.handleUnitManagement(cmd);    break;
       case 'unit_detail':        this.handleUnitDetail(cmd);        break;
       case 'unit_fusion_a':      this.handleFusionSelectA(cmd);     break;
@@ -224,6 +249,10 @@ class App {
       case 'facility_assign':    this.handleFacilityAssign(cmd);    break;
       case 'compendium':         this.handleCompendium(cmd);        break;
       case 'inventory':          this.handleInventory(cmd);         break;
+      case 'training_select':    this.handleTrainingSelect(cmd);    break;
+      case 'training_menu':      this.handleTrainingMenu(cmd);      break;
+      case 'training_part':      this.handleTrainingPart(cmd);      break;
+      case 'training_action':    this.handleTrainingAction(cmd);    break;
       case 'advance_day':        this.handleAdvanceDay(cmd);        break;
       case 'end_game':           this.handleEndGame(cmd);           break;
       default:
@@ -231,6 +260,166 @@ class App {
         this.showTownMenu();
         break;
     }
+  }
+
+  // ============================================================
+  //  DEBUG COMMANDS (prefix: /)
+  // ============================================================
+  handleDebug(cmd) {
+    const parts = cmd.substring(1).split(' ');
+    const action = parts[0];
+    const arg1 = parts[1];
+    const arg2 = parts[2];
+
+    switch (action) {
+      case 'help':
+        this.print('── 디버그 명령어 ──', 'system');
+        this.print('  /soul [양]       — 영혼력 추가 (기본 1000)', 'dim');
+        this.print('  /mat [ID] [양]   — 재료 추가 (예: /mat MAT_HERB 10)', 'dim');
+        this.print('  /matall [양]     — 기초 재료 7종 전부 추가', 'dim');
+        this.print('  /stamina [양]    — 스태미나 추가 (기본 30)', 'dim');
+        this.print('  /hp [양]         — 연금술사 HP 전회복', 'dim');
+        this.print('  /healall         — 전 유닛 HP 전회복 + 기절 해제', 'dim');
+        this.print('  /level [양]      — 선택 유닛 레벨업 (유닛관리에서)', 'dim');
+        this.print('  /party [크기]    — 파티 최대 크기 변경', 'dim');
+        this.print('  /floor [층]      — 최대 도달 층수 설정', 'dim');
+        this.print('  /unit [ID]       — 유닛 즉시 획득', 'dim');
+        this.print('  /items           — 전체 재료 목록 표시', 'dim');
+        this.print('  /units           — 전체 유닛 ID 목록 표시', 'dim');
+        this.print('  /god             — 갓모드 (재료+영혼력+스태미나 대량)', 'dim');
+        this.print('  /title           — 타이틀 화면으로 돌아가기', 'dim');
+        break;
+
+      case 'soul':
+        const soulAmt = parseInt(arg1) || 1000;
+        this.engine.state.soulPower += soulAmt;
+        this.print(`영혼력 +${soulAmt} (현재: ${this.engine.state.soulPower})`, 'success');
+        break;
+
+      case 'mat':
+        if (!arg1) { this.print('사용법: /mat [재료ID] [수량]', 'error'); break; }
+        const matQty = parseInt(arg2) || 5;
+        this.engine.addMaterial(arg1, matQty);
+        this.print(`${this.engine.getMaterialName(arg1)} +${matQty}`, 'success');
+        break;
+
+      case 'matall':
+        const qty = parseInt(arg1) || 20;
+        const basics = ['MAT_HERB','MAT_CATALYST_HERB','MAT_IRON_ORE','MAT_MAGIC_STONE','MAT_POISON_FISH','MAT_WATER','MAT_SLIME_CORE'];
+        for (const m of basics) {
+          this.engine.addMaterial(m, qty);
+        }
+        this.print(`기초 재료 7종 각 +${qty}`, 'success');
+        break;
+
+      case 'stamina':
+        const stamAmt = parseInt(arg1) || 30;
+        this.engine.state.stamina = Math.min(this.engine.state.maxStamina, this.engine.state.stamina + stamAmt);
+        this.print(`스태미나 → ${this.engine.state.stamina}/${this.engine.state.maxStamina}`, 'success');
+        break;
+
+      case 'hp':
+        this.engine.state.player.hp = this.engine.state.player.maxHp;
+        this.engine.state.player.recoveryDays = 0;
+        this.print(`연금술사 HP 전회복 (${this.engine.state.player.hp}/${this.engine.state.player.maxHp})`, 'success');
+        break;
+
+      case 'healall':
+        for (const u of this.engine.state.ownedUnits) {
+          u.hp = u.maxHp;
+          u.isKnockedOut = false;
+          u.recoveryDays = 0;
+        }
+        this.print(`전 유닛 HP 전회복 + 기절 해제`, 'success');
+        break;
+
+      case 'level':
+        if (this._selectedUnitId) {
+          const unit = this.engine.getUnitInstance(this._selectedUnitId);
+          if (unit) {
+            const times = parseInt(arg1) || 1;
+            for (let i = 0; i < times; i++) {
+              unit.exp.combat += unit.level * 100;
+              const g = {
+                '요괴':{hp:5,atk:3,def:2,spd:2},'정령':{hp:5,atk:2,def:2,spd:2},
+                '인조':{hp:6,atk:2,def:3,spd:1},'야수':{hp:4,atk:2,def:1,spd:3},
+                '환상':{hp:3,atk:2,def:2,spd:2}
+              };
+              const gr = g[unit.category] || g['정령'];
+              unit.level++;
+              unit.maxHp += gr.hp; unit.hp = unit.maxHp;
+              unit.atk += gr.atk; unit.def += gr.def; unit.spd += gr.spd;
+            }
+            this.print(`${unit.name} → Lv.${unit.level} (ATK:${unit.atk} DEF:${unit.def} SPD:${unit.spd})`, 'success');
+          }
+        } else {
+          this.print('유닛 관리에서 유닛을 선택한 상태에서 사용하세요.', 'error');
+        }
+        break;
+
+      case 'party':
+        const newSize = parseInt(arg1) || 5;
+        this.engine.state.maxPartySize = newSize;
+        this.print(`파티 최대 크기 → ${newSize}`, 'success');
+        break;
+
+      case 'floor':
+        const floorNum = parseInt(arg1) || 15;
+        this.engine.state.dungeon.maxFloorReached = floorNum;
+        this.print(`최대 도달 층수 → ${floorNum}`, 'success');
+        break;
+
+      case 'unit':
+        if (!arg1) { this.print('사용법: /unit [유닛ID]  (예: /unit UNIT_THORN_IMP)', 'error'); break; }
+        const unitDef = this.engine.getUnitDef(arg1);
+        if (!unitDef) { this.print(`유닛 "${arg1}" 을(를) 찾을 수 없습니다.`, 'error'); break; }
+        const inst = this.engine.createUnitInstance(unitDef);
+        this.engine.state.ownedUnits.push(inst);
+        if (!this.engine.state.compendium.registered.includes(arg1)) {
+          this.engine.state.compendium.registered.push(arg1);
+        }
+        this.print(`${unitDef.name} Lv.${unitDef.level} 획득!`, 'success');
+        break;
+
+      case 'items':
+        this.print('── 전체 재료 ID ──', 'system');
+        this.engine.data.materials.forEach(m => this.print(`  ${m.id} — ${m.name}`, 'dim'));
+        break;
+
+      case 'units':
+        this.print('── 전체 유닛 ID (일부) ──', 'system');
+        this.engine.data.units.slice(0, 20).forEach(u =>
+          this.print(`  ${u.id} — ${u.name} Lv.${u.level} 인:${u.sigilName}`, 'dim')
+        );
+        this.print(`  ... 외 ${this.engine.data.units.length - 20}체`, 'dim');
+        break;
+
+      case 'god':
+        this.engine.state.soulPower += 9999;
+        this.engine.state.stamina = this.engine.state.maxStamina;
+        this.engine.state.player.hp = this.engine.state.player.maxHp;
+        this.engine.state.player.recoveryDays = 0;
+        const allMats = ['MAT_HERB','MAT_CATALYST_HERB','MAT_IRON_ORE','MAT_MAGIC_STONE','MAT_POISON_FISH','MAT_WATER','MAT_SLIME_CORE','MAT_SPRING'];
+        for (const m of allMats) this.engine.addMaterial(m, 99);
+        for (const u of this.engine.state.ownedUnits) {
+          u.hp = u.maxHp; u.isKnockedOut = false; u.recoveryDays = 0;
+        }
+        this.engine.state.maxPartySize = 5;
+        this.engine.state.dungeon.maxFloorReached = 15;
+        this.print('★ GOD MODE ★ 영혼력+9999, 재료 99개, 전회복, 파티5인, 15층 해금', 'success');
+        break;
+
+      case 'title':
+        this.engine.autoSave();
+        this.print('자동 저장 후 타이틀로 돌아갑니다...', 'system');
+        setTimeout(() => this.showMainMenu(), 500);
+        break;
+
+      default:
+        this.print(`알 수 없는 디버그 명령: ${action}. /help로 목록 확인.`, 'error');
+        break;
+    }
+    this.updateStatus();
   }
 
   // ============================================================
@@ -248,30 +437,78 @@ class App {
     this.print('║                                          ║', 'system');
     this.print('╚══════════════════════════════════════════╝', 'system');
     this.printBlank();
-    this.printOption('1', '  1. 새 게임');
-    this.printOption('2', '  2. 계속하기');
+
+    // Show save slots
+    const slots = this.engine.getSaveSlots();
+    this.print('── 세이브 슬롯 ──', 'system');
+    slots.forEach((s) => {
+      if (s.empty) {
+        this.print(`  슬롯 ${s.slot + 1}: [비어있음]`, 'dim');
+      } else {
+        this.printOption(`${s.slot + 1}`,
+          `  슬롯 ${s.slot + 1}: ${s.date} | 영혼력:${s.soulPower} | 유닛:${s.units}체 | ${s.floor}층 | ${s.realTime}`
+        );
+      }
+    });
     this.printBlank();
-    this.setActions([{key:'1', label:'새 게임'}, {key:'2', label:'계속하기'}]);
+    this.printOption('n', '  n. 새 게임');
+    this.printBlank();
+    this.setActions([
+      ...slots.filter(s => !s.empty).map(s => ({key:`${s.slot+1}`, label:`슬롯${s.slot+1} 불러오기`})),
+      {key:'n', label:'새 게임'}
+    ]);
   }
 
   handleMainMenu(cmd) {
-    switch (cmd) {
-      case '1':
-        this.engine.newGame();
-        this.showIntro();
-        break;
-      case '2':
-        if (this.engine.loadGame()) {
-          this.print('저장된 게임을 불러왔습니다.', 'success');
-          this.updateStatus();
-          this.showTownMenu();
-        } else {
-          this.print('저장된 게임이 없습니다.', 'error');
-        }
+    // Load save slot
+    if (['1','2','3'].includes(cmd)) {
+      const slot = parseInt(cmd) - 1;
+      if (this.engine.loadGame(slot)) {
+        this.print(`슬롯 ${cmd} 불러오기 완료!`, 'success');
+        this.updateStatus();
+        this.showTownMenu();
+      } else {
+        this.print(`슬롯 ${cmd}에 저장 데이터가 없습니다.`, 'error');
+      }
+      return;
+    }
+
+    switch (cmd.toLowerCase()) {
+      case 'n':
+        this.showNewGameSlotSelect();
         break;
       default:
-        this.print('1 또는 2를 입력하세요.', 'error');
+        this.print('슬롯 번호(1~3) 또는 n(새 게임)을 입력하세요.', 'error');
         break;
+    }
+  }
+
+  showNewGameSlotSelect() {
+    this.currentScreen = 'new_game_slot';
+    this.printBlank();
+    this.print('새 게임을 저장할 슬롯을 선택하세요:', 'system');
+    const slots = this.engine.getSaveSlots();
+    slots.forEach(s => {
+      if (s.empty) {
+        this.printOption(`${s.slot + 1}`, `  슬롯 ${s.slot + 1}: [비어있음]`);
+      } else {
+        this.printOption(`${s.slot + 1}`, `  슬롯 ${s.slot + 1}: ${s.date} | ${s.realTime} [덮어쓰기]`, 'error');
+      }
+    });
+    this.printBlank();
+    this.printOption('0', '  0. 취소');
+    this.setActions([{key:'1',label:'슬롯1'},{key:'2',label:'슬롯2'},{key:'3',label:'슬롯3'},{key:'0',label:'취소'}]);
+  }
+
+  handleNewGameSlot(cmd) {
+    if (cmd === '0') { this.showMainMenu(); return; }
+    if (['1','2','3'].includes(cmd)) {
+      this._currentSaveSlot = parseInt(cmd) - 1;
+      this.engine.newGame();
+      this.engine.saveGame(this._currentSaveSlot);
+      this.showIntro();
+    } else {
+      this.print('1~3 또는 0을 입력하세요.', 'error');
     }
   }
 
@@ -316,6 +553,7 @@ class App {
   // ============================================================
   showTownMenu() {
     this.currentScreen = 'town';
+    this.autoSave(); // 도시 복귀 시 자동 저장
     this.clearOutput();
     this.printSeparator();
     this.print('【 미궁 도시 】', 'location');
@@ -328,43 +566,140 @@ class App {
     this.print('도시의 중심 광장. 탐사자들이 분주히 오가고 있다.', 'description');
     this.printBlank();
     this.printOption('1', '  1. 탐사 준비    — 미궁에 진입한다');
-    this.printOption('2', '  2. 조합/가공    — 공방에서 제작한다');
+    this.printOption('2', '  2. 가공/연구    — 공방에서 가공·조합한다');
     this.printOption('3', '  3. 유닛 관리    — 유닛을 확인/육성한다');
-    this.printOption('4', '  4. 도시 시설    — 시설을 관리한다');
-    this.printOption('5', '  5. 전서         — 유닛을 구매/등록한다');
-    this.printOption('6', '  6. 인벤토리     — 소지품을 확인한다');
-    this.printOption('7', '  7. 하루 넘기기');
-    this.printOption('8', '  8. 저장');
+    this.printOption('4', '  4. 조교소       — 유닛을 조교한다');
+    this.printOption('5', '  5. 도시 시설    — 시설을 관리한다');
+    this.printOption('6', '  6. 전서         — 유닛을 구매/등록한다');
+    this.printOption('7', '  7. 인벤토리     — 소지품을 확인한다');
+    this.printOption('8', '  8. 하루 넘기기');
+    this.printOption('9', '  9. 저장');
+    const p = this.engine.state.player;
+    if (p.hp < p.maxHp) {
+      this.printOption('0', `  0. 회복 (연금술사 HP: ${p.hp}/${p.maxHp})`);
+    }
     this.printBlank();
     this.setActions([
-      {key:'1', label:'탐사'}, {key:'2', label:'조합'}, {key:'3', label:'유닛'},
-      {key:'4', label:'시설'}, {key:'5', label:'전서'}, {key:'6', label:'인벤토리'},
-      {key:'7', label:'넘기기'}, {key:'8', label:'저장'}
+      {key:'1', label:'탐사'}, {key:'2', label:'가공/연구'}, {key:'3', label:'유닛'},
+      {key:'4', label:'조교소'}, {key:'5', label:'시설'}, {key:'6', label:'전서'},
+      {key:'7', label:'인벤토리'}, {key:'8', label:'넘기기'}, {key:'9', label:'저장'},
+      ...(p.hp < p.maxHp ? [{key:'0', label:'회복'}] : [])
     ]);
     this.updateStatus();
   }
 
   handleTown(cmd) {
     switch (cmd) {
-      case '1': this.showDungeonPrep();    break;
-      case '2': this.showCrafting();       break;
-      case '3': this.showUnitManagement(); break;
-      case '4': this.showCityFacilities(); break;
-      case '5': this.showCompendium();     break;
-      case '6': this.showInventory();      break;
-      case '7': this.doAdvanceDay();       break;
-      case '8': this.doSaveGame();         break;
+      case '1': {
+        const check = this.engine.canExplore();
+        if (!check.ok) { this.print(check.reason, 'error'); break; }
+        this.showDungeonPrep();
+        break;
+      }
+      case '2': this.showCrafting();        break;
+      case '3': this.showUnitManagement();  break;
+      case '4': this.showTrainingFacility(); break;
+      case '5': this.showCityFacilities();  break;
+      case '6': this.showCompendium();      break;
+      case '7': this.showInventory();       break;
+      case '8': this.doAdvanceDay();        break;
+      case '9': this.doSaveGame();          break;
+      case '0': this.doHealPlayer();        break;
       default:
-        this.print('1~8 사이의 번호를 입력하세요.', 'error');
+        this.print('번호를 입력하세요.', 'error');
         break;
     }
   }
 
+  doHealPlayer() {
+    const p = this.engine.state.player;
+    if (p.hp >= p.maxHp) {
+      this.print('이미 만전입니다.', 'dim');
+      return;
+    }
+
+    // Find healing items (제작품만 — 원재료 직접 사용 불가)
+    const inv = this.engine.state.inventory;
+    const healItems = [];
+    for (const [matId, qty] of Object.entries(inv)) {
+      if (qty <= 0) continue;
+      if (matId.startsWith('MAT_')) continue; // 원재료 제외
+      const mat = this.engine.data.materials.find(m => m.id === matId);
+      if (!mat) continue;
+      const isHeal = (mat.effect && mat.effect.type === 'heal') ||
+        (mat.category === 'consumable_potion') || (mat.category === 'consumable_food');
+      if (isHeal) {
+        healItems.push({ id: matId, name: mat.name, qty, value: (mat.effect && mat.effect.value) || 20 });
+      }
+    }
+
+    if (healItems.length === 0) {
+      this.print('회복 아이템이 없습니다. (물약이나 스프를 만들어보세요)', 'error');
+      return;
+    }
+
+    this.print(`연금술사 HP: ${p.hp}/${p.maxHp}`, 'system');
+    this.printBlank();
+    healItems.forEach((item, i) => {
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${item.name} ×${item.qty} (HP +${item.value})`);
+    });
+    this.printOption('0', '  0. 취소');
+    this.setActions([{key:'0', label:'취소'}]);
+
+    const self = this;
+    const origHandler = this.handleTown.bind(this);
+    this.handleTown = function(c) {
+      self.handleTown = origHandler;
+      if (c === '0') { self.showTownMenu(); return; }
+      const idx = parseInt(c);
+      if (isNaN(idx) || idx < 1 || idx > healItems.length) { self.showTownMenu(); return; }
+      const selected = healItems[idx - 1];
+      self.engine.removeMaterial(selected.id, 1);
+      const result = self.engine.healPlayer(selected.value);
+      self.print(`${selected.name} 사용! HP +${result.healed} (${result.hp}/${result.maxHp})`, 'success');
+      self.printBlank();
+      self.updateStatus();
+      self.showTownMenu();
+    };
+  }
+
   doSaveGame() {
-    if (this.engine.saveGame()) {
-      this.print('게임이 저장되었습니다.', 'success');
-    } else {
-      this.print('저장에 실패했습니다.', 'error');
+    const slot = this._currentSaveSlot != null ? this._currentSaveSlot : 0;
+    this.printBlank();
+    this.print('── 저장할 슬롯 선택 ──', 'system');
+    const slots = this.engine.getSaveSlots();
+    slots.forEach(s => {
+      if (s.empty) {
+        this.printOption(`${s.slot + 1}`, `  슬롯 ${s.slot + 1}: [비어있음]`);
+      } else {
+        this.printOption(`${s.slot + 1}`, `  슬롯 ${s.slot + 1}: ${s.date} | ${s.realTime}`);
+      }
+    });
+    this.printOption('0', '  0. 취소');
+    this.setActions([{key:'1',label:'슬롯1'},{key:'2',label:'슬롯2'},{key:'3',label:'슬롯3'},{key:'0',label:'취소'}]);
+
+    const self = this;
+    const origHandler = this.handleTown.bind(this);
+    this.handleTown = function(c) {
+      self.handleTown = origHandler;
+      if (c === '0') { self.showTownMenu(); return; }
+      if (['1','2','3'].includes(c)) {
+        const s = parseInt(c) - 1;
+        self._currentSaveSlot = s;
+        if (self.engine.saveGame(s)) {
+          self.print(`슬롯 ${c}에 저장 완료!`, 'success');
+        } else {
+          self.print('저장 실패.', 'error');
+        }
+      }
+      self.showTownMenu();
+    };
+  }
+
+  // Auto save — call at key moments
+  autoSave() {
+    if (this._currentSaveSlot != null) {
+      this.engine.saveGame(this._currentSaveSlot);
     }
   }
 
@@ -391,15 +726,40 @@ class App {
     }
     this.printBlank();
 
-    // Floor selection info
+    // Floor selection
     const maxFloor = this.engine.state.dungeon.maxFloorReached;
     const maxAvailable = Math.min(15, maxFloor + 1);
-    this.print(`진입 가능 층: 1층 ~ ${maxAvailable}층`, 'system');
     this.print(`스태미나: ${this.engine.state.stamina}/${this.engine.state.maxStamina}`, 'system');
     this.printBlank();
-    this.print('진입할 층 번호를 입력하세요. (0 = 돌아가기)', 'dim');
+
+    // ASCII dungeon map
+    this.print('── 미궁 구조도 ──', 'lore');
+    const bossFloors = [5, 10, 15];
+    const zones = { 1:'석굴',2:'석굴/수계',3:'수계/독림',4:'석굴/독림/결빙',5:'석굴심부★',
+      6:'석굴심부/수계',7:'기관부/독림',8:'기관부/수계/결빙',9:'독림심부/수계심부',10:'경계★',
+      11:'위험/기관부',12:'경계/결빙',13:'기관부/수계심부',14:'위험/기관부',15:'위험★' };
+    for (let f = maxAvailable; f >= 1; f--) {
+      const isBoss = bossFloors.includes(f);
+      const reached = f <= maxFloor;
+      const zone = zones[f] || '???';
+      const marker = isBoss ? '◆' : '│';
+      const status = reached ? '  ' : '新';
+      const line = `  ${marker} ${String(f).padStart(2)}F ${status} [${zone}]`;
+      if (f <= maxAvailable) {
+        this.printOption(`${f}`, line);
+      }
+    }
     this.printBlank();
-    this.setActions([{key:'0', label:'돌아가기'}]);
+    this.printOption('0', '  0. 돌아가기');
+    this.printBlank();
+
+    // Action bar with floor buttons
+    const floorActions = [];
+    for (let f = 1; f <= maxAvailable; f++) {
+      floorActions.push({ key: `${f}`, label: `${f}F${bossFloors.includes(f) ? '★' : ''}` });
+    }
+    floorActions.push({ key: '0', label: '돌아가기' });
+    this.setActions(floorActions);
     this.updateStatus();
   }
 
@@ -461,6 +821,63 @@ class App {
     };
     this.print(`현재 노드: ${node.name || node.id} (${typeNames[node.type] || node.type})`, 'system');
     this.printBlank();
+
+    // ASCII mini-map of current floor
+    const floorNodes = this.dungeon.getFloorNodes(floor);
+    if (floorNodes.length > 0) {
+      const typeIcons = { entrance:'입', exit:'출', combat:'⚔', collect:'♦', rest:'♥', chest:'★', event:'?', boss:'◆' };
+      const typeNames = { entrance:'입구', exit:'출구', combat:'전투', collect:'채집', rest:'휴식', chest:'상자', event:'이벤트', boss:'보스' };
+
+      // BFS from entrance to build order
+      const visited = new Set();
+      const queue = [floorNodes.find(n => n.type === 'entrance')].filter(Boolean);
+      const displayed = [];
+      while (queue.length > 0) {
+        const n = queue.shift();
+        if (!n || visited.has(n.id)) continue;
+        visited.add(n.id);
+        displayed.push(n);
+        for (const connId of (n.connections || [])) {
+          const conn = floorNodes.find(fn => fn.id === connId);
+          if (conn && !visited.has(conn.id)) queue.push(conn);
+        }
+      }
+
+      // Render each node as a line (vertical map)
+      this.print('  ┌─ 층 구조도 ─┐', 'dim');
+      displayed.forEach((n, i) => {
+        const icon = typeIcons[n.type] || '○';
+        const isCurrent = n.id === node.id;
+        const zone = n.zone ? `${n.zone}` : '';
+        const typeName = typeNames[n.type] || n.type;
+        const label = zone ? `${typeName}/${zone}` : typeName;
+
+        // Connections indicator
+        const connCount = (n.connections || []).length;
+        const branch = connCount > 2 ? '╠' : '│';
+
+        if (isCurrent) {
+          this.print(`  ${branch} ▶ [${icon} ${label}] ◀ 현재`, 'system');
+        } else {
+          this.print(`  ${branch}   ${icon} ${label}`, 'dim');
+        }
+
+        // Draw connector to next
+        if (i < displayed.length - 1) {
+          const nextConn = (n.connections || []).filter(c => {
+            const idx = displayed.findIndex(d => d.id === c);
+            return idx > i;
+          });
+          if (nextConn.length > 1) {
+            this.print('  ├───┬───┤', 'dim');
+          } else {
+            this.print('  │', 'dim');
+          }
+        }
+      });
+      this.print('  └───────────┘', 'dim');
+      this.printBlank();
+    }
 
     // Connected nodes
     const connected = this.dungeon.getConnectedNodes();
@@ -599,18 +1016,22 @@ class App {
       return;
     }
 
-    // Open chest
+    // Open chest (repeatable, costs stamina)
     if (lowerCmd === 'o') {
       const currentNode = this.dungeon.getCurrentNode();
       if (!currentNode || currentNode.type !== 'chest') {
         this.print('여기에 상자가 없습니다.', 'error');
         return;
       }
+      if (!this.engine.useStamina(1)) {
+        this.print('스태미나가 부족합니다.', 'error');
+        return;
+      }
       const chest = this.dungeon.openChest(currentNode);
-      this.print(chest.message, chest.empty ? 'dim' : 'success');
-      if (!chest.empty && chest.loot) {
+      this.print('【 상자 】 (스태미나 -1)', 'system');
+      if (chest.loot) {
         for (const item of chest.loot) {
-          this.print(`  ${item.name} x${item.qty}`, 'lore');
+          this.print(`  ▸ ${item.name} ×${item.qty}`, 'success');
         }
       }
       this.printBlank();
@@ -718,7 +1139,8 @@ class App {
     this.print(`${ud.name}이(가) 나타났다!`, 'unit');
     this.print(`  Lv.${ud.level}  인: ${ud.sigilName}  원소: ${ud.primaryElement || '없음'}  분류: ${ud.category}`, 'dim');
     if (ud.personalityTraits && ud.personalityTraits.length > 0) {
-      this.print(`  성향: ${ud.personalityTraits.join(', ')}`, 'dim');
+      const names = ud.personalityTraits.map(t => typeof t === 'object' ? t.name : t).filter(Boolean);
+      if (names.length > 0) this.print(`  성향: ${names.join(', ')}`, 'dim');
     }
     this.printBlank();
     this.printOption('1', '  1. 대화 (교섭)');
@@ -891,26 +1313,16 @@ class App {
       return;
     }
 
-    // Build player party (player + party units)
-    const playerUnit = {
-      instanceId: 0,
-      name: this.engine.state.player.name,
-      hp: this.engine.state.player.hp,
-      maxHp: this.engine.state.player.maxHp,
-      atk: this.engine.state.player.atk,
-      def: this.engine.state.player.def,
-      spd: this.engine.state.player.spd,
-      traits: this.engine.state.player.traits,
-      personalityTraits: [],
-      primaryElement: null,
-      category: '인조',
-      defenseProfile: { physical: 10, '열': 10, '위': 10, '동': 10, '광': 10, '식': 10 }
-    };
-
+    // Commander system: only units fight. Player commands.
     const partyInstances = this.engine.getPartyUnits().filter(u => !u.isKnockedOut);
-    const allyParty = [playerUnit, ...partyInstances];
+    if (partyInstances.length === 0) {
+      this.print('전투 가능한 유닛이 없다! 귀환해야 한다.', 'error');
+      this.dungeon.retreat();
+      this.showTownMenu();
+      return;
+    }
 
-    this.combat.startBattle(allyParty, enc.enemies);
+    this.combat.startBattle(partyInstances, enc.enemies);
     this.showCombatScreen();
   }
 
@@ -923,8 +1335,11 @@ class App {
 
     const bs = this.combat.battleState;
 
+    // Commander status
+    this.print(`☆ ${this.engine.state.player.name} [지휘 중]`, 'system');
+    this.printBlank();
     // Show ally/enemy HP
-    this.print('— 아군 —', 'system');
+    this.print('— 아군 유닛 —', 'system');
     for (const u of bs.allies) {
       const koText = u.isKO ? ' [기절]' : '';
       this.print(`  ${u.name} HP:${Math.max(0, u.hp)}/${u.maxHp}${koText}`, 'unit');
@@ -1005,18 +1420,22 @@ class App {
   }
 
   doCombatItem() {
-    // List usable items from inventory
+    // List usable items (전투 중: 물약만. 식량은 전투 중 사용 불가)
     const inv = this.engine.state.inventory;
     const usableItems = [];
     for (const [matId, qty] of Object.entries(inv)) {
+      if (qty <= 0) continue;
+      if (matId.startsWith('MAT_')) continue;
       const mat = this.engine.data.materials.find(m => m.id === matId);
-      if (mat && mat.effect && (mat.effect.type === 'heal' || mat.effect.type === 'damage')) {
+      if (!mat) continue;
+      if (mat.category === 'consumable_food') continue; // 식량은 전투 중 사용 불가
+      if (mat.effect && (mat.effect.type === 'heal' || mat.effect.type === 'damage' || mat.effect.type === 'debuff')) {
         usableItems.push({ id: matId, name: mat.name, qty, effect: mat.effect });
       }
     }
 
     if (usableItems.length === 0) {
-      this.print('사용 가능한 아이템이 없습니다.', 'dim');
+      this.print('사용 가능한 아이템이 없습니다. (물약/독물약을 만들어오세요. 식량은 전투 밖에서만 사용 가능)', 'dim');
       return;
     }
 
@@ -1109,7 +1528,7 @@ class App {
     } else if (bs.result === 'flee') {
       this.print('도주 성공.', 'system');
     } else {
-      this.print('전멸...', 'danger');
+      this.print('유닛 전멸... 연금술사가 부상을 입었다!', 'danger');
     }
     this.printBlank();
 
@@ -1125,6 +1544,11 @@ class App {
         }
         if (results.expGained > 0) {
           this.print(`전투 경험치: +${Math.floor(results.expGained)}`, 'success');
+        }
+        if (results.levelUps && results.levelUps.length > 0) {
+          for (const lu of results.levelUps) {
+            this.print(`  ★ ${lu.name} 레벨 업! → Lv.${lu.newLevel}`, 'success');
+          }
         }
 
         // Boss milestone check
@@ -1151,6 +1575,18 @@ class App {
             this.print(`  ★ ${r}`, 'success');
           }
         }
+      }
+    }
+
+    // Show player injury on loss
+    if (results && results.playerInjury) {
+      this.printBlank();
+      const p = this.engine.state.player;
+      this.print(`연금술사 부상: HP -${results.playerInjury} (잔여 HP: ${p.hp}/${p.maxHp})`, 'error');
+      if (p.hp <= 0) {
+        p.hp = 0;
+        p.recoveryDays = 3;
+        this.print('심각한 부상! 3일간 탐사 불가.', 'error');
       }
     }
 
@@ -1200,7 +1636,7 @@ class App {
     this.currentScreen = 'crafting';
     this.clearOutput();
     this.printSeparator();
-    this.print('【 공방 — 조합/가공 】', 'location');
+    this.print('【 공방 — 가공/연구 】', 'location');
     this.printBlank();
     this.print('작업대 위에 도구들이 정리되어 있다.', 'description');
 
@@ -1428,6 +1864,18 @@ class App {
     if (result.contradictions !== undefined) {
       this.print(`  모순 수: ${result.contradictions}`, 'dim');
     }
+
+    // Special: 압축기 제작 시 자동 설비 설치
+    if (result.result.id === 'ITEM_COMPRESSOR' && !this.engine.state.equipment.compressor) {
+      this.engine.removeMaterial('ITEM_COMPRESSOR', 1);
+      this.engine.state.equipment.compressor = true;
+      this.engine.state.milestones.compressorBuilt = true;
+      this.printBlank();
+      this.print('★ 압축기가 공방에 설치되었다!', 'success');
+      this.print('  새로운 가공 경로 개방: 압축 (위 주입 + 동 해방)', 'lore');
+      this.print('  주의: 이제부터 월간 유지비가 발생합니다.', 'error');
+    }
+
     this.printBlank();
     this.setActions([{key:'0', label:'돌아가기'}]);
     this.updateStatus();
@@ -1438,11 +1886,15 @@ class App {
   }
 
   showRecipeList() {
+    this.currentScreen = 'recipe_list';
+    this.clearOutput();
+    this.printSeparator();
+    this.print('【 레시피 목록 】', 'location');
     this.printBlank();
+
     const recipes = this.crafting.getKnownRecipes();
     this._recipeList = recipes;
 
-    this.print('── 알려진 레시피 ──', 'lore');
     if (recipes.length === 0) {
       this.print('  아직 발견한 레시피가 없습니다.', 'dim');
     } else {
@@ -1458,7 +1910,44 @@ class App {
       });
     }
     this.printBlank();
+    this.printOption('0', '  0. 돌아가기');
+    this.printBlank();
     this.setActions([{key:'0', label:'돌아가기'}]);
+  }
+
+  handleRecipeList(cmd) {
+    if (cmd === '0') { this.showCrafting(); return; }
+    const idx = parseInt(cmd);
+    if (isNaN(idx) || idx < 1 || !this._recipeList || idx > this._recipeList.length) {
+      this.print('올바른 번호를 입력하세요.', 'error');
+      return;
+    }
+    const recipe = this._recipeList[idx - 1];
+    const result = this.crafting.craftRecipe(recipe.id);
+    this.printBlank();
+    if (!result.success) {
+      this.print(result.reason, 'error');
+      return;
+    }
+    this.print(`제작 완료: ${result.result.name}`, 'success');
+    if (result.result.effect) {
+      this.print(`  효과: ${result.result.effect}`, 'dim');
+    }
+
+    // 압축기 자동 설치
+    if (result.result.id === 'ITEM_COMPRESSOR' && !this.engine.state.equipment.compressor) {
+      this.engine.removeMaterial('ITEM_COMPRESSOR', 1);
+      this.engine.state.equipment.compressor = true;
+      this.engine.state.milestones.compressorBuilt = true;
+      this.printBlank();
+      this.print('★ 압축기가 공방에 설치되었다!', 'success');
+      this.print('  새로운 가공 경로 개방: 압축 (위 주입 + 동 해방)', 'lore');
+      this.print('  주의: 이제부터 월간 유지비가 발생합니다.', 'error');
+    }
+
+    this.printBlank();
+    this.updateStatus();
+    this.showRecipeList();
   }
 
   // ============================================================
@@ -1482,7 +1971,7 @@ class App {
         const inParty = this.engine.state.party.includes(u.instanceId) ? ' [파티]' : '';
         const facilityText = u.assignedFacility ? ` [${this.economy.getFacilityName(u.assignedFacility)}]` : '';
         const koText = u.isKnockedOut ? ' [기절]' : '';
-        this.print(
+        this.printOption(`${i + 1}`,
           `  ${i + 1}. ${u.name} Lv.${u.level} | 인:${u.sigilName} | HP:${u.hp}/${u.maxHp} | ` +
           `호감:${affStage.name}(${u.affection})${inParty}${facilityText}${koText}`,
           'unit'
@@ -1546,45 +2035,65 @@ class App {
     this.print(`  경험치 — 전투:${u.exp.combat} 신체:${u.exp.body} 성격:${u.exp.personality} 성인:${u.exp.adult}`, 'dim');
 
     // Equipment
+    const slotNames = { weapon: '무기', armor: '방어구', accessory: '장신구' };
     const eqNames = [];
     for (const [slot, itemId] of Object.entries(u.equipment)) {
       if (itemId) {
         const mat = this.engine.data.materials.find(m => m.id === itemId);
-        eqNames.push(`${slot}: ${mat ? mat.name : itemId}`);
+        eqNames.push(`${slotNames[slot] || slot}: ${mat ? mat.name : itemId}`);
       }
     }
     if (eqNames.length > 0) {
       this.print(`  장비: ${eqNames.join(' | ')}`, 'dim');
     }
 
+    if (u.isKnockedOut) {
+      this.print(`  ★ 기절 상태 (회복까지 ${u.recoveryDays}일)`, 'error');
+    }
+
     const inParty = this.engine.state.party.includes(u.instanceId);
     this.printBlank();
-    this.printOption('1', '  1. 훈련 (전투 경험치)');
-    this.printOption('2', '  2. 교류 (호감도)');
-    this.printOption('3', '  3. 조교');
-    this.printOption('4', '  4. 장비 변경');
-    this.printOption('5', `  5. 파티 편성 (현재: ${inParty ? '편성됨' : '미편성'})`);
-    this.printOption('6', '  6. 납품 (영혼력 획득)');
-    this.printOption('7', '  7. 합체 (유닛 합성)');
-    this.printOption('0', '  0. 돌아가기');
-    this.printBlank();
-    this.setActions([{key:'1',label:'훈련'},{key:'2',label:'교류'},{key:'3',label:'조교'},{key:'5',label:'파티'},{key:'6',label:'납품'},{key:'7',label:'합체'},{key:'0',label:'돌아가기'}]);
+
+    if (u.isKnockedOut) {
+      this.printOption('1', '  1. 치료 (회복 아이템 사용)');
+      this.printOption('2', '  2. 납품 (영혼력 획득)');
+      this.printOption('0', '  0. 돌아가기');
+      this.printBlank();
+      this.setActions([{key:'1',label:'치료'},{key:'2',label:'납품'},{key:'0',label:'돌아가기'}]);
+    } else {
+      this.printOption('1', '  1. 장비 변경');
+      this.printOption('2', `  2. 파티 편성 (현재: ${inParty ? '편성됨' : '미편성'})`);
+      this.printOption('3', '  3. 납품 (영혼력 획득)');
+      this.printOption('4', '  4. 합체 (유닛 합성)');
+      this.printOption('5', '  5. 치료 (회복 아이템 사용)');
+      this.printOption('0', '  0. 돌아가기');
+      this.printBlank();
+      this.setActions([{key:'1',label:'장비'},{key:'2',label:'파티'},{key:'3',label:'납품'},{key:'4',label:'합체'},{key:'5',label:'치료'},{key:'0',label:'돌아가기'}]);
+    }
     this.updateStatus();
   }
 
   handleUnitDetail(cmd) {
-    switch (cmd) {
-      case '1': this.doTrain();            break;
-      case '2': this.doSocialize();        break;
-      case '3': this.doTrainAdult();       break;
-      case '4': this.doEquipChange();      break;
-      case '5': this.doPartyToggle();      break;
-      case '6': this.doDeliver();          break;
-      case '7': this.showFusionSelectA();  break;
-      case '0': this.showUnitManagement(); break;
-      default:
-        this.print('0~7 사이의 번호를 입력하세요.', 'error');
-        break;
+    const u = this.engine.getUnitInstance(this._selectedUnitId);
+    if (u && u.isKnockedOut) {
+      // 기절 시 메뉴
+      switch (cmd) {
+        case '1': this.doHealUnit();         break;
+        case '2': this.doDeliver();          break;
+        case '0': this.showUnitManagement(); break;
+        default: this.print('올바른 번호를 입력하세요.', 'error'); break;
+      }
+    } else {
+      // 정상 메뉴 (훈련/교류/조교는 조교소로 이동됨)
+      switch (cmd) {
+        case '1': this.doEquipChange();      break;
+        case '2': this.doPartyToggle();      break;
+        case '3': this.doDeliver();          break;
+        case '4': this.showFusionSelectA();  break;
+        case '5': this.doHealUnit();         break;
+        case '0': this.showUnitManagement(); break;
+        default: this.print('올바른 번호를 입력하세요.', 'error'); break;
+      }
     }
   }
 
@@ -1618,9 +2127,88 @@ class App {
     if (result.unlocked) {
       this.print(`  새로운 특성 해금: ${result.unlocked.traitName}!`, 'lore');
     }
+    if (result.leveled) {
+      this.print(`  ★ 레벨 업! → Lv.${result.leveled.newLevel}`, 'success');
+    }
     this.printBlank();
     this.updateStatus();
     this.showUnitDetail();
+  }
+
+  doHealUnit() {
+    const u = this.engine.getUnitInstance(this._selectedUnitId);
+    if (!u) return;
+
+    // Find healing items (제작품만 — 원재료 직접 사용 불가)
+    const healItems = [];
+    const inv = this.engine.state.inventory;
+    for (const [matId, qty] of Object.entries(inv)) {
+      if (qty <= 0) continue;
+      if (matId.startsWith('MAT_')) continue; // 원재료 제외
+      const mat = this.engine.data.materials.find(m => m.id === matId);
+      if (!mat) continue;
+      const isHeal = (mat.effect && mat.effect.type === 'heal') ||
+        (mat.category === 'consumable_potion') || (mat.category === 'consumable_food');
+      if (isHeal) {
+        healItems.push({ id: matId, name: mat.name, qty, effect: mat.effect || { type: 'heal', value: 20, desc: 'HP 회복' } });
+      }
+    }
+
+    if (healItems.length === 0) {
+      this.print('회복 아이템이 없습니다. (물약이나 스프를 만들어보세요)', 'error');
+      return;
+    }
+
+    this.printBlank();
+    this.print('── 치료: 아이템 선택 ──', 'system');
+
+    if (u.isKnockedOut) {
+      this.print(`  ${u.name} — 기절 (회복까지 ${u.recoveryDays}일)`, 'error');
+    } else {
+      this.print(`  ${u.name} — HP: ${u.hp}/${u.maxHp}`, 'unit');
+    }
+    this.printBlank();
+
+    healItems.forEach((item, i) => {
+      this.printOption(`${i + 1}`, `  ${i + 1}. ${item.name} ×${item.qty} — ${item.effect.desc}`);
+    });
+    this.printOption('0', '  0. 취소');
+    this.setActions([{key:'0', label:'취소'}]);
+
+    const self = this;
+    const origHandler = this.handleUnitDetail.bind(this);
+    this.handleUnitDetail = function(c) {
+      self.handleUnitDetail = origHandler;
+      if (c === '0') { self.showUnitDetail(); return; }
+
+      const idx = parseInt(c);
+      if (isNaN(idx) || idx < 1 || idx > healItems.length) {
+        self.print('올바른 번호를 입력하세요.', 'error');
+        self.showUnitDetail();
+        return;
+      }
+
+      const selected = healItems[idx - 1];
+      self.engine.removeMaterial(selected.id, 1);
+
+      if (u.isKnockedOut) {
+        // 기절 해제 + HP 부분 회복
+        u.isKnockedOut = false;
+        u.recoveryDays = 0;
+        u.hp = Math.min(u.maxHp, Math.floor(u.maxHp * 0.3) + (selected.effect.value || 20));
+        self.print(`${selected.name}을(를) 사용! ${u.name}의 기절이 풀렸다! (HP: ${u.hp}/${u.maxHp})`, 'success');
+      } else {
+        // HP 회복
+        const healAmt = selected.effect.value || 20;
+        const before = u.hp;
+        u.hp = Math.min(u.maxHp, u.hp + healAmt);
+        self.print(`${selected.name}을(를) 사용! ${u.name}의 HP ${before} → ${u.hp} (+${u.hp - before})`, 'success');
+      }
+
+      self.printBlank();
+      self.updateStatus();
+      self.showUnitDetail();
+    };
   }
 
   doTrainAdult() {
@@ -1671,7 +2259,7 @@ class App {
     equipItems.forEach((item, i) => {
       const slotName = item.category === 'equipment_weapon' ? '무기' :
                         item.category === 'equipment_armor' ? '방어구' : '장신구';
-      const effectDesc = item.effect ? item.effect.desc : '';
+      const effectDesc = item.effect ? (typeof item.effect === 'string' ? item.effect : (item.effect.desc || '')) : '';
       this.printOption(`${i + 1}`, `  ${i + 1}. ${item.name} [${slotName}] ${effectDesc}`);
     });
     this.printOption('0', '  0. 취소');
@@ -1740,7 +2328,11 @@ class App {
     const soulValue = this.engine.calcSoulPowerValue(u);
     this.printBlank();
     this.print(`${u.name}을(를) 납품하면 영혼력 ${soulValue}을(를) 획득합니다.`, 'system');
-    this.print('정말 납품하시겠습니까? (y/n)', 'important');
+    this.print('정말 납품하시겠습니까?', 'important');
+    this.printBlank();
+    this.printOption('y', '  y. 납품');
+    this.printOption('n', '  n. 취소');
+    this.setActions([{key:'y', label:'납품 실행'}, {key:'n', label:'취소'}]);
 
     const self = this;
     const origHandler = this.handleUnitDetail.bind(this);
@@ -1824,8 +2416,12 @@ class App {
     this.print(`  → 예상 유닛: ${preview.resultUnit}`, 'lore');
     this.print(`  → 예상 레벨: ${preview.resultLevel}`, 'lore');
     this.printBlank();
-    this.print('합체를 실행하시겠습니까? 원본 유닛은 사라집니다. (y/n)', 'important');
+    this.print('합체를 실행하시겠습니까? 원본 유닛은 사라집니다.', 'important');
     this.printBlank();
+    this.printOption('y', '  y. 실행');
+    this.printOption('n', '  n. 취소');
+    this.printBlank();
+    this.setActions([{key:'y', label:'합체 실행'}, {key:'n', label:'취소'}]);
   }
 
   handleFusionSelectB(_cmd) {
@@ -1948,11 +2544,16 @@ class App {
     }
     this.printBlank();
 
-    this.printOption('1', '  1. 업그레이드 (건설)');
+    const actions = [];
+    if (fac.upgradeCost) {
+      this.printOption('1', '  1. 업그레이드 (건설)');
+      actions.push({key:'1', label:'업그레이드'});
+    }
     this.printOption('2', '  2. 유닛 배치');
     this.printOption('3', '  3. 유닛 해제');
     this.printOption('0', '  0. 돌아가기');
     this.printBlank();
+    this.setActions([...actions, {key:'2',label:'배치'},{key:'3',label:'해제'},{key:'0',label:'돌아가기'}]);
   }
 
   handleFacilityDetail(cmd) {
@@ -2085,10 +2686,16 @@ class App {
         const price = ud.level * 15;
         const canBuy = this.engine.state.soulPower >= price;
         this._compendiumList.push(unitId);
-        this.print(
-          `  ${i + 1}. ${ud.name} Lv.${ud.level} | 인:${ud.sigilName} | 가격: ${price} 영혼력 ${canBuy ? '' : '[부족]'}`,
-          canBuy ? 'menu' : 'dim'
-        );
+        if (canBuy) {
+          this.printOption(`${i + 1}`,
+            `  ${i + 1}. ${ud.name} Lv.${ud.level} | 인:${ud.sigilName} | 가격: ${price} 영혼력`
+          );
+        } else {
+          this.print(
+            `  ${i + 1}. ${ud.name} Lv.${ud.level} | 인:${ud.sigilName} | 가격: ${price} 영혼력 [부족]`,
+            'dim'
+          );
+        }
       }
     });
 
@@ -2147,9 +2754,15 @@ class App {
       const groups = {};
       for (const matId of matIds) {
         const mat = this.engine.data.materials.find(m => m.id === matId);
-        const source = (mat && mat.source) ? mat.source : '기본 재료';
+        let source = '기타';
+        if (mat && mat.source) source = mat.source;
+        else if (matId.startsWith('MAT_')) source = '기본 재료';
+        else if (matId.startsWith('ITEM_')) source = '제작품';
+        else if (matId.startsWith('CRAFT_')) source = '조합품';
+        else if (matId.startsWith('PROC_')) source = '가공품';
         if (!groups[source]) groups[source] = [];
-        groups[source].push({ id: matId, name: mat ? mat.name : matId, qty: inv[matId], mat });
+        const displayName = (mat && mat.name) ? mat.name : matId;
+        groups[source].push({ id: matId, name: displayName, qty: inv[matId], mat });
       }
 
       for (const [source, items] of Object.entries(groups)) {
@@ -2228,6 +2841,18 @@ class App {
       }
 
       this.print('시설 생산이 완료되었다.', 'system');
+
+      // 가공소 자동 가공 결과
+      const workshopResults = this.engine.state._workshopResults;
+      if (workshopResults && workshopResults.length > 0) {
+        this.print(`가공소 자동 가공 (${workshopResults.length}건):`, 'success');
+        for (const r of workshopResults) {
+          const equipName = {furnace:'가마', crusher:'분쇄', compressor:'압축'}[r.equipment] || r.equipment;
+          this.print(`  ${r.from} →[${equipName}]→ ${r.to}`, 'dim');
+        }
+        this.engine.state._workshopResults = null;
+      }
+
       this.print(`이번 달 활성 인: ${monthReport.activeSignals.join(', ')}`, 'lore');
       this.printBlank();
 
@@ -2248,6 +2873,334 @@ class App {
   handleAdvanceDay(_cmd) {
     this.showTownMenu();
   }
+
+  // ============================================================
+  //  SCREEN: Training Facility (조교소)
+  // ============================================================
+  showTrainingFacility() {
+    this.currentScreen = 'training_select';
+    this.clearOutput();
+    this.printSeparator();
+    this.print('【 조교소 】', 'location');
+    this.printBlank();
+    this.print('유닛을 선택하여 조교를 시작합니다. (스태미나 3 소모)', 'description');
+    this.printBlank();
+
+    const units = this.engine.state.ownedUnits.filter(u => !u.isKnockedOut && !u.assignedFacility);
+    this._trainingUnitList = units;
+
+    if (units.length === 0) {
+      this.print('  조교 가능한 유닛이 없습니다.', 'dim');
+    } else {
+      units.forEach((u, i) => {
+        const traitName = this.training.getAdultTraitName(u);
+        const gs = u.globalState;
+        this.printOption(`${i + 1}`,
+          `  ${i + 1}. ${u.name} Lv.${u.level} | 인:${u.sigilName} | 성인특성: ${traitName} | 음란:${gs.lewdness || 0} 복종:${gs.submission || 0}`,
+          'unit'
+        );
+      });
+    }
+    this.printBlank();
+    this.printOption('0', '  0. 돌아가기');
+    this.setActions([{key:'0', label:'돌아가기'}]);
+    this.updateStatus();
+  }
+
+  handleTrainingSelect(cmd) {
+    if (cmd === '0') { this.showTownMenu(); return; }
+    const idx = parseInt(cmd);
+    if (isNaN(idx) || idx < 1 || idx > this._trainingUnitList.length) {
+      this.print('올바른 번호를 입력하세요.', 'error');
+      return;
+    }
+
+    const unit = this._trainingUnitList[idx - 1];
+    const check = this.training.canTrain(unit);
+    if (!check.ok) {
+      this.print(check.reason, 'error');
+      return;
+    }
+
+    this._trainingUnit = unit;
+    this.showTrainingMenu();
+  }
+
+  showTrainingMenu() {
+    this.currentScreen = 'training_menu';
+    const unit = this._trainingUnit;
+    this.clearOutput();
+    this.printSeparator();
+    this.print(`【 조교소: ${unit.name} 】`, 'location');
+    this.printBlank();
+
+    const affStage = this.unit.getAffectionStage(unit.affection);
+    this.print(`  Lv.${unit.level} | 인:${unit.sigilName} | 호감:${affStage.name}(${unit.affection})`, 'unit');
+    this.print(`  경험치 — 전투:${unit.exp.combat} 신체:${unit.exp.body} 성격:${unit.exp.personality} 성인:${unit.exp.adult}`, 'dim');
+    this.printBlank();
+
+    this.printOption('1', '  1. 훈련     — 전투 경험치 (스태미나 2)');
+    this.printOption('2', '  2. 교류     — 호감도 상승 (스태미나 1)');
+    this.printOption('3', '  3. 조교     — 성인 조교 (스태미나 3)');
+    this.printOption('0', '  0. 돌아가기');
+    this.printBlank();
+    this.setActions([{key:'1',label:'훈련'},{key:'2',label:'교류'},{key:'3',label:'조교'},{key:'0',label:'돌아가기'}]);
+    this.updateStatus();
+  }
+
+  handleTrainingMenu(cmd) {
+    switch (cmd) {
+      case '1': {
+        const result = this.unit.trainUnit(this._trainingUnit.instanceId);
+        this.printBlank();
+        if (!result.success) { this.print(result.reason, 'error'); return; }
+        this.print(result.message, 'success');
+        if (result.unlocked) this.print(`  새로운 특성 해금: ${result.unlocked.traitName}!`, 'lore');
+        if (result.leveled) this.print(`  ★ 레벨 업! → Lv.${result.leveled.newLevel}`, 'success');
+        this.printBlank();
+        this.updateStatus();
+        this.showTrainingMenu();
+        break;
+      }
+      case '2': {
+        const result = this.unit.socialize(this._trainingUnit.instanceId);
+        this.printBlank();
+        if (!result.success) { this.print(result.reason, 'error'); return; }
+        this.print(result.message, 'success');
+        if (result.unlocked) this.print(`  새로운 특성 해금: ${result.unlocked.traitName}!`, 'lore');
+        if (result.leveled) this.print(`  ★ 레벨 업! → Lv.${result.leveled.newLevel}`, 'success');
+        this.printBlank();
+        this.updateStatus();
+        this.showTrainingMenu();
+        break;
+      }
+      case '3':
+        this.showTrainingParts();
+        break;
+      case '0':
+        this.showTrainingFacility();
+        break;
+      default:
+        this.print('올바른 번호를 입력하세요.', 'error');
+        break;
+    }
+  }
+
+  // ERA-style single screen: stats + body parts + actions all visible
+  showTrainingScreen() {
+    this.currentScreen = 'training_action';
+    const unit = this._trainingUnit;
+    this.clearOutput();
+
+    const gs = unit.globalState;
+    const sen = unit.sensitivity;
+    const adultTrait = this.training.getAdultTrait(unit);
+    const isHidden = adultTrait === 'AT_ACCUMULATIVE';
+    const parts = this.training.getAvailableParts(unit);
+
+    // Helper: bar display
+    const bar = (val, max = 100, len = 20) => {
+      const filled = Math.min(len, Math.floor((val / max) * len));
+      return '[' + '█'.repeat(filled) + '·'.repeat(len - filled) + ']';
+    };
+
+    // ── Header ──
+    this.print(`【 조교: ${unit.name} 】 Lv.${unit.level} ${unit.sigilName}`, 'location');
+    this.print(`  성인 특성: ${this.training.getAdultTraitName(unit)}`, 'lore');
+    this.printSeparator();
+
+    // ── Body Part Sensitivities ──
+    this.print('  부위 감도', 'system');
+    for (const p of parts) {
+      const s = isHidden ? '???' : (sen[p.id] || 0);
+      const sBar = isHidden ? '[????????????????????]' : bar(sen[p.id] || 0, 100);
+      const lockTag = p.locked ? ' [잠금]' : '';
+      const milestone = p.locked ? '' : ` 【${p.milestone}】`;
+      this.print(`  ${p.name.padEnd(4)} ${String(s).padStart(3)} ${sBar}${milestone}${lockTag}`, p.locked ? 'dim' : 'unit');
+    }
+    this.printBlank();
+
+    // ── Global States ──
+    this.print('  상태 수치', 'system');
+    this.print(`  연모 ${String(gs.love||0).padStart(3)} ${bar(gs.love||0)}  복종 ${String(gs.submission||0).padStart(3)} ${bar(gs.submission||0)}`, 'unit');
+    this.print(`  음란 ${String(gs.lewdness||0).padStart(3)} ${bar(gs.lewdness||0)}  공포 ${String(gs.fear||0).padStart(3)} ${bar(gs.fear||0)}`, gs.lewdness > 70 ? 'error' : 'unit');
+    this.print(`  반감 ${String(gs.resentment||0).padStart(3)} ${bar(gs.resentment||0)}`, gs.resentment > 50 ? 'error' : 'unit');
+    this.printBlank();
+
+    // ── 세분화 경험치 ──
+    const de = unit.detailedExp || {};
+    this.print('  경험치', 'system');
+    this.print(
+      `  애무 ${String(de.caress||0).padStart(4)} | 자극 ${String(de.stimulate||0).padStart(4)} | 핥기 ${String(de.lick||0).padStart(4)} | 키스 ${String(de.kiss||0).padStart(4)}`,
+      'dim'
+    );
+    this.print(
+      `  삽입 ${String(de.insert||0).padStart(4)} | 도구 ${String(de.toy||0).padStart(4)} | 조련 ${String(de.discipline||0).padStart(4)} | 봉사 ${String(de.service||0).padStart(4)}`,
+      'dim'
+    );
+    this.print(
+      `  절정 ${String(de.orgasm||0).padStart(4)} | 노출 ${String(de.exposure||0).padStart(4)} | 총회 ${String(de.totalSessions||0).padStart(4)}`,
+      'dim'
+    );
+    this.printBlank();
+
+    // ── Player / Stamina ──
+    this.print(`  스태미나: ${this.engine.state.stamina}/${this.engine.state.maxStamina}`, 'system');
+    this.printSeparator();
+
+    // ── Actions: [부위코드][행위번호] 형태로 입력 ──
+    // 부위: m=입, c=가슴, v=V, k=C, a=애널, s=피부
+    const partKeys = { mouth:'m', chest:'c', v:'v', c:'k', anal:'a', skin:'s' };
+    const partKeyNames = { m:'입', c:'가슴', v:'V', k:'C', a:'애널', s:'피부' };
+
+    this.print('  행위 (부위키+번호 입력. 예: s1 = 피부 애무)', 'system');
+    this.print(`  부위키: ${Object.entries(partKeyNames).map(([k,n]) => `${k}=${n}`).join(' | ')}`, 'dim');
+    this.printBlank();
+
+    // Show actions with unlock status (use first unlocked part for reference)
+    const refPart = parts.find(p => !p.locked)?.id || 'skin';
+    const actions = this.training.getAvailableActions(unit, refPart);
+    this._trainingActions = actions;
+
+    // Display actions in grid
+    const cols = 4;
+    let row = '  ';
+    let actionBtns = [];
+    actions.forEach((a, i) => {
+      const num = i + 1;
+      if (a.locked) {
+        row += `${num}.${a.name}[잠금]`.padEnd(18);
+      } else {
+        row += `${num}.${a.name}(${'★'.repeat(a.intensity)})`.padEnd(18);
+        // Add quick buttons for skin (most common)
+        actionBtns.push({ key: `s${num}`, label: `피부/${a.name}` });
+      }
+      if ((i + 1) % cols === 0) { this.print(row, 'dim'); row = '  '; }
+    });
+    if (row.trim()) this.print(row, 'dim');
+
+    this.printBlank();
+    this.printOption('0', '  0. 돌아가기');
+    actionBtns.push({key:'0', label:'돌아가기'});
+    this.setActions(actionBtns);
+    this.updateStatus();
+  }
+
+  // Unified handler: parse [partKey][actionNum] commands
+  handleTrainingAction(cmd) {
+    if (cmd === '0') { this.showTrainingMenu(); return; }
+
+    const unit = this._trainingUnit;
+    const partKeyMap = { m:'mouth', c:'chest', v:'v', k:'c', a:'anal', s:'skin' };
+
+    // Parse command: first char = part key, rest = action number
+    let partId, actionIdx;
+    if (cmd.length >= 2 && partKeyMap[cmd[0]]) {
+      partId = partKeyMap[cmd[0]];
+      actionIdx = parseInt(cmd.substring(1));
+    } else {
+      this.print('입력 형식: [부위키][행위번호] (예: s1=피부애무, v3=V자극)', 'error');
+      this.print('부위키: m=입, c=가슴, v=V, k=C, a=애널, s=피부', 'dim');
+      return;
+    }
+
+    // Validate part
+    const parts = this.training.getAvailableParts(unit);
+    const part = parts.find(p => p.id === partId);
+    if (!part) { this.print('존재하지 않는 부위입니다.', 'error'); return; }
+    if (part.locked) { this.print(`${part.name}은(는) 잠겨있습니다.`, 'error'); return; }
+
+    // Validate action
+    const actions = this.training.getAvailableActions(unit, partId);
+    if (isNaN(actionIdx) || actionIdx < 1 || actionIdx > actions.length) {
+      this.print('올바른 행위 번호를 입력하세요.', 'error');
+      return;
+    }
+    const action = actions[actionIdx - 1];
+    if (action.locked) { this.print(`잠금: ${action.lockReason}`, 'error'); return; }
+
+    const hasTool = this.training.hasTrainingTool();
+    if (action.requiresTool && !hasTool) {
+      this.print('조교 도구가 필요합니다.', 'error');
+      return;
+    }
+
+    if (!this.engine.useStamina(3)) {
+      this.print('스태미나가 부족합니다.', 'error');
+      return;
+    }
+
+    // Execute
+    const result = this.training.execute(unit, partId, action.id, hasTool);
+
+    // Show result briefly, then redraw full screen
+    this.clearOutput();
+
+    // Result message at top
+    this.print(`▸ ${unit.name}의 ${this.training.PART_NAMES[partId]}을(를) ${action.name}했다.`, 'unit');
+    if (result.senGain > 0) {
+      const mulText = result.matrixMul !== 1.0 ? ` (×${result.matrixMul.toFixed(1)})` : '';
+      this.print(`  감도 +${result.senGain}${mulText} | 숙련 +${result.partExpGain}【${result.partMilestone}】`, 'success');
+    }
+    const changes = [];
+    if (result.lewdGain) changes.push(`음란+${result.lewdGain}`);
+    if (result.submissionGain > 0) changes.push(`복종+${result.submissionGain}`);
+    if (result.submissionGain < 0) changes.push(`복종${result.submissionGain}`);
+    if (result.fearGain) changes.push(`공포+${result.fearGain}`);
+    if (result.resentGain) changes.push(`반감+${result.resentGain}`);
+    if (result.loveGain) changes.push(`연모+${result.loveGain}`);
+    if (changes.length) this.print(`  ${changes.join(' | ')}`, 'system');
+    for (const text of result.extraText) this.print(`  ▸ ${text}`, 'lore');
+    if (result.leveled) this.print(`  ★ 레벨 업! → Lv.${result.leveled.newLevel}`, 'success');
+    this.printSeparator();
+
+    // Redraw full status below
+    const gs = unit.globalState;
+    const sen = unit.sensitivity;
+    const isHidden = this.training.getAdultTrait(unit) === 'AT_ACCUMULATIVE';
+    const allParts = this.training.getAvailableParts(unit);
+    const bar = (val, max = 100, len = 20) => {
+      const filled = Math.min(len, Math.floor((val / max) * len));
+      return '[' + '█'.repeat(filled) + '·'.repeat(len - filled) + ']';
+    };
+
+    this.print('  부위 감도', 'system');
+    for (const p of allParts) {
+      const s = isHidden ? '???' : (sen[p.id] || 0);
+      const sBar = isHidden ? '[????????????????????]' : bar(sen[p.id] || 0, 100);
+      const lockTag = p.locked ? ' [잠금]' : '';
+      const milestone = p.locked ? '' : ` 【${p.milestone}】`;
+      this.print(`  ${p.name.padEnd(4)} ${String(s).padStart(3)} ${sBar}${milestone}${lockTag}`, p.locked ? 'dim' : 'unit');
+    }
+    this.printBlank();
+    this.print(`  연모 ${String(gs.love||0).padStart(3)} ${bar(gs.love||0)}  복종 ${String(gs.submission||0).padStart(3)} ${bar(gs.submission||0)}`, 'unit');
+    this.print(`  음란 ${String(gs.lewdness||0).padStart(3)} ${bar(gs.lewdness||0)}  공포 ${String(gs.fear||0).padStart(3)} ${bar(gs.fear||0)}`, 'unit');
+    this.print(`  반감 ${String(gs.resentment||0).padStart(3)} ${bar(gs.resentment||0)}  스태 ${this.engine.state.stamina}/${this.engine.state.maxStamina}`, 'unit');
+    const de2 = unit.detailedExp || {};
+    this.print(`  애무${String(de2.caress||0).padStart(3)} 자극${String(de2.stimulate||0).padStart(3)} 핥기${String(de2.lick||0).padStart(3)} 키스${String(de2.kiss||0).padStart(3)} 삽입${String(de2.insert||0).padStart(3)} 도구${String(de2.toy||0).padStart(3)} 절정${String(de2.orgasm||0).padStart(3)} 봉사${String(de2.service||0).padStart(3)}`, 'dim');
+    this.printSeparator();
+
+    const partKeyNames = { m:'입', c:'가슴', v:'V', k:'C', a:'애널', s:'피부' };
+    this.print(`  부위키: ${Object.entries(partKeyNames).map(([k,n]) => `${k}=${n}`).join(' | ')}  | 0=돌아가기`, 'dim');
+    const actionsRef = this.training.getAvailableActions(unit, partId);
+    this._trainingActions = actionsRef;
+    let row = '  ';
+    actionsRef.forEach((a, i) => {
+      const num = i + 1;
+      row += (a.locked ? `${num}.${a.name}[X]` : `${num}.${a.name}`).padEnd(16);
+      if ((i + 1) % 5 === 0) { this.print(row, 'dim'); row = '  '; }
+    });
+    if (row.trim()) this.print(row, 'dim');
+
+    this.setActions([{key:'0', label:'돌아가기'}]);
+    this.updateStatus();
+  }
+
+  // Keep old method names as redirects
+  showTrainingParts() { this.showTrainingScreen(); }
+  handleTrainingPart(cmd) { this.handleTrainingAction(cmd); }
+  PARTS_IDX(parts, p) { return parts.indexOf(p) + 1; }
+
 
   // ============================================================
   //  SCREEN: End Game

@@ -139,7 +139,9 @@ class CraftingSystem {
       if (newElement === '동') newElement = null;
     }
 
-    const resultId = `PROC_${mat.id}_${equipmentId}`;
+    // ID format matches recipe expectations: MAT_XXX_FIRED / MAT_XXX_CRUSHED / MAT_XXX_COMPRESSED
+    const suffixMap = { furnace: '_FIRED', crusher: '_CRUSHED', compressor: '_COMPRESSED' };
+    const resultId = `${mat.id}${suffixMap[equipmentId] || '_PROC'}`;
     const resultName = this.generateName({ function: newFunction, element: newElement, form: newForm });
 
     // Register as a material if not already exists
@@ -298,7 +300,16 @@ class CraftingSystem {
     const tier = Math.floor((matA.tier + matB.tier) / 2) + (this.countDuplicates(matA.tags, matB.tags) > 0 ? 1 : 0);
     const name = this.generateName(combinedTags);
     const category = this.determineCategory(combinedTags);
-    const id = `CRAFT_${matA.id}_${matB.id}_${Date.now()}`;
+    // Deterministic ID: same inputs always produce same ID (so items stack)
+    const idA = matA.id < matB.id ? matA.id : matB.id;
+    const idB = matA.id < matB.id ? matB.id : matA.id;
+    const id = `CRAFT_${idA}_${idB}`;
+
+    // If already exists in materials, reuse it
+    const existingCraft = this.engine.data.materials.find(m => m.id === id);
+    if (existingCraft) {
+      return existingCraft;
+    }
 
     const item = {
       id,

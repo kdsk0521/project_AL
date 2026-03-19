@@ -18,8 +18,10 @@ function createWindow() {
   mainWindow.setMenuBarVisibility(false);
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
-  // Always open DevTools in alpha
-  mainWindow.webContents.openDevTools({ mode: 'bottom' });
+  // DevTools — F12로 수동 열기 가능
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12') mainWindow.webContents.toggleDevTools();
+  });
 
   mainWindow.on('closed', () => { mainWindow = null; });
 }
