@@ -328,9 +328,163 @@
       font-style: italic;
       font-size: 12px;
     }
+
+    /* ── Training Dashboard (ERA-style) ── */
+    #training-dashboard {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 100;
+      background: #0a0a0a;
+      color: #c8c8c8;
+      font-family: "D2Coding", "Consolas", monospace;
+      font-size: 13px;
+      padding: 12px 20px;
+      overflow-y: auto;
+    }
+    #training-dashboard.active { display: block; }
+
+    .td-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 8px;
+      border-bottom: 1px solid #333;
+      margin-bottom: 8px;
+    }
+    .td-header .td-title { color: #4a9eff; font-weight: bold; font-size: 15px; }
+    .td-header .td-stamina { color: #44cc44; }
+
+    .td-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .td-section {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 6px 8px;
+    }
+    .td-section-title {
+      color: #4a9eff;
+      font-size: 11px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #222;
+      padding-bottom: 2px;
+    }
+
+    .td-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 2px 0;
+      font-size: 12px;
+    }
+    .td-bar-label { min-width: 36px; color: #999; }
+    .td-bar-value { min-width: 32px; text-align: right; color: #ddd; }
+    .td-bar-bg {
+      flex: 1;
+      height: 12px;
+      background: #1a1a2e;
+      border: 1px solid #333;
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+    .td-bar-fill { height: 100%; border-radius: 1px; transition: width 0.3s; }
+    .td-bar-bg .bar-text {
+      position: absolute; top:0; left:0; right:0; bottom:0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: #aaa;
+    }
+
+    .td-state-row {
+      display: flex;
+      gap: 12px;
+      margin: 1px 0;
+      font-size: 12px;
+    }
+    .td-state-item { display: flex; gap: 4px; }
+    .td-state-label { color: #888; }
+    .td-state-val { min-width: 20px; text-align: right; }
+
+    .td-exp-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 2px 8px;
+      font-size: 11px;
+      color: #777;
+    }
+
+    .td-desc {
+      padding: 6px 8px;
+      border: 1px solid #222;
+      border-radius: 4px;
+      background: #0e0e0e;
+      min-height: 30px;
+      margin-bottom: 8px;
+      color: #c084fc;
+      font-size: 12px;
+    }
+
+    .td-actions {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 3px;
+    }
+    .td-action-btn {
+      background: #1a1a2e;
+      border: 1px solid #333;
+      border-radius: 3px;
+      padding: 4px 6px;
+      color: #c8c8c8;
+      font-family: "D2Coding", "Consolas", monospace;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .td-action-btn:hover { color: #ffd700; border-color: #ffd700; }
+    .td-action-btn.locked { color: #555; border-color: #222; cursor: default; }
+    .td-action-btn.locked:hover { color: #555; border-color: #222; }
   </style>
 </head>
 <body>
+
+  <!-- Training Dashboard (ERA-style overlay) -->
+  <div id="training-dashboard">
+    <div class="td-header">
+      <span class="td-title" id="td-unit-name">【 조교 】</span>
+      <span class="td-stamina" id="td-stamina">스태미나: --/--</span>
+      <span style="color:#666;cursor:pointer" id="td-close">[닫기]</span>
+    </div>
+    <div class="td-body">
+      <!-- 좌: 감도 바 -->
+      <div class="td-section">
+        <div class="td-section-title">부위 감도</div>
+        <div id="td-sensitivity-bars"></div>
+      </div>
+      <!-- 우: 상태 + 경험치 -->
+      <div class="td-section">
+        <div class="td-section-title">상태 수치</div>
+        <div id="td-global-state"></div>
+        <div class="td-section-title" style="margin-top:6px">경험치</div>
+        <div class="td-exp-grid" id="td-exp"></div>
+      </div>
+    </div>
+    <!-- 대사/묘사 -->
+    <div class="td-desc" id="td-desc">...</div>
+    <!-- 행위 그리드 -->
+    <div class="td-actions" id="td-actions"></div>
+    <!-- 입력 -->
+    <div style="margin-top:8px; display:flex; align-items:center; gap:6px;">
+      <span style="color:#4a9eff; font-weight:bold">&gt;</span>
+      <input type="text" id="td-input" style="flex:1; background:transparent; border:none; outline:none; color:#e0e0e0; font-family:'D2Coding',monospace; font-size:14px; caret-color:#4a9eff;" placeholder="행위 번호 입력..." autofocus>
+    </div>
+  </div>
 
   <!-- Main Game Area -->
   <div id="main-area">

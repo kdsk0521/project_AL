@@ -162,6 +162,220 @@ class App {
     if (bar) bar.innerHTML = '';
   }
 
+  // 아이템 태그 + tier 요약 표시
+  // 튜토리얼 가이드 체크 (도시 복귀 시마다 호출)
+  _checkTutorialGuide(s) {
+    const t = s.tutorial;
+    if (!t) return;
+
+    // 1단계: 첫 탐사 전 → 탐사 안내
+    if (!t.firstExploration && s.dungeon.maxFloorReached === 0) {
+      this.print('💡 전임자의 메모: "미궁에 들어가면 재료를 캘 수 있다. 1번을 눌러 탐사를 시작해보자."', 'lore');
+      this.printBlank();
+      return;
+    }
+
+    // 2단계: 첫 탐사 후 + 첫 조합 전 → 조합 안내
+    if (!t.firstCrafting && s.dungeon.maxFloorReached >= 1 && Object.keys(s.inventory).length > 2) {
+      if (!t.firstExploration) { t.firstExploration = true; }
+      this.print('💡 전임자의 메모: "가져온 재료로 뭔가 만들어보자. 2번 가공/연구에서 조합할 수 있다."', 'lore');
+      this.print('   "약초와 물을 합치면 회복 물약이 된다. 기초 중의 기초."', 'dim');
+      this.printBlank();
+      return;
+    }
+
+    // 3단계: 조합 경험 후 + 유닛 1체만 → 영입 안내
+    if (!t.firstRecruitment && t.firstCrafting && s.ownedUnits.length <= 1) {
+      this.print('💡 미궁 2층부터는 분기가 나뉜다. 만나는 유닛에게 대화를 시도해보자.', 'lore');
+      this.printBlank();
+      return;
+    }
+
+    // 4단계: 유닛 2체+ + 도시 배치 경험 없음 → 배치 안내
+    if (!t.firstPlacement && s.ownedUnits.length >= 2) {
+      if (!t.firstRecruitment) { t.firstRecruitment = true; }
+      const inParty = s.party.length;
+      if (s.ownedUnits.length > inParty) {
+        this.print('💡 탐사에 안 데려갈 유닛은 도시 시설에 배치할 수 있다. (5번 도시 시설)', 'lore');
+        this.printBlank();
+        return;
+      }
+    }
+
+    // 5단계: 보스 격파 후 + 압축기 미제작 → 압축기 안내
+    if (s.milestones.firstBossDefeated && !s.milestones.compressorBuilt) {
+      if (!t.firstBoss) { t.firstBoss = true; }
+      if (s.inventory['MAT_SPRING'] > 0) {
+        this.print('💡 보스에서 얻은 스프링으로 압축기를 만들 수 있다. 마법강철도 필요하다.', 'lore');
+        this.print('   (철광석→분쇄→철가루 + 마력석 = 마법강철)', 'dim');
+        this.printBlank();
+      }
+      return;
+    }
+
+    // 유지비 경고 (압축기 제작 후 + 첫 경고 안 함)
+    if (s.milestones.compressorBuilt && !t.maintenanceWarned) {
+      t.maintenanceWarned = true;
+      this.print('⚠ 압축기 설치로 월간 유지비가 발생합니다. 영혼력이 부족해지면 유닛을 납품하세요.', 'error');
+      this.printBlank();
+      return;
+    }
+
+    // 납품 유도 (유지비 시작 후 + 영혼력 부족 + 납품 경험 없음)
+    if (s.milestones.compressorBuilt && !t.firstDelivery && s.soulPower < 100) {
+      this.print('💡 영혼력이 부족하다. 유닛을 전서에 납품하면 영혼력을 얻을 수 있다. (3번 유닛 관리 → 납품)', 'lore');
+      this.printBlank();
+      return;
+    }
+  }
+
+  _printTagSummary(item) {
+    if (!item) return;
+    const tags = item.tags || {};
+    const funcs = (tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : [])).filter(Boolean);
+    const elems = (tags.elements || (tags.element ? (Array.isArray(tags.element) ? tags.element : [tags.element]) : [])).filter(Boolean);
+    const forms = (tags.forms || (tags.form ? (Array.isArray(tags.form) ? tags.form : [tags.form]) : [])).filter(Boolean);
+
+    // 태그별 중복 횟수로 표시
+    const countMap = (arr) => {
+      const m = {};
+      arr.forEach(t => { m[t] = (m[t] || 0) + 1; });
+      return Object.entries(m).map(([k, v]) => v > 1 ? `${k}×${v}` : k).join(', ');
+    };
+
+    const parts = [];
+    if (funcs.length) parts.push(`기능[${countMap(funcs)}]`);
+    if (elems.length) parts.push(`원소[${countMap(elems)}]`);
+    if (forms.length) parts.push(`형태[${countMap(forms)}]`);
+
+    const tier = item.tier || 1;
+    if (parts.length) {
+      this.print(`  Tier ${tier} | ${parts.join(' ')}`, 'dim');
+    }
+  }
+
+
+  // 부품 태그 요약 (밀도 기반)
+  // ═══ Training Dashboard Renderer ═══
+
+  _renderTrainingDashboard(unit, resultMsg = null) {
+    const gs = unit.globalState;
+    const sen = unit.sensitivity;
+    const isHidden = this.training.getAdultTrait(unit) === 'AT_ACCUMULATIVE';
+    const parts = this.training.getAvailableParts(unit);
+    const colors = this.engine.colors;
+
+    // Header
+    document.getElementById('td-unit-name').textContent =
+      `【 ${unit.name} 】 Lv.${unit.level} ${unit.sigilName} — ${this.training.getAdultTraitName(unit)}`;
+    document.getElementById('td-stamina').textContent =
+      `스태미나: ${this.engine.state.stamina}/${this.engine.state.maxStamina}`;
+
+    // Sensitivity bars
+    const senEl = document.getElementById('td-sensitivity-bars');
+    senEl.innerHTML = '';
+    for (const p of parts) {
+      const val = isHidden ? 0 : (sen[p.id] || 0);
+      const disp = isHidden ? '???' : val;
+      const pct = Math.min(100, val);
+      const color = val >= 80 ? '#ff69b4' : val >= 50 ? '#ff4444' : val >= 20 ? '#ffaa00' : '#44cc44';
+      senEl.innerHTML += `<div class="td-bar-row">
+        <span class="td-bar-label">${p.name}</span>
+        <span class="td-bar-value">${disp}</span>
+        <div class="td-bar-bg">
+          <div class="td-bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <span style="font-size:10px;color:#888;min-width:50px">【${p.milestone}】</span>
+        ${p.locked ? '<span style="color:#ff4444;font-size:10px">[잠금]</span>' : ''}
+      </div>`;
+    }
+
+    // Global states
+    const gsEl = document.getElementById('td-global-state');
+    const stateItems = [
+      { key: 'love', label: '연모', color: colors.globalState.love },
+      { key: 'submission', label: '복종', color: colors.globalState.submission },
+      { key: 'lewdness', label: '음란', color: colors.globalState.lewdness },
+      { key: 'fear', label: '공포', color: colors.globalState.fear },
+      { key: 'resentment', label: '반감', color: colors.globalState.resentment }
+    ];
+    gsEl.innerHTML = '';
+    for (const s of stateItems) {
+      const val = gs[s.key] || 0;
+      gsEl.innerHTML += `<div class="td-bar-row">
+        <span class="td-bar-label">${s.label}</span>
+        <span class="td-bar-value" style="color:${s.color}">${val}</span>
+        <div class="td-bar-bg">
+          <div class="td-bar-fill" style="width:${Math.min(100,val)}%;background:${s.color}"></div>
+        </div>
+      </div>`;
+    }
+
+    // Experience
+    const de = unit.detailedExp || {};
+    const expEl = document.getElementById('td-exp');
+    const expItems = [
+      ['애무', de.caress||0], ['자극', de.stimulate||0], ['핥기', de.lick||0], ['키스', de.kiss||0],
+      ['삽입', de.insert||0], ['도구', de.toy||0], ['절정', de.orgasm||0], ['봉사', de.service||0],
+      ['조련', de.discipline||0], ['노출', de.exposure||0], ['총회', de.totalSessions||0]
+    ];
+    expEl.innerHTML = expItems.map(([k,v]) => `<span>${k}:${v}</span>`).join('');
+
+    // Description (result message or default)
+    const descEl = document.getElementById('td-desc');
+    descEl.textContent = resultMsg || `${unit.name}이(가) 당신을 바라보고 있다.`;
+
+    // Action buttons
+    const actions = this.training.getAvailableActions(unit);
+    this._trainingActions = actions;
+    const actEl = document.getElementById('td-actions');
+    actEl.innerHTML = '';
+    for (const a of actions) {
+      const btn = document.createElement('button');
+      btn.className = `td-action-btn ${a.locked ? 'locked' : ''}`;
+      btn.textContent = `${a.id}. ${a.name}${a.locked ? ' [X]' : ''}`;
+      if (a.locked) {
+        btn.title = a.lockReason;
+      } else {
+        btn.onclick = () => {
+          const tdInput = document.getElementById('td-input');
+          tdInput.value = '';
+          this.processCommand(`${a.id}`);
+        };
+      }
+      actEl.appendChild(btn);
+    }
+
+    // 돌아가기 버튼
+    const backBtn = document.createElement('button');
+    backBtn.className = 'td-action-btn';
+    backBtn.textContent = '0. 돌아가기';
+    backBtn.style.background = '#2a1a1a';
+    backBtn.onclick = () => this.processCommand('0');
+    actEl.appendChild(backBtn);
+  }
+
+  _closeTrainingDashboard() {
+    document.getElementById('training-dashboard').classList.remove('active');
+    document.getElementById('main-area').style.display = '';
+    this.showTrainingMenu();
+  }
+
+  _partSummary(part) {
+    if (!part.tags || part.tags.length === 0) return '기본';
+    const counts = {};
+    part.tags.forEach(t => { counts[t] = (counts[t]||0)+1; });
+    return Object.entries(counts).map(([k,v]) => v > 1 ? k + '×' + v : k).join(',');
+  }
+  _partTier(part) {
+    if (!part.tags || part.tags.length === 0) return 0;
+    const counts = {};
+    part.tags.forEach(t => { counts[t] = (counts[t]||0)+1; });
+    const total = Object.values(counts).reduce((s,v)=>s+v,0);
+    const unique = Object.keys(counts).length;
+    return Math.floor(total / unique);
+  }
+
   printSeparator() {
     this.print('─'.repeat(60), 'dim');
   }
@@ -271,6 +485,7 @@ class App {
       case 'crafting_process_eq':this.handleCraftingProcessEq(cmd); break;
       case 'crafting_combine':   this.handleCraftingCombine(cmd);   break;
       case 'crafting_combine_b': this.handleCraftingCombineB(cmd);  break;
+      case 'craft_result':      if (this._craftResultHandler) this._craftResultHandler(cmd); else this.showCrafting(); break;
       case 'recipe_list':        this.handleRecipeList(cmd);       break;
       case 'unit_management':    this.handleUnitManagement(cmd);    break;
       case 'unit_detail':        this.handleUnitDetail(cmd);        break;
@@ -597,6 +812,10 @@ class App {
     this.printBlank();
 
     const s = this.engine.state;
+
+    // 튜토리얼 가이드 트리거 (alpha_progression.md)
+    this._checkTutorialGuide(s);
+
     this.print(`${s.year}년 ${s.month}월 ${s.day}일`, 'lore');
     this.print(`스태미나: ${s.stamina}/${s.maxStamina}  |  영혼력: ${s.soulPower}`, 'system');
     this.printBlank();
@@ -1222,6 +1441,7 @@ class App {
     if (result.success) {
       // Recruit!
       const instance = this.dungeon.recruitUnit(enc.unitDef);
+      if (this.engine.state.tutorial) this.engine.state.tutorial.firstRecruitment = true;
       this.print(`${enc.unitDef.name}이(가) 동료가 되었다!`, 'success');
       this.print(`  인: ${instance.sigilName} | Lv.${instance.level} | ${instance.category}`, 'unit');
       this.printBlank();
@@ -1785,22 +2005,17 @@ class App {
 
     this.printBlank();
     this.print('가공 완료!', 'success');
-    this.print(`  ${result.input} → ${result.result.name || result.result.resultName || '가공물'}`, 'lore');
-    if (result.result.tags) {
-      const t = result.result.tags || result.result.resultTags || {};
-      const tagStr = Object.entries(t).filter(([,v]) => v).map(([k,v]) => `${k}:${v}`).join(', ');
-      if (tagStr) this.print(`  태그: ${tagStr}`, 'dim');
-    }
+    this.print(`  ${result.input} → ${result.result.name || '가공물'}`, 'lore');
+    this._printTagSummary(result.result);
     this.printBlank();
     this.printOption('1', '  [공방으로]');
+    this.currentScreen = 'craft_result';
     this.setActions([{key:'1', label:'공방으로'}]);
-    this.currentScreen = 'crafting'; // 공방 핸들러로 전환
     this.updateStatus();
 
     const self = this;
-    const origHandler = this.handleCrafting.bind(this);
-    this.handleCrafting = function(_c) {
-      self.handleCrafting = origHandler;
+    this._craftResultHandler = function(_c) {
+      delete self._craftResultHandler;
       self.showCrafting();
     };
   }
@@ -1903,11 +2118,13 @@ class App {
     }
 
     this.print(`결과: ${result.result.name}`, 'success');
+    if (this.engine.state.tutorial) this.engine.state.tutorial.firstCrafting = true;
+    this._printTagSummary(result.result);
     if (result.result.effect && result.result.effect.desc) {
       this.print(`  효과: ${result.result.effect.desc}`, 'dim');
     }
-    if (result.contradictions !== undefined) {
-      this.print(`  모순 수: ${result.contradictions}`, 'dim');
+    if (result.contradictions !== undefined && result.contradictions > 0) {
+      this.print(`  모순: ${result.contradictions}쌍`, 'dim');
     }
 
     // Special: 압축기 제작 시 자동 설비 설치
@@ -1938,16 +2155,20 @@ class App {
       this.print(`★ ${upgrade.name} 장착! 채집량 ×${1 + (upgrade.tier - 1) * 0.5}`, 'success');
     }
 
+    // 조합 상태 리셋
+    this._combineMatA = null;
+    this._combineMatB = null;
+    this._combineStep = 0;
+
     this.printBlank();
     this.printOption('1', '  [공방으로]');
-    this.currentScreen = 'crafting';
+    this.currentScreen = 'craft_result'; // 전용 화면으로 (crafting_combine_b 탈출)
     this.setActions([{key:'1', label:'공방으로'}]);
     this.updateStatus();
 
     const self = this;
-    const origHandler = this.handleCrafting.bind(this);
-    this.handleCrafting = function(_c) {
-      self.handleCrafting = origHandler;
+    this._craftResultHandler = function(_c) {
+      delete self._craftResultHandler;
       self.showCrafting();
     };
   }
@@ -1997,6 +2218,7 @@ class App {
       return;
     }
     this.print(`제작 완료: ${result.result.name}`, 'success');
+    this._printTagSummary(result.result);
     if (result.result.effect) {
       this.print(`  효과: ${result.result.effect}`, 'dim');
     }
@@ -2417,6 +2639,7 @@ class App {
       self.handleUnitDetail = origHandler;
       if (c.toLowerCase() === 'y') {
         const result = self.unit.deliverUnit(self._selectedUnitId);
+        if (self.engine.state.tutorial) self.engine.state.tutorial.firstDelivery = true;
         if (result.success) {
           self.print(result.message, 'success');
           self.updateStatus();
@@ -2711,6 +2934,7 @@ class App {
     this.printBlank();
     if (result.success) {
       this.print(result.message, 'success');
+      if (this.engine.state.tutorial) this.engine.state.tutorial.firstPlacement = true;
       this._facilityList = this.economy.getAllFacilities();
     } else {
       this.print(result.reason, 'error');
@@ -2837,7 +3061,7 @@ class App {
         if (!tool) continue;
         const gating = this.engine.getToolGating(key);
         const partsStr = tool.parts.map(p => {
-          const suffix = p.suffix ? `${p.suffix}` : '기본';
+          const suffix = this._partSummary(p);
           return `${p.slot}(${suffix} t${p.tier})`;
         }).join(' | ');
         this._toolList.push(key);
@@ -2878,11 +3102,21 @@ class App {
     // 부품 상세
     this.print('  부품 구성:', 'system');
     tool.parts.forEach((p, i) => {
-      const suffix = p.suffix || '없음';
+      const suffix = this._partSummary(p);
       const bar = '█'.repeat(Math.min(10, p.tier)) + '·'.repeat(Math.max(0, 10 - p.tier));
       this.printOption(`${i + 1}`, `  ${i + 1}. [${p.slot}] 접미사: ${suffix} | tier: ${p.tier} [${bar}]`);
     });
     this.printBlank();
+
+    // 보관함 (이 도구의 보관된 부품)
+    const stored = this.engine.state.partInventory.filter(p => p.toolKey === toolKey);
+    if (stored.length > 0) {
+      this.print('  보관함:', 'system');
+      stored.forEach((p, i) => {
+        this.printOption(`s${i + 1}`, `    s${i + 1}. ${p.slot} [${(p.tags&&p.tags.length?p.tags.join(','):'없음')} t${p.tier}] — 재장착 가능`);
+      });
+      this.printBlank();
+    }
 
     // 게이팅 효과 설명
     if (tool.type === 'gather') {
@@ -2895,15 +3129,108 @@ class App {
     }
     this.printBlank();
 
-    this.printOption('u', '  u. 부품 업그레이드 (솥 — 재료 투입)');
+    this.printOption('u', '  u. 부품 업그레이드 (솥 — 아이템 투입)');
+    this.printOption('r', '  r. 부품 초기화 (현재 부품 → 부품 보관함, t0으로 리셋)');
     this.printOption('0', '  0. 돌아가기');
-    this.setActions([{key:'u', label:'업그레이드'}, {key:'0', label:'돌아가기'}]);
+    this.setActions([{key:'u', label:'업그레이드'}, {key:'r', label:'초기화'}, {key:'0', label:'돌아가기'}]);
   }
 
   handleToolDetail(cmd) {
     if (cmd === '0') { this.showToolManagement(); return; }
     if (cmd === 'u') { this.showToolUpgrade(); return; }
-    // 부품 번호 선택 시에도 업그레이드로
+    if (cmd === 'r') {
+      // 부품 초기화 — 현재 부품 보관 + 새 t0 부품 제작 (재료 소모)
+      this.printBlank();
+      this.print('초기화할 부품 번호 (1~3):', 'system');
+      this.print('  (현재 부품은 보관함으로. 새 t0 부품 제작에 재료가 소모됩니다)', 'dim');
+      const tool = this.engine.state.tools[this._selectedToolKey];
+      const recipes = this.engine.state.partRecipes;
+      tool.parts.forEach((p, i) => {
+        const recipeKey = `${this._selectedToolKey}_${i}`;
+        const mats = recipes[recipeKey] || [];
+        const matNames = mats.map(m => this.engine.getMaterialName(m));
+        const canCraft = mats.every(m => this.engine.hasMaterial(m));
+        if (p.tier > 0) {
+          this.printOption(`${i+1}`, `  ${i+1}. ${p.slot} [${(p.tags&&p.tags.length?p.tags.join(','):'없음')} t${p.tier}] → 리셋 (필요: ${matNames.join('+')} ${canCraft ? '' : '[재료 부족]'})`);
+        } else {
+          this.print(`  ${i+1}. ${p.slot} (이미 t0)`, 'dim');
+        }
+      });
+      this.printOption('0', '  0. 취소');
+
+      const self = this;
+      const origHandler = this.handleToolDetail.bind(this);
+      this.handleToolDetail = function(c) {
+        self.handleToolDetail = origHandler;
+        if (c === '0') { self.showToolDetail(); return; }
+        const pi = parseInt(c);
+        if (pi >= 1 && pi <= 3) {
+          const part = tool.parts[pi - 1];
+          const recipeKey = `${self._selectedToolKey}_${pi - 1}`;
+          const mats = recipes[recipeKey] || [];
+
+          // 재료 체크
+          if (!mats.every(m => self.engine.hasMaterial(m))) {
+            self.print('재료가 부족합니다.', 'error');
+            self.showToolDetail();
+            return;
+          }
+
+          if (part.tier > 0) {
+            // 현재 부품 → 보관함
+            self.engine.state.partInventory.push({
+              toolKey: self._selectedToolKey,
+              slot: part.slot,
+              tags: [...(part.tags||[])],
+              tier: part.tier
+            });
+            self.print(`${part.slot} [${(part.tags||[]).join(',')} t${part.tier}]을(를) 보관함에 저장.`, 'success');
+          }
+
+          // 재료 소모 + t0 리셋
+          for (const m of mats) self.engine.removeMaterial(m, 1);
+          self.print(`재료 소모: ${mats.map(m => self.engine.getMaterialName(m)).join(' + ')}`, 'dim');
+          part.tags = [];
+          part.tier = 0;
+          self.print(`새 t0 ${part.slot} 제작 완료!`, 'success');
+        }
+        self.showToolDetail();
+      };
+      return;
+    }
+    // 보관함에서 재장착 (s1, s2, ...)
+    if (cmd.startsWith('s')) {
+      const si = parseInt(cmd.substring(1));
+      const tool = this.engine.state.tools[this._selectedToolKey];
+      const stored = this.engine.state.partInventory.filter(p => p.toolKey === this._selectedToolKey);
+      if (si >= 1 && si <= stored.length) {
+        const storedPart = stored[si - 1];
+        // 같은 슬롯의 현재 부품을 보관함으로
+        const slotIdx = tool.parts.findIndex(p => p.slot === storedPart.slot);
+        if (slotIdx >= 0) {
+          const current = tool.parts[slotIdx];
+          if (current.tier > 0) {
+            this.engine.state.partInventory.push({
+              toolKey: this._selectedToolKey,
+              slot: current.slot,
+              tags: [...(current.tags||[])],
+              tier: current.tier
+            });
+          }
+          // 보관함 부품을 장착
+          current.tags = [...(storedPart.tags||[])];
+          current.tier = storedPart.tier;
+          // 보관함에서 제거
+          const globalIdx = this.engine.state.partInventory.indexOf(storedPart);
+          if (globalIdx >= 0) this.engine.state.partInventory.splice(globalIdx, 1);
+          this.print(`${storedPart.slot} [${(storedPart.tags||[]).join(',')} t${storedPart.tier}] 장착!`, 'success');
+        }
+        this.showToolDetail();
+        return;
+      }
+    }
+
+    // 부품 번호 선택 시 업그레이드
     const idx = parseInt(cmd);
     if (idx >= 1 && idx <= 3) {
       this._selectedPartIdx = idx - 1;
@@ -2921,30 +3248,38 @@ class App {
     this.clearOutput();
     this.printSeparator();
     this.print(`【 부품 업그레이드: ${tool.name} — ${part.slot} 】`, 'location');
-    this.print(`  현재: 접미사 ${part.suffix || '없음'} / tier ${part.tier}`, 'dim');
+    this.print(`  현재 태그: ${(part.tags&&part.tags.length) ? part.tags.join(',') : '없음'} / tier ${this._partTier(part)}`, 'dim');
     this.printBlank();
 
-    // 재료 선택 (인벤토리에서)
-    this.print('  투입할 재료를 선택하세요:', 'system');
+    // 재료 선택 (모든 인벤토리 — 원재료, 가공품, 조합품 전부 가능)
+    this.print('  투입할 아이템을 선택하세요 (고tier 조합품 = 더 큰 효과):', 'system');
     const inv = this.engine.state.inventory;
-    const matIds = Object.keys(inv).filter(id => inv[id] > 0 && id.startsWith('MAT_'));
+    const matIds = Object.keys(inv).filter(id => inv[id] > 0);
     this._upgradeMatList = matIds;
 
     if (matIds.length === 0) {
-      this.print('  투입할 재료가 없습니다.', 'dim');
+      this.print('  투입할 아이템이 없습니다.', 'dim');
     } else {
       matIds.forEach((matId, i) => {
         const mat = this.engine.data.materials.find(m => m.id === matId);
         const name = mat ? mat.name : matId;
-        // 접미사 미리보기
-        let suffixPreview = '';
+        // 태그 밀도 미리보기
+        let preview = '';
         if (mat && mat.tags) {
-          const prop = mat.tags.function || '';
-          const elem = mat.tags.element || '';
-          if (prop && elem) suffixPreview = ` → [${prop}×${elem}]`;
-          else if (prop) suffixPreview = ` → [${prop}]`;
+          const tags = mat.tags;
+          const funcs = (tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : [])).filter(Boolean);
+          const elems = (tags.elements || (tags.element ? (Array.isArray(tags.element) ? tags.element : [tags.element]) : [])).filter(Boolean);
+          const allTags = [...funcs, ...elems];
+          // tier 미리보기
+          if (allTags.length > 0) {
+            const counts = {};
+            allTags.forEach(t => { counts[t] = (counts[t]||0)+1; });
+            const density = Math.floor(Object.values(counts).reduce((s,v)=>s+v,0) / Object.keys(counts).length);
+            const tagStr = Object.entries(counts).map(([k,v]) => v>1 ? `${k}×${v}` : k).join(',');
+            preview = ` [t${density} ${tagStr}]`;
+          }
         }
-        this.printOption(`${i + 1}`, `  ${i + 1}. ${name} ×${inv[matId]}${suffixPreview}`);
+        this.printOption(`${i + 1}`, `  ${i + 1}. ${name} ×${inv[matId]}${preview}`);
       });
     }
     this.printBlank();
@@ -2957,51 +3292,49 @@ class App {
 
   handleToolUpgrade(cmd) {
     if (cmd === '0') { this.showToolDetail(); return; }
-    // 부품 전환 (1~3)
-    if (['1','2','3'].includes(cmd) && this._upgradeMatList && cmd <= this._upgradeMatList.length) {
-      // 재료 투입
-      const matId = this._upgradeMatList[parseInt(cmd) - 1];
-      const mat = this.engine.data.materials.find(m => m.id === matId);
-      if (!mat || !this.engine.hasMaterial(matId)) {
-        this.print('재료가 부족합니다.', 'error');
-        return;
-      }
 
-      this.engine.removeMaterial(matId, 1);
-
-      const tool = this.engine.state.tools[this._selectedToolKey];
-      const partIdx = this._selectedPartIdx || 0;
-      const part = tool.parts[partIdx];
-
-      // 접미사 결정: 재료의 기능태그 × 원소태그
-      const prop = mat.tags?.function || null;
-      const elem = mat.tags?.element || null;
-      let newSuffix = null;
-      if (prop && elem) newSuffix = `${prop}×${elem}`;
-      else if (prop) newSuffix = prop;
-      else if (elem) newSuffix = elem;
-
-      // 같은 접미사면 tier 상승, 다르면 접미사 교체 + tier 1
-      if (newSuffix && newSuffix === part.suffix) {
-        part.tier++;
-        this.print(`${part.slot}의 tier 상승! → t${part.tier}`, 'success');
-      } else if (newSuffix) {
-        part.suffix = newSuffix;
-        part.tier = Math.max(1, part.tier);
-        if (part.tier === 0) part.tier = 1;
-        this.print(`${part.slot}에 접미사 [${newSuffix}] 부여! (t${part.tier})`, 'success');
-      } else {
-        part.tier++;
-        this.print(`${part.slot}의 tier 상승! → t${part.tier}`, 'success');
-      }
-
-      this.printBlank();
-      this.updateStatus();
-      this.showToolUpgrade();
+    const idx = parseInt(cmd);
+    if (isNaN(idx) || idx < 1 || !this._upgradeMatList || idx > this._upgradeMatList.length) {
+      this.print('아이템 번호를 입력하세요.', 'error');
       return;
     }
 
-    this.print('재료 번호를 입력하세요.', 'error');
+    const matId = this._upgradeMatList[idx - 1];
+    const mat = this.engine.data.materials.find(m => m.id === matId);
+    if (!mat || !this.engine.hasMaterial(matId)) {
+      this.print('아이템이 부족합니다.', 'error');
+      return;
+    }
+
+    this.engine.removeMaterial(matId, 1);
+
+    const tool = this.engine.state.tools[this._selectedToolKey];
+    const partIdx = this._selectedPartIdx || 0;
+    const part = tool.parts[partIdx];
+
+    // 투입 아이템의 태그를 부품에 누적
+    const tags = mat.tags || {};
+    const funcs = (tags.functions || (tags.function ? (Array.isArray(tags.function) ? tags.function : [tags.function]) : [])).filter(Boolean);
+    const elems = (tags.elements || (tags.element ? (Array.isArray(tags.element) ? tags.element : [tags.element]) : [])).filter(Boolean);
+    const newTags = [...funcs, ...elems];
+
+    if (!part.tags) part.tags = [];
+    const beforeTier = this._partTier(part);
+    part.tags.push(...newTags);
+    const afterTier = this._partTier(part);
+
+    this.print(`${part.slot}에 태그 추가: [${newTags.join(', ')}]`, 'success');
+    this.print(`  현재 태그: ${this._partSummary(part)}`, 'dim');
+    if (afterTier > beforeTier) {
+      this.print(`  ★ tier 상승! t${beforeTier} → t${afterTier}`, 'success');
+    } else {
+      this.print(`  tier: ${afterTier} (태그 다양화)`, 'dim');
+    }
+
+    this.print(`  투입: ${mat.name} (태그밀도 t${inputTier})`, 'dim');
+    this.printBlank();
+    this.updateStatus();
+    this.showToolUpgrade();
   }
 
   // ============================================================
@@ -3321,41 +3654,28 @@ class App {
   showTrainingScreen() {
     this.currentScreen = 'training_action';
     const unit = this._trainingUnit;
-    this.clearOutput();
 
-    const gs = unit.globalState;
-    const sen = unit.sensitivity;
-    const adultTrait = this.training.getAdultTrait(unit);
-    const isHidden = adultTrait === 'AT_ACCUMULATIVE';
-    const parts = this.training.getAvailableParts(unit);
+    // 대시보드 모드 전환 (game-output 숨기고 training-dashboard 표시)
+    document.getElementById('main-area').style.display = 'none';
+    const dashboard = document.getElementById('training-dashboard');
+    dashboard.classList.add('active');
 
-    // Helper: bar display
-    const bar = (val, max = 100, len = 20) => {
-      const filled = Math.min(len, Math.floor((val / max) * len));
-      return '[' + '█'.repeat(filled) + '·'.repeat(len - filled) + ']';
+    // 대시보드 입력 연결
+    const tdInput = document.getElementById('td-input');
+    tdInput.value = '';
+    tdInput.focus();
+    tdInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        const cmd = tdInput.value.trim();
+        tdInput.value = '';
+        if (cmd) this.processCommand(cmd);
+      }
     };
 
-    // ── Header ──
-    this.print(`【 조교: ${unit.name} 】 Lv.${unit.level} ${unit.sigilName}`, 'location');
-    this.print(`  성인 특성: ${this.training.getAdultTraitName(unit)}`, 'lore');
-    this.printSeparator();
+    // 닫기 버튼
+    document.getElementById('td-close').onclick = () => this._closeTrainingDashboard();
 
-    // ── Body Part Sensitivities ──
-    this.print('  부위 감도', 'system');
-    for (const p of parts) {
-      const s = isHidden ? '???' : (sen[p.id] || 0);
-      const sBar = isHidden ? '[????????????????????]' : bar(sen[p.id] || 0, 100);
-      const lockTag = p.locked ? ' [잠금]' : '';
-      const milestone = p.locked ? '' : ` 【${p.milestone}】`;
-      this.print(`  ${p.name.padEnd(4)} ${String(s).padStart(3)} ${sBar}${milestone}${lockTag}`, p.locked ? 'dim' : 'unit');
-    }
-    this.printBlank();
-
-    // ── Global States ──
-    this.print('  상태 수치', 'system');
-    this.print(`  연모 ${String(gs.love||0).padStart(3)} ${bar(gs.love||0)}  복종 ${String(gs.submission||0).padStart(3)} ${bar(gs.submission||0)}`, 'unit');
-    this.print(`  음란 ${String(gs.lewdness||0).padStart(3)} ${bar(gs.lewdness||0)}  공포 ${String(gs.fear||0).padStart(3)} ${bar(gs.fear||0)}`, gs.lewdness > 70 ? 'error' : 'unit');
-    this.print(`  반감 ${String(gs.resentment||0).padStart(3)} ${bar(gs.resentment||0)}`, gs.resentment > 50 ? 'error' : 'unit');
+    this._renderTrainingDashboard(unit);
     this.printBlank();
 
     // ── 세분화 경험치 ──
@@ -3410,7 +3730,7 @@ class App {
 
   // ERA식 handler: 번호만 입력
   handleTrainingAction(cmd) {
-    if (cmd === '0') { this.showTrainingMenu(); return; }
+    if (cmd === '0') { this._closeTrainingDashboard(); return; }
 
     const unit = this._trainingUnit;
     const actionId = parseInt(cmd);
@@ -3418,32 +3738,28 @@ class App {
     // Find action by ID
     const actions = this.training.getAvailableActions(unit);
     const action = actions.find(a => a.id === actionId);
-    if (!action) { this.print('올바른 번호를 입력하세요.', 'error'); return; }
-    if (action.locked) { this.print(`잠금: ${action.lockReason}`, 'error'); return; }
+    if (!action) { this._renderTrainingDashboard(unit, '올바른 번호를 입력하세요.'); return; }
+    if (action.locked) { this._renderTrainingDashboard(unit, `잠금: ${action.lockReason}`); return; }
 
     const hasTool = this.training.hasTrainingTool();
     if (action.requiresTool && !hasTool) {
-      this.print('조교 도구가 필요합니다.', 'error');
+      this._renderTrainingDashboard(unit, '조교 도구가 필요합니다.');
       return;
     }
 
     if (!this.engine.useStamina(3)) {
-      this.print('스태미나가 부족합니다.', 'error');
+      this._renderTrainingDashboard(unit, '⚠ 스태미나가 부족합니다!');
       return;
     }
 
     // Execute (ERA식: actionId만 전달)
     const result = this.training.execute(unit, actionId, hasTool);
 
-    // Show result, then redraw
-    this.clearOutput();
-
-    // 행위 결과
-    this.print(`▸ ${action.name}`, 'unit');
-    // 부위별 감도 변화 표시
+    // 결과 메시지 조립
+    const msgs = [];
+    msgs.push(`▸ ${action.name}`);
     if (result.partResults && result.partResults.length > 0) {
-      const partStr = result.partResults.map(pr => `${pr.partName}+${pr.gain}`).join(' | ');
-      this.print(`  감도: ${partStr}`, 'success');
+      msgs.push(`감도: ${result.partResults.map(pr => `${pr.partName}+${pr.gain}`).join(' | ')}`);
     }
     const changes = [];
     if (result.lewdGain) changes.push(`음란+${result.lewdGain}`);
@@ -3452,49 +3768,12 @@ class App {
     if (result.fearGain) changes.push(`공포+${result.fearGain}`);
     if (result.resentGain) changes.push(`반감+${result.resentGain}`);
     if (result.loveGain) changes.push(`연모+${result.loveGain}`);
-    if (changes.length) this.print(`  ${changes.join(' | ')}`, 'system');
-    for (const text of result.extraText) this.print(`  ▸ ${text}`, 'lore');
-    if (result.leveled) this.print(`  ★ 레벨 업! → Lv.${result.leveled.newLevel}`, 'success');
-    this.printSeparator();
-
-    // Redraw full status below
-    const gs = unit.globalState;
-    const sen = unit.sensitivity;
-    const isHidden = this.training.getAdultTrait(unit) === 'AT_ACCUMULATIVE';
-    const allParts = this.training.getAvailableParts(unit);
-    const bar = (val, max = 100, len = 20) => {
-      const filled = Math.min(len, Math.floor((val / max) * len));
-      return '[' + '█'.repeat(filled) + '·'.repeat(len - filled) + ']';
-    };
-
-    this.print('  부위 감도', 'system');
-    for (const p of allParts) {
-      const s = isHidden ? '???' : (sen[p.id] || 0);
-      const sBar = isHidden ? '[????????????????????]' : bar(sen[p.id] || 0, 100);
-      const lockTag = p.locked ? ' [잠금]' : '';
-      const milestone = p.locked ? '' : ` 【${p.milestone}】`;
-      this.print(`  ${p.name.padEnd(4)} ${String(s).padStart(3)} ${sBar}${milestone}${lockTag}`, p.locked ? 'dim' : 'unit');
-    }
-    this.printBlank();
-    this.print(`  연모 ${String(gs.love||0).padStart(3)} ${bar(gs.love||0)}  복종 ${String(gs.submission||0).padStart(3)} ${bar(gs.submission||0)}`, 'unit');
-    this.print(`  음란 ${String(gs.lewdness||0).padStart(3)} ${bar(gs.lewdness||0)}  공포 ${String(gs.fear||0).padStart(3)} ${bar(gs.fear||0)}`, 'unit');
-    this.print(`  반감 ${String(gs.resentment||0).padStart(3)} ${bar(gs.resentment||0)}  스태 ${this.engine.state.stamina}/${this.engine.state.maxStamina}`, 'unit');
-    const de2 = unit.detailedExp || {};
-    this.print(`  애무${String(de2.caress||0).padStart(3)} 자극${String(de2.stimulate||0).padStart(3)} 핥기${String(de2.lick||0).padStart(3)} 키스${String(de2.kiss||0).padStart(3)} 삽입${String(de2.insert||0).padStart(3)} 도구${String(de2.toy||0).padStart(3)} 절정${String(de2.orgasm||0).padStart(3)} 봉사${String(de2.service||0).padStart(3)}`, 'dim');
-    this.printSeparator();
-
-    // 행위 목록 (번호=ID)
-    const actionsRef = this.training.getAvailableActions(unit);
-    let row2 = '  ';
-    actionsRef.forEach((a) => {
-      row2 += (a.locked ? `${String(a.id).padStart(2)}.${a.name}[X]` : `${String(a.id).padStart(2)}.${a.name}`).padEnd(20);
-      if (row2.length > 58) { this.print(row2, 'dim'); row2 = '  '; }
-    });
-    if (row2.trim().length > 2) this.print(row2, 'dim');
-    this.print('  0=돌아가기', 'dim');
-
-    this.setActions([{key:'0', label:'돌아가기'}]);
-    this.updateStatus();
+    if (changes.length) msgs.push(changes.join(' | '));
+    for (const text of result.extraText) msgs.push(`▸ ${text}`);
+    if (result.leveled) msgs.push(`★ 레벨 업! → Lv.${result.leveled.newLevel}`);
+    // 대시보드 갱신 (결과 메시지 포함)
+    this._renderTrainingDashboard(unit, msgs.join(' | '));
+    document.getElementById('td-input').focus();
   }
 
   // Keep old method names as redirects

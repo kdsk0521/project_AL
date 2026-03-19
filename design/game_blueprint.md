@@ -415,6 +415,10 @@
 - [x] 개발 환경/언어 → JavaScript (Node.js + React)
 - [x] 실행 환경 → Electron (로컬 데스크탑 앱, 싱글 플레이 전용)
 - [x] DB 구조 → 정의 데이터 JSON / 세이브 데이터 SQLite
+- [x] 행동 구조 → 메인/자유 이원 구조 확정 (system_economy.md v0.7). 스태미나 수치 방식 폐기. 메인 행동(탐사/교류) 하루 1개 + 자유 행동 제한 없음
+- [x] 도구 시스템 → 7종 t0 기본 지급 + 부품 업그레이드 (system_tool_upgrade.md)
+- [x] UI/인터페이스 → ERA 스타일 텍스트 UI 초안 (ui_interface.md)
+- [x] 알파 초반 동선 → 5단계 시스템 개방 순서 확정 (alpha_progression.md)
 - [ ] 난이도 스케일링 공식
 - [ ] 세이브/로드 구조 (SQLite 기반 구체 스키마)
 - [ ] 이벤트 풀 초기 규모 및 우선순위
@@ -425,3 +429,4 @@
 *v0.3 — ERA 기초 레퍼런스 추가, 유닛 육성 이력(성장 경로 분기) 시스템 추가*
 *v0.4 — NPC 제로 반영 (NPC 표현→유닛/시스템으로 통일). 하위 문서 확정 사항 미결정 목록에 반영. 종족 6대 분류 확정 (인간 종족 없음, 외형은 별도).*
 *v0.5 — 기술 스택 확정: JS 단일 언어(Node.js+React), Electron 데스크탑 앱, JSON(정의)+SQLite(세이브) 이원화, 텍스트+아스키아트+이미지 출력. ERA/Emuera 미사용 확정. 데이터 구조 방침 갱신.*
+*v0.6 — 스태미나 폐기→메인/자유 이원 구조 확정. 도구 시스템(system_tool_upgrade.md), UI 설계(ui_interface.md), 알파 초반 동선(alpha_progression.md) 신규 문서 반영.*

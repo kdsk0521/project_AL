@@ -56,7 +56,7 @@ class GameEngine {
       // Resources
       stamina: 30,
       maxStamina: 30,
-      soulPower: 500, // starting amount
+      soulPower: 50, // 극소량 시작 (alpha_progression: 납품 전까지 경제 압박 없음)
 
       // Player
       player: {
@@ -93,6 +93,31 @@ class GameEngine {
         workshop: { level: 1, unitId: null }    // \uAC00\uACF5\uC18C (starts at 1)
       },
 
+      // 부품 제작 레시피 (도구키_슬롯인덱스 → [재료A, 재료B])
+      partRecipes: {
+        'pickaxe_0': ['MAT_IRON_ORE','MAT_IRON_ORE'],
+        'pickaxe_1': ['MAT_CATALYST_HERB','MAT_WATER'],
+        'pickaxe_2': ['MAT_SLIME_CORE','MAT_WATER'],
+        'rod_0': ['MAT_IRON_ORE','MAT_SLIME_CORE'],
+        'rod_1': ['MAT_CATALYST_HERB','MAT_CATALYST_HERB'],
+        'rod_2': ['MAT_IRON_ORE','MAT_WATER'],
+        'staff_0': ['MAT_HERB','MAT_MAGIC_STONE'],
+        'staff_1': ['MAT_IRON_ORE','MAT_CATALYST_HERB'],
+        'staff_2': ['MAT_MAGIC_STONE','MAT_SLIME_CORE'],
+        'dummy_0': ['MAT_SLIME_CORE','MAT_IRON_ORE'],
+        'dummy_1': ['MAT_SLIME_CORE','MAT_CATALYST_HERB'],
+        'dummy_2': ['MAT_IRON_ORE','MAT_WATER'],
+        'treadmill_0': ['MAT_CATALYST_HERB','MAT_CATALYST_HERB'],
+        'treadmill_1': ['MAT_IRON_ORE','MAT_IRON_ORE'],
+        'treadmill_2': ['MAT_SLIME_CORE','MAT_WATER'],
+        'rotor_0': ['MAT_MAGIC_STONE','MAT_SLIME_CORE'],
+        'rotor_1': ['MAT_SLIME_CORE','MAT_WATER'],
+        'rotor_2': ['MAT_IRON_ORE','MAT_CATALYST_HERB'],
+        'textbook_0': ['MAT_IRON_ORE','MAT_CATALYST_HERB'],
+        'textbook_1': ['MAT_CATALYST_HERB','MAT_WATER'],
+        'textbook_2': ['MAT_MAGIC_STONE','MAT_IRON_ORE'],
+      },
+
       // Workshop equipment
       equipment: {
         furnace: true,
@@ -106,59 +131,59 @@ class GameEngine {
         pickaxe: {
           name: '곡괭이', type: 'gather', gatherZone: '광맥',
           parts: [
-            { slot: '머리', suffix: null, tier: 0 },
-            { slot: '자루', suffix: null, tier: 0 },
-            { slot: '손잡이', suffix: null, tier: 0 }
+            { slot: '머리', tags: [], tier: 0 },
+            { slot: '자루', tags: [], tier: 0 },
+            { slot: '손잡이', tags: [], tier: 0 }
           ]
         },
         rod: {
           name: '낚시대', type: 'gather', gatherZone: '수계',
           parts: [
-            { slot: '바늘', suffix: null, tier: 0 },
-            { slot: '줄', suffix: null, tier: 0 },
-            { slot: '막대', suffix: null, tier: 0 }
+            { slot: '바늘', tags: [], tier: 0 },
+            { slot: '줄', tags: [], tier: 0 },
+            { slot: '막대', tags: [], tier: 0 }
           ]
         },
         staff: {
           name: '채집봉', type: 'gather', gatherZone: '수풀',
           parts: [
-            { slot: '끝장식', suffix: null, tier: 0 },
-            { slot: '봉체', suffix: null, tier: 0 },
-            { slot: '보석', suffix: null, tier: 0 }
+            { slot: '끝장식', tags: [], tier: 0 },
+            { slot: '봉체', tags: [], tier: 0 },
+            { slot: '보석', tags: [], tier: 0 }
           ]
         },
         // 육성 도구 (2종)
         dummy: {
           name: '타격 인형', type: 'training_combat',
           parts: [
-            { slot: '팔', suffix: null, tier: 0 },
-            { slot: '몸통', suffix: null, tier: 0 },
-            { slot: '받침대', suffix: null, tier: 0 }
+            { slot: '팔', tags: [], tier: 0 },
+            { slot: '몸통', tags: [], tier: 0 },
+            { slot: '받침대', tags: [], tier: 0 }
           ]
         },
         treadmill: {
           name: '달리기 기구', type: 'training_body',
           parts: [
-            { slot: '벨트', suffix: null, tier: 0 },
-            { slot: '프레임', suffix: null, tier: 0 },
-            { slot: '바퀴', suffix: null, tier: 0 }
+            { slot: '벨트', tags: [], tier: 0 },
+            { slot: '프레임', tags: [], tier: 0 },
+            { slot: '바퀴', tags: [], tier: 0 }
           ]
         },
         // 조교 도구 (2종)
         rotor: {
           name: '로터', type: 'training_adult',
           parts: [
-            { slot: '모터', suffix: null, tier: 0 },
-            { slot: '표면', suffix: null, tier: 0 },
-            { slot: '손잡이', suffix: null, tier: 0 }
+            { slot: '모터', tags: [], tier: 0 },
+            { slot: '표면', tags: [], tier: 0 },
+            { slot: '손잡이', tags: [], tier: 0 }
           ]
         },
         textbook: {
           name: '교본', type: 'training_personality',
           parts: [
-            { slot: '표지', suffix: null, tier: 0 },
-            { slot: '내지', suffix: null, tier: 0 },
-            { slot: '잠금장치', suffix: null, tier: 0 }
+            { slot: '표지', tags: [], tier: 0 },
+            { slot: '내지', tags: [], tier: 0 },
+            { slot: '잠금장치', tags: [], tier: 0 }
           ]
         }
       },
@@ -196,10 +221,21 @@ class GameEngine {
 
       // Milestone flags
       milestones: {
-        firstBossDefeated: false,  // 5층 보스 → 파티 +1 (3인)
+        firstBossDefeated: false,
         compressorBuilt: false,
-        floor10Cleared: false,     // 10층 보스 → 파티 +1 (4인)
-        floor15Cleared: false      // 15층 보스 → 파티 +1 (5인)
+        floor10Cleared: false,
+        floor15Cleared: false
+      },
+
+      // 튜토리얼 진행 플래그 (alpha_progression.md)
+      tutorial: {
+        firstExploration: false,   // 1단계: 첫 탐사 완료
+        firstCrafting: false,      // 2단계: 첫 조합 완료
+        firstRecruitment: false,   // 3단계: 첫 유닛 영입
+        firstPlacement: false,     // 4단계: 첫 도시 배치
+        firstBoss: false,          // 5단계: 첫 보스 격파
+        firstDelivery: false,      // 납품 경험
+        maintenanceWarned: false,  // 유지비 경고 표시됨
       },
 
       // Unit instance counter

@@ -138,16 +138,12 @@ class CraftingSystem {
       elems = elems.filter(e => e !== '동'); // 동 제거
     }
 
-    // 중복 제거
-    funcs = [...new Set(funcs)];
-    elems = [...new Set(elems)];
-    forms = [...new Set(forms)];
-
+    // 중복 유지! 중복 = tier 결정의 핵심
+    // (보존×2, 식×2, 식물×2 → tier 2)
     const resultTags = {
       function: funcs.length === 1 ? funcs[0] : funcs,
       element: elems.length === 0 ? null : (elems.length === 1 ? elems[0] : elems),
       form: forms.length === 1 ? forms[0] : forms,
-      // 배열 버전 유지
       functions: funcs, elements: elems, forms: forms
     };
 
@@ -270,31 +266,30 @@ class CraftingSystem {
 
   mergeTags(tagsA, tagsB) {
     const merged = {};
-    const allKeys = new Set([...Object.keys(tagsA), ...Object.keys(tagsB)]);
 
-    for (const key of allKeys) {
-      const valA = tagsA[key];
-      const valB = tagsB[key];
+    // 배열화 헬퍼: 값을 무조건 배열로
+    const toArr = (v) => !v ? [] : (Array.isArray(v) ? [...v] : [v]);
 
-      if (key === 'function') {
-        // Collect all function tags
-        merged.functions = [];
-        if (valA) merged.functions.push(valA);
-        if (valB && valB !== valA) merged.functions.push(valB);
-        merged[key] = valA || valB;
-      } else if (key === 'element') {
-        merged.elements = [];
-        if (valA) merged.elements.push(valA);
-        if (valB && valB !== valA) merged.elements.push(valB);
-        merged[key] = valA || valB;
-      } else if (key === 'form') {
-        merged.forms = [];
-        if (valA) merged.forms.push(valA);
-        if (valB && valB !== valA) merged.forms.push(valB);
-        merged[key] = valA || valB;
-      } else {
-        merged[key] = valA || valB;
-      }
+    // 기능 태그: 중복 유지 (회복+회복 = 회복×2)
+    {
+      const a = [...toArr(tagsA.functions || tagsA.function)];
+      const b = [...toArr(tagsB.functions || tagsB.function)];
+      merged.functions = [...a, ...b].filter(Boolean);
+      merged.function = merged.functions[0] || null;
+    }
+    // 원소 태그: 중복 유지
+    {
+      const a = [...toArr(tagsA.elements || tagsA.element)];
+      const b = [...toArr(tagsB.elements || tagsB.element)];
+      merged.elements = [...a, ...b].filter(Boolean);
+      merged.element = merged.elements[0] || null;
+    }
+    // 형태 태그: 중복 유지
+    {
+      const a = [...toArr(tagsA.forms || tagsA.form)];
+      const b = [...toArr(tagsB.forms || tagsB.form)];
+      merged.forms = [...a, ...b].filter(Boolean);
+      merged.form = merged.forms[0] || null;
     }
 
     return merged;
