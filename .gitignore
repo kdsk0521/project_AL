@@ -2,3 +2,7 @@ node_modules/
 package-lock.json
 *.log
 .claude/
+
+# 내부 문서 (분석 리포트, 아이디어 노트 등)
+docs/
+dual_brain_*.md
