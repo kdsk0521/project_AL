@@ -1,0 +1,125 @@
+; 경제 밸런스 테이블
+
+; === 초기 자원 ===
+[starting_resources]
+soulPower,500
+stamina,30
+maxStamina,30
+player_hp,100
+player_maxHp,100
+player_atk,12
+player_def,10
+player_spd,10
+
+; === 초기 재료 ===
+[starting_materials]
+MAT_HERB,5
+MAT_WATER,5
+MAT_SLIME_CORE,3
+MAT_IRON_ORE,2
+MAT_CATALYST_HERB,2
+
+; === 영혼력 공식 ===
+; value = level * level_mul + traits.length * trait_mul
+[soul_power_formula]
+level_multiplier,10
+trait_multiplier,5
+salt_sigil_bonus,1.15
+active_sigil_bonus,1.2
+
+; === 유지비 (Tier 1.5부터) ===
+[maintenance]
+base_cost,20
+compressor_cost,15
+facility_cost_per_level,5
+
+; === 시설 비용 ===
+; facility: 시설키, soul: 영혼력, mat1~mat3: 재료ID=수량
+[facility_costs]
+facility,base_soul,mat1,mat2
+well,50,MAT_IRON_ORE=3,MAT_WATER=5
+slimeFarm,80,MAT_SLIME_CORE=5,
+fishery,60,MAT_WATER=5,MAT_IRON_ORE=2
+greenhouse,70,MAT_HERB=5,MAT_CATALYST_HERB=3
+expeditionHQ,100,MAT_IRON_ORE=5,MAT_SLIME_CORE=3
+workshop,60,MAT_IRON_ORE=3,
+
+; === 시설 생산량 (/월) ===
+[facility_production]
+facility,material,qty_per_level
+well,MAT_WATER,3
+slimeFarm,MAT_SLIME_CORE,2
+fishery,MAT_POISON_FISH,2
+greenhouse,MAT_CATALYST_HERB,2
+
+; === 가공소 자동 가공 ===
+[workshop_auto]
+processes_per_level,2
+level1_equipment,furnace
+level2_equipment,furnace;crusher
+level3_equipment,furnace;crusher;compressor
+
+; === 시설 최대 레벨 ===
+[facility_limits]
+max_level,3
+expedition_recovery_per_level,0.25
+
+; === 파티 ===
+[party]
+initial_size,2
+size_after_floor5,3
+size_after_floor10,4
+size_after_floor15,5
+
+; === 전서 구매 ===
+[compendium]
+price_per_level,15
+
+; === 호감도 기본값 (대분류별) ===
+[base_affection]
+요괴,10
+정령,20
+인조,25
+야수,5
+환상,0
+
+; === 시간 ===
+[calendar]
+days_per_month,30
+months_per_year,12
+
+; === 스태미나 소모 ===
+[stamina_costs]
+dungeon_enter_base,2
+dungeon_enter_per_3floors,1
+collect,1
+chest,1
+crafting_process,1
+crafting_combine,2
+training,3
+unit_train,2
+unit_socialize,1
+
+; === 회복 ===
+[recovery]
+daily_player_heal_ratio,0.3
+rest_node_heal_ratio,0.3
+ko_recovery_days,3
+player_injury_recovery_days,3
+
+; === 달력 활성 인 ===
+; month: 월, sigils: 활성인 번호 (세미콜론 구분)
+[active_sigils]
+month,sigils
+1,1;5
+2,2;6
+3,3;7
+4,4;1
+5,5;2
+6,6;3
+7,7;4
+8,1;5
+9,2;6
+10,3;7
+11,4;1
+12,5;2

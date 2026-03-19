@@ -1,0 +1,26 @@
+; 가공 규칙 밸런스 테이블 (crafting.js applyProcessingRules)
+; material: 원재료 ID, equipment: 장비 (furnace/crusher/compressor)
+; result_function: 변환된 기능태그, result_form: 변환된 형태태그
+; result_element: 변환된 원소태그 (null=제거됨, keep=유지)
+; result_id: 결과 ID, result_name: 결과 이름
+material,equipment,result_function,result_form,result_element,result_id,result_name
+MAT_HERB,furnace,보존,식물,식,MAT_HERB_FIRED,보존허브
+MAT_HERB,crusher,회복,분말,null,MAT_HERB_CRUSHED,약초분말
+MAT_HERB,compressor,수호,결정,식,MAT_HERB_COMPRESSED,약초결정
+MAT_CATALYST_HERB,furnace,억제,식물,null,MAT_CATALYST_HERB_FIRED,억제초
+MAT_CATALYST_HERB,crusher,촉매,분말,null,MAT_CATALYST_HERB_CRUSHED,촉매분말
+MAT_CATALYST_HERB,compressor,부여,결정,null,MAT_CATALYST_HERB_COMPRESSED,촉매결정
+MAT_IRON_ORE,furnace,공격,광물,위,MAT_IRON_ORE_FIRED,공격광물(철)
+MAT_IRON_ORE,crusher,경도,분말,위,MAT_IRON_ORE_CRUSHED,철가루
+MAT_IRON_ORE,compressor,경도,결정,위,MAT_IRON_ORE_COMPRESSED,철결정
+MAT_MAGIC_STONE,furnace,마력촉매,광물,열,MAT_MAGIC_STONE_FIRED,마력촉매석
+MAT_MAGIC_STONE,crusher,촉매,분말,열,MAT_MAGIC_STONE_CRUSHED,마력석분말
+MAT_MAGIC_STONE,compressor,부여,결정,열,MAT_MAGIC_STONE_COMPRESSED,마력결정
+MAT_POISON_FISH,furnace,가공성,유기,null,MAT_POISON_FISH_FIRED,식재료(해독어)
+MAT_POISON_FISH,crusher,독성,분말,광,MAT_POISON_FISH_CRUSHED,독분말
+MAT_POISON_FISH,compressor,조련,결정,광,MAT_POISON_FISH_COMPRESSED,독결정
+MAT_WATER,furnace,가공성,기체,null,MAT_WATER_FIRED,증기
+MAT_WATER,compressor,전도,결정,null,MAT_WATER_COMPRESSED,물결정
+MAT_SLIME_CORE,furnace,수호,유기,동,MAT_SLIME_CORE_FIRED,경화슬라임
+MAT_SLIME_CORE,crusher,전도,분말,동,MAT_SLIME_CORE_CRUSHED,슬라임분말
+MAT_SLIME_CORE,compressor,보존,결정,null,MAT_SLIME_CORE_COMPRESSED,슬라임결정

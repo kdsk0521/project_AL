@@ -1,0 +1,59 @@
+; 전투 밸런스 테이블
+
+; === 대분류별 기초 스탯 ===
+; category: 대분류, base_hp/atk/def/spd: 기본값, growth_hp/atk/def/spd: 레벨업 성장치
+[category_stats]
+category,base_hp,base_atk,base_def,base_spd,growth_hp,growth_atk,growth_def,growth_spd
+요괴,100,18,12,12,5,3,2,2
+정령,100,14,14,14,5,2,2,2
+인조,120,14,18,8,6,2,3,1
+야수,80,14,8,18,4,2,1,3
+환상,70,10,10,10,3,2,2,2
+
+; === 보스 스탯 ===
+[boss_stats]
+floor,name,level,hp,atk,def,spd,element,gimmick,drop_slime,drop_spring
+5,거대 슬라임,8,200,22,15,6,,none,8,1
+10,변이 슬라임,16,400,35,25,10,식,split,8,1
+15,폭주 슬라임,24,700,50,35,14,동,split+elementShift,8,1
+
+; === 슬라임 스케일링 ===
+; floor별 기본 슬라임 스탯
+[slime_scaling]
+base_hp,30
+hp_per_floor,8
+base_atk,5
+atk_per_floor,2
+base_def,3
+def_per_floor,1
+base_spd,4
+spd_per_floor,1
+
+; === AP 시스템 ===
+[ap_system]
+min_ap,2
+max_ap,4
+speed_divisor,8
+speed_base_add,2
+
+; === 데미지 공식 ===
+; damage = ATK * (ATK / (ATK + DEF)) * multiplier * variance
+[damage_formula]
+variance_min,0.9
+variance_max,1.1
+min_damage,1
+
+; === 드랍 확률 ===
+[drop_rates]
+slime_drop_rate,1.0
+unit_main_drop_rate,0.6
+unit_bonus_drop_rate,0.25
+unit_slime_chance,0.15
+boss_spring_qty,1
+boss_slime_qty_min,5
+boss_slime_qty_max,8
+
+; === 커맨더 시스템 ===
+[commander]
+player_injury_on_wipe,0.2
+player_target_rate,0
