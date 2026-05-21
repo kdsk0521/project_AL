@@ -1,0 +1,54 @@
+; 유닛 데이터 (units.json → units.csv)
+; combatTraits/personalityTraits: 세미콜론 구분 ID 목록
+
+[units]
+id,name,level,sigil,sigilName,category,primaryElement,secondaryElement,acquisition,hp,atk,def,spd,combatTraits,personalityTraits,adultTrait,habitat,appearance
+UNIT_THORN_IMP,가시 임프,3,1,백양(白羊),요괴,위,열,기초풀,106,24,18,18,CT_PIERCE,PT_FEARLESS,AT_INEXPERIENCED,1~3층 석굴 구역,작은 뿔과 등에 가시 돋친 소녀형. 장난기 가득한 눈/ 짧은 꼬리
+UNIT_FROST_LIZARD_GIRL,서리 도마뱀 소녀,8,1,백양(白羊),야수,열,위,조우,96,30,24,34,CT_COLD_RADIATION,PT_WILDNESS,AT_HYPOTHERMIA,4~7층 결빙 경계 구역,파란 비늘이 팔다리에 부분적으로 나 있는 소녀형. 체온이 극도로 낮고 입김이 하얗게 서림
+UNIT_SLAG_GOLEM,슬래그 골렘,14,1,백양(白羊),인조,열,동,기초풀,148,42,46,36,CT_HEAT_WALL,PT_DULL,AT_SENSORY_BLOCK,,찌꺼기 금속으로 이루어진 장신의 인형 체형. 관절 틈에서 열기/ 무표정한 얼굴 조각
+UNIT_BLADE_FOX,칼날 여우,19,1,백양(白羊),요괴,광,식,조우(조건),138,56,50,50,CT_FLASH_SLASH,PT_VANITY,AT_SHAME_EXCESS,8~12층 기관부,은발에 여우귀/ 꼬리 끝이 면도날처럼 빛남. 날렵하고 자신만만한 표정
+UNIT_THUNDER_SPIRIT,폭뢰 정령,24,1,백양(白羊),정령,위,광,조우,148,62,62,62,CT_OVERLOAD,PT_EMOTIONAL_BURST,AT_HYPERSENSITIVITY,10~15층 위험 구역 심부,번개를 두른 반투명 여성형. 몸에서 지속적으로 방전/ 머리카락이 정전기로 퍼져 있음
+UNIT_ASH_SHRINE_MAIDEN,잿빛 무녀,34,1,백양(白羊),환상,식,열,합체전용,138,78,78,78,CT_CORROSION_FIELD;CT_ASH_RESIDUE,PT_APATHETIC,AT_SENSORY_CONFUSION,,재색 피부에 기다란 머리카락이 얼굴을 반쯤 가린 여성형. 만진 것이 서서히 부식됨. 형태가 간헐적으로 흔들림
+UNIT_THUNDER_HORN_GENERAL,뇌각 장수,43,1,백양(白羊),야수,동,위,조우(희귀),166,100,94,104,CT_CRUSHING_CHARGE;CT_INTIMIDATION,PT_DOMINATION,AT_SADIST,20~25층 심층 구역,거대한 뿔이 달린 장신의 여성형 마수. 체격이 크고 근육질/ 하반신에 갑각
+UNIT_MUD_DOLL,진흙 인형,4,2,금우(金牛),인조,동,열,기초풀,128,22,26,16,CT_HARDEN,PT_PASSIVE,AT_PLASTICITY,,점토로 빚은 소녀형. 관절이 부드럽고 표정이 어설프게 새겨져 있음. 만지면 약간 눅눅함
+UNIT_MOSS_WOLF,이끼 늑대,9,2,금우(金牛),야수,식,동,조우,98,32,26,36,CT_EROSION_BITE,PT_VIGILANT,AT_NUMB_CONSTITUTION,3~6층 독림 구역 입구,이끼와 덩굴이 체표를 덮은 늑대귀 소녀. 야성적이지만 움직임은 느릿함
+UNIT_CRYSTAL_SPIDER,수정 거미,15,2,금우(金牛),요괴,광,동,기초풀,130,48,42,42,CT_BINDING_THREAD,PT_POSSESSIVE,AT_OBSESSIVE_BOND,5~10층 석굴 심부,등에서 수정 거미줄을 뽑아내는 여성형. 손가락이 길고/ 눈이 여럿 (요괴 특유의 이형 포인트)
+UNIT_AMBER_SPIRIT,호박 정령,18,2,금우(金牛),정령,광,열,조우,136,50,50,50,CT_SEAL_LIGHT,PT_CAUTIOUS,AT_ACCUMULATIVE,8~12층 기관부,호박(琥珀)색 반투명 여성형. 내부에 고대 벌레 같은 것이 봉인된 듯 비침. 동작이 느리지만 우아함
+UNIT_IRON_KNIGHT,철벽 기사,26,2,금우(金牛),인조,동,위,조우,172,66,70,60,CT_IRON_WALL;CT_GUARDIAN,PT_DUTY,AT_ARMOR_SEAL,12~18층 기관부 심부,전신 갑옷을 두른 여성형. 갑옷 사이로 마력광이 새어나옴. 얼굴은 바이저로 가려짐
+UNIT_CORAL_WITCH,산호 마녀,35,2,금우(金牛),요괴,식,광,합체전용,170,88,82,82,CT_CORAL_EROSION;CT_TERRITORY_CONTROL,PT_HOARDER,AT_EXCESS_ACCUMULATION,,산호가 뿔처럼 자란 여성형. 피부에 산호 무늬/ 느린 동작이지만 주변을 서서히 잠식함
+UNIT_GENBU,현무,44,2,금우(金牛),환상,동,식,조우(희귀),158,98,98,98,CT_IMMOVABLE;CT_EARTHQUAKE,PT_DETACHED,AT_PRIMORDIAL_SENSE,22~28층 심층,거북 등딱지를 등에 진 장신 여성형. 등딱지에 문양이 새겨져 있고 형태가 간헐적으로 일렁임. 느리지만 압도적 존재감
+UNIT_BUBBLE_SLIME,거품 슬라임,3,3,거해(巨蟹),요괴,열,동,기초풀,106,24,18,18,CT_DISSOLVE_FLUID,PT_DEPENDENT,AT_DISSOLVING_BODY,1~3층 수계 구역 입구,반투명 거품 질감의 소녀형. 체형이 불안정하게 흔들림/ 만지면 따뜻하고 눅눅함
+UNIT_YARD_SPIDER,야드 스파이더,7,3,거해(巨蟹),인조,위,광,기초풀,134,28,32,22,CT_DISASSEMBLE_ANALYZE,PT_OBSERVANT,AT_LEARNING_RESPONSE,,거미 다리가 4개 달린 소형 자동인형 소녀. 한쪽 눈이 렌즈/ 손가락이 정밀 도구로 교체 가능
+UNIT_LOTUS_FAIRY,수련 요정,13,3,거해(巨蟹),정령,열,식,조우,126,40,40,40,CT_CURRENT,PT_INTROVERTED,AT_TRUST_UNLOCK,5~8층 수계 구역,수련잎 위에 앉아있는 소녀형. 긴 머리카락이 물처럼 흐르고/ 물속에선 형태가 풀어짐
+UNIT_JELLYFISH_DANCER,해파리 무희,20,3,거해(巨蟹),요괴,광,위,조우(조건),140,58,52,52,CT_PARALYSIS_TENTACLE,PT_SEDUCTIVE,AT_TENTACLE_SENSE,10~14층 수계 심부,해파리 촉수 같은 반투명 머리카락의 여성형. 움직임이 물속처럼 느리고 우아. 발광
+UNIT_HOTSPRING_CRAB,온천 대게,25,3,거해(巨蟹),야수,열,동,조우,130,64,58,68,CT_PINCER_STRIKE;CT_LIGHT_ARMOR,PT_LOYAL,AT_GUARD_RELEASE,12~16층 화산-수계 경계 (온천 지대),게 갑각을 어깨/팔에 두른 건장한 여성형. 한쪽 팔이 거대한 집게. 온천 김이 몸에서 남
+UNIT_PHOSPHOR_MOON_JELLY,인 해월,36,3,거해(巨蟹),환상,광,식,합체전용,142,82,82,82,CT_MOONLIGHT_DISSOLVE;CT_FORM_INSTABILITY,PT_EMBRACE,AT_BOUNDARY_DISSOLVE,,달빛 같은 피부의 여성형. 하반신이 간헐적으로 투명해지며 해저의 무언가가 비침. 존재 자체가 불안정
+UNIT_DEEP_SEA_DRAGON_LADY,심해 용궁녀,45,3,거해(巨蟹),요괴,위,열,조우(희귀),190,108,102,102,CT_DEEP_PRESSURE;CT_DRAGON_SCALE,PT_NOBLE,AT_ABYSS_LONELINESS,24~30층 심층 수계,용의 뿔과 비늘을 부분적으로 가진 장신 여성형. 심해의 압력을 두른 듯 주변 공기가 무거움. 위엄 있지만 어딘가 쓸쓸함
+UNIT_HERB_FAIRY,약초 요정,5,4,처녀(處女),정령,식,열,기초풀,110,24,24,24,CT_PURIFY,PT_TIMID,AT_SELECTIVE_RESPONSE,1~4층 독림 구역 입구,약초 향이 나는 소녀형. 머리카락에 작은 꽃과 잎이 자라남. 손끝이 늘 녹색
+UNIT_LENS_SALAMANDER,렌즈 도롱뇽,10,4,처녀(處女),야수,광,위,조우,100,34,28,38,CT_FOCUSED_LIGHT,PT_OBSERVANT_2,AT_ANALYSIS_REFUSAL,4~8층 석굴 구역,크고 둥근 안경을 쓴 소녀형. 등과 꼬리에 도롱뇽 비늘이 남아있고/ 안경 너머로 끊임없이 주변을 분석하는 눈
+UNIT_DISTILLER_DOLL,증류기 인형,16,4,처녀(處女),인조,열,광,기초풀,152,46,50,40,CT_DISTILL,PT_EMOTIONLESS_SURFACE,AT_REFINED_SENSITIVITY,,유리관이 몸 일부를 관통하는 인형 체형. 체내에 액체가 순환하는 게 투명하게 보임. 무표정
+UNIT_POISON_BUTTERFLY,독나비,21,4,처녀(處女),요괴,식,동,조우(조건),142,60,54,54,CT_PARALYSIS_POISON;CT_SCALES,PT_SADISTIC,AT_POISON_SENSITIVITY,10~14층 독림 심부,나비 날개(독 인분) 달린 여성형. 아름답지만 피부에서 미량의 독기. 만지면 손이 저림
+UNIT_CRYSTAL_KNIGHT,결정 기사,27,4,처녀(處女),인조,동,광,조우,174,68,72,62,CT_CRYSTAL_BARRIER;CT_SELF_REPAIR,PT_CLEAN_FREAK,AT_CLEANLINESS_OBSESSION,13~18층 기관부,수정 갑옷을 입은 여성형. 갑옷이 몸에 융합되어 있고/ 타격을 받으면 결정이 재생
+UNIT_SEAL_SCRIBE,봉인의 서기관,36,4,처녀(處女),환상,광,식,합체전용,142,82,82,82,CT_SEAL_ART;CT_DECODE,PT_DETACHED_2,AT_RECORD_CONSTITUTION,,온몸에 문자가 새겨진 여성형. 눈이 빛나고/ 주변에 문자 파편이 떠다님. 형태가 간헐적으로 글자로 분해
+UNIT_SILVER_ALCHEMIST,백은의 연금술사,46,4,처녀(處女),요괴,열,위,조우(희귀),192,110,104,104,CT_PRECISION_ALCHEMY;CT_INSIGHT,PT_DOMINEERING,AT_REVERSE_REFINE,25~30층 기관부 심층,은발/ 연금술사 로브를 입은 장신 여성형. 한쪽 눈이 금색. 플레이어와 같은 연금술사이지만 비인간
+UNIT_SCORPION_GIRL,전갈 소녀,4,5,천갈(天蝎),야수,식,위,기초풀,88,22,16,26,CT_VENOM_STING,PT_COMBATIVE,AT_SINGLE_FOCUS,2~5층 석굴 구역,전갈 꼬리와 집게손이 있는 소녀형. 작고 날렵/ 눈빛이 사나움
+UNIT_SHADOW_CAT,그림자 고양이,9,5,천갈(天蝎),요괴,동,식,조우,118,36,30,30,CT_AMBUSH,PT_MOODY,AT_TRACKING_SENSE,3~7층 석굴 어둠 구역,검은 고양이귀와 꼬리/ 그림자처럼 존재감이 희미한 소녀형. 어둠 속에서 눈만 빛남
+UNIT_EROSION_SPIDER,침식 거미,17,5,천갈(天蝎),요괴,식,광,기초풀,134,52,46,46,CT_EROSION_THREAD;CT_BINDING,PT_OBSESSIVE,AT_INFILTRATION_SENSITIVITY,6~10층 석굴 심부,거미줄 무늬가 피부에 새겨진 여성형. 손끝에서 부식성 실을 뽑아내고/ 눈이 여섯 개
+UNIT_DISSECTION_DOLL,해부인형,22,5,천갈(天蝎),인조,광,동,조우(조건),164,58,62,52,CT_DISMANTLE,PT_INQUISITIVE,AT_PART_SEPARATION,12~16층 기관부,관절이 분리 가능한 인형 체형. 체내 구조가 투명하게 보이고/ 스스로 분해/재조립 가능
+UNIT_POISON_MIST_DANCER,독무 무용수,28,5,천갈(天蝎),정령,식,열,조우,156,70,70,70,CT_POISON_MIST;CT_EVASION_DANCE,PT_MERCILESS,AT_ANESTHETIC_SENSITIVITY,14~20층 독림 심층,독안개를 두른 여성형. 춤추듯 움직이며/ 지나간 자리에 독무가 남음. 피부색이 보라빛
+UNIT_SKELETON_SURGEON,해골 외과의,37,5,천갈(天蝎),환상,위,식,합체전용,144,84,84,84,CT_PRECISION_INCISION;CT_WEAK_POINT_DETECT,PT_MANIACAL_RESEARCH,AT_DISSECTION_SENSITIVITY,,해골 가면을 쓴 여성형. 의사 복장의 잔해/ 손에 항상 메스 형태의 마력체. 존재 자체가 불안정하게 깜빡임
+UNIT_KARMIC_ASSASSIN,업화의 인살,45,5,천갈(天蝎),야수,열,위,조우(희귀),170,104,98,108,CT_KARMIC_FLAME;CT_TRACKER,PT_TENACITY,AT_OBSESSIVE_TRACKING,22~28층 화산 심층,전신에 화상 흔적 같은 붉은 문양의 장신 여성형. 뿔이 길고 예리/ 눈동자가 종으로 갈라짐. 압도적인 살기
+UNIT_MIST_JELLYFISH,안개 해파리,3,6,쌍어(雙魚),정령,동,광,기초풀,106,20,20,20,CT_MIST_FIELD,PT_PASSIVE_2,AT_FAINT_SENSE,1~4층 수계 구역,안개처럼 반투명한 소녀형. 머리카락이 해파리 촉수처럼 부유/ 만지면 손이 스르륵 빠짐
+UNIT_MIRROR_FOX,거울 여우,8,6,쌍어(雙魚),요괴,광,동,조우,116,34,28,28,CT_REFLECT,PT_MIMIC,AT_EMPATHIC_REFLECT,3~7층 기관부 입구,온몸이 거울처럼 반사하는 여우귀 소녀. 표정이 상대의 감정을 따라 변함
+UNIT_SYMBIOTE_GIRL,공생균 소녀,14,6,쌍어(雙魚),야수,식,열,기초풀,108,42,36,46,CT_SPORE_SPREAD;CT_SYMBIOSIS,PT_CLINGY,AT_DEFENSELESS,5~9층 독림 구역,피부 아래로 균사가 비치는 소녀형. 체온이 약간 높고/ 가까이 있으면 기분이 이상하게 편해짐
+UNIT_INCENSE_DOLL,향로 인형,20,6,쌍어(雙魚),인조,열,식,조우(조건),160,54,58,48,CT_FRAGRANCE;CT_SOOTHE,PT_DEVOTED,AT_FRAGRANCE_ADDICTION,10~14층 기관부,향을 피우는 향로가 내장된 인형 체형. 연기가 항상 감돌고/ 가까이 있으면 나른해짐
+UNIT_TWIN_SERPENT,쌍두사,26,6,쌍어(雙魚),요괴,위,동,조우,152,70,64,64,CT_PETRIFY_GAZE;CT_DUAL_BODY,PT_DUALITY,AT_FICKLE_SENSITIVITY,14~19층 석굴~기관부 경계,허리 아래가 뱀 하반신인 여성형. 머리카락이 살아있는 뱀. 몸의 좌우가 미묘하게 다름
+UNIT_FATE_WEAVER,인과의 직공,35,6,쌍어(雙魚),환상,광,위,합체전용,140,80,80,80,CT_CAUSAL_THREAD;CT_FATE_EDIT,PT_TRANSCENDENT,AT_DELAYED_REFLECTION,,실을 짜는 여성형. 손가락 사이로 빛나는 실이 주변 사물/존재에 연결됨. 형태가 간헐적으로 실 다발로 해체
+UNIT_ECHO_MERMAID,잔향의 인어,44,6,쌍어(雙魚),정령,동,열,조우(희귀),188,102,102,102,CT_ECHO;CT_REQUIEM,PT_SELF_SACRIFICE,AT_ECHO_SENSITIVITY,23~28층 심층 수계,하반신이 물로 이루어진 인어형 여성. 노래하면 주변 공기가 진동. 아름답지만 만지면 손이 스며들 것 같은 불안감
+UNIT_SALT_SLIME,소금 슬라임,3,7,염(鹽),요괴,동,위,기초풀,106,24,18,18,CT_CRYSTALLIZE,PT_AIRHEAD,AT_SLOW_CONSTITUTION,1~4층 석굴 구역,하얀 결정질 소녀형. 피부가 소금처럼 거칠고/ 습기에 약해서 비 오는 날 움츠러듦
+UNIT_STONE_MAIDEN,석상 소녀,10,7,염(鹽),인조,위,동,기초풀,140,34,38,28,CT_PETRIFY,PT_EXPRESSIONLESS,AT_PETRIFY_SENSE,,돌로 만들어진 소녀형. 관절만 유연하고 나머지는 석재 질감. 표정 변화가 극도로 미세
+UNIT_FOSSIL_LIZARD,화석 도마뱀,15,7,염(鹽),야수,열,식,조우,110,44,38,48,CT_FOSSIL_ARMOR,PT_RESIGNED,AT_RESIDUAL_SENSE,5~9층 석굴 심부,화석 무늬가 몸에 새겨진 도마뱀꼬리 소녀. 피부가 건조하고 갈라져 있으며/ 체온이 낮음
+UNIT_SALT_FLOWER,소금꽃,21,7,염(鹽),정령,광,동,조우,142,56,56,56,CT_CRYSTAL_REFLECT,PT_INTROVERTED_2,AT_CRYSTAL_GROWTH,8~13층 결빙 구역 (소금 동굴),소금 결정이 꽃처럼 피어난 형태의 소녀형. 햇빛에 반짝이고/ 만지면 따끔함
+UNIT_MUMMY_SHRINE_MAIDEN,미이라 무녀,27,7,염(鹽),요괴,식,열,조우,154,72,66,66,CT_PRESERVE;CT_SEAL_BIND,PT_ENLIGHTENED,AT_SEAL_RELEASE,13~18층 기관부,붕대로 전신을 감은 여성형. 틈새로 보이는 피부는 건조하고 보존 처리됨. 눈만 빛남
+UNIT_BARRIER_STONE,결계석,37,7,염(鹽),환상,위,광,합체전용,144,84,84,84,CT_BARRIER;CT_MANA_AMPLIFY,PT_SILENT,AT_MINERAL_CONSTITUTION,,거대한 보석이 인간형으로 깨어난 형태. 체형은 여성형이지만 피부가 전부 광물. 감정 표현이 빛의 색 변화로만 나타남
+UNIT_EARTH_MOTHER,대지모,47,7,염(鹽),정령,동,식,조우(희귀),194,108,108,108,CT_EARTH_BLESSING;CT_NATURAL_HEAL,PT_EMBRACE_2,AT_MATERNAL_SENSE,24~30층 심층 자연 구역,대지를 연상시키는 갈색 피부의 장신 여성형. 발밑에서 풀이 자라고/ 존재 자체가 무겁고 따뜻함

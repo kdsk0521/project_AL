@@ -51,13 +51,13 @@ class TrainingSystem {
       { id: 10, name: '클리 자극', intensity: 2, targets: [{part:'c',ratio:1.3},{part:'skin',ratio:0.2}],
         unlock: {lewdness:20}, expKey: 'stimulate', flavor: '클리토리스를 손가락으로 자극한다.' },
       { id: 11, name: '로터(C)', intensity: 3, targets: [{part:'c',ratio:1.5},{part:'v',ratio:0.5}],
-        unlock: {lewdness:20}, requiresTool: true, expKey: 'toy', flavor: '클리에 로터를 대고 진동시킨다.' },
+        unlock: null, expKey: 'toy', flavor: '클리에 로터를 대고 진동시킨다.' },
 
       // ── 음란 25+ ──
       { id: 12, name: 'V 손가락', intensity: 2, targets: [{part:'v',ratio:1.2},{part:'c',ratio:0.4}],
         unlock: {lewdness:25}, expKey: 'stimulate', flavor: '질 내부를 손가락으로 자극한다.' },
       { id: 13, name: '로터(V)', intensity: 3, targets: [{part:'v',ratio:1.5},{part:'c',ratio:0.3}],
-        unlock: {lewdness:25}, requiresTool: true, expKey: 'toy', flavor: '질 안에 로터를 넣고 진동시킨다.' },
+        unlock: null, expKey: 'toy', flavor: '질 안에 로터를 넣고 진동시킨다.' },
 
       // ── 음란 30+ ──
       { id: 14, name: '딥키스', intensity: 3, targets: [{part:'mouth',ratio:1.5},{part:'chest',ratio:0.4},{part:'skin',ratio:0.3}],
@@ -69,7 +69,7 @@ class TrainingSystem {
 
       // ── 음란 35+ ──
       { id: 17, name: '로터(A)', intensity: 3, targets: [{part:'anal',ratio:1.3}],
-        unlock: {lewdness:35}, requiresTool: true, expKey: 'toy', flavor: '항문에 로터를 넣는다.' },
+        unlock: null, expKey: 'toy', flavor: '항문에 로터를 넣는다.' },
 
       // ── 음란 40+ ──
       { id: 18, name: '클리 핥기', intensity: 3, targets: [{part:'c',ratio:1.8},{part:'v',ratio:0.5}],
@@ -267,6 +267,35 @@ class TrainingSystem {
       return { success: false, reason: '조교 도구가 필요합니다.' };
     }
 
+    // ═══ 반복 페널티 / 전환 보너스 시스템 ═══
+    if (!unit._repeatTracker) unit._repeatTracker = { lastActionId: null, streak: 0, lastCategory: null };
+    const rt = unit._repeatTracker;
+    let repeatMul = 1.0;
+    let repeatMsg = null;
+
+    // 같은 행위 연속 체크
+    if (rt.lastActionId === actionId) {
+      rt.streak++;
+      // 2회째 85%, 3회째 70%, 4회째 55%, 5회이상 40% (최소 40%)
+      repeatMul = Math.max(0.4, 1.0 - rt.streak * 0.15);
+      repeatMsg = `반복 ${rt.streak + 1}회 (효율 ${Math.round(repeatMul * 100)}%)`;
+    } else {
+      // 다른 행위로 전환 — 카테고리(expKey) 기반 보너스 체크
+      const switched = rt.lastActionId !== null;
+      const categoryChanged = rt.lastCategory !== null && rt.lastCategory !== action.expKey;
+      rt.streak = 0;
+
+      if (switched && categoryChanged) {
+        repeatMul = 1.25; // 다른 카테고리 전환 보너스 125%
+        repeatMsg = '전환 보너스! (효율 125%)';
+      } else if (switched) {
+        repeatMul = 1.1; // 같은 카테고리 내 다른 행위 110%
+        repeatMsg = '행위 변경 (효율 110%)';
+      }
+    }
+    rt.lastActionId = actionId;
+    rt.lastCategory = action.expKey;
+
     // 잠긴 부위 체크
     if (!unit._partExp) unit._partExp = {};
     const lockedParts = new Set(this.getAvailableParts(unit).filter(p => p.locked).map(p => p.id));
@@ -279,13 +308,14 @@ class TrainingSystem {
 
     // Flavor text
     if (action.flavor) extraText.push(action.flavor);
+    if (repeatMsg) extraText.push(repeatMsg);
 
     for (const target of action.targets) {
       if (lockedParts.has(target.part)) continue; // 잠긴 부위 스킵
 
       const partMilestone = this.getPartMilestone(unit._partExp[target.part] || 0);
       const baseSen = action.intensity * 2 + Math.floor(Math.random() * 3);
-      const senGain = Math.floor(baseSen * target.ratio * partMilestone.senMul);
+      const senGain = Math.floor(baseSen * target.ratio * partMilestone.senMul * repeatMul);
 
       if (senGain > 0) {
         totalSenGain += senGain;
@@ -293,9 +323,9 @@ class TrainingSystem {
       }
     }
 
-    // 글로벌 상태 변화 기본값
-    let lewdGain = action.intensity;
-    let submissionGain = Math.floor(action.intensity * 0.5);
+    // 글로벌 상태 변화 기본값 (반복 페널티 적용)
+    let lewdGain = Math.floor(action.intensity * repeatMul);
+    let submissionGain = Math.floor(action.intensity * 0.5 * repeatMul);
     let fearGain = 0;
     let resentGain = 0;
     let loveGain = 0;
@@ -648,7 +678,7 @@ class TrainingSystem {
     let totalPartExpGain = 0;
     for (const target of action.targets) {
       if (lockedParts.has(target.part)) continue;
-      const peg = Math.floor(action.intensity * target.ratio * 3 + 2);
+      const peg = Math.floor((action.intensity * target.ratio * 3 + 2) * repeatMul);
       unit._partExp[target.part] = (unit._partExp[target.part] || 0) + peg;
       totalPartExpGain += peg;
 
@@ -718,6 +748,8 @@ class TrainingSystem {
       leveled,
       lewdGain, submissionGain, fearGain, resentGain, loveGain,
       extraText,
+      repeatMul,          // 반복 효율 (UI 표시용)
+      repeatStreak: rt.streak, // 연속 횟수
       sensitivity: { ...sen },
       globalState: { ...gs }
     };

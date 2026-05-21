@@ -12,29 +12,32 @@ class GameEngine {
     // Color constants
     this.colors = require('./data/colors.json');
 
-    // Load and normalize data from JSON files
-    const rawUnits = require('./data/units.json');
+    // Load data — CSV (balance/) preferred, JSON (data/) as fallback
     const rawDungeon = require('./data/dungeonMap.json');
     const rawRecipes = require('./data/recipes.json');
-    const rawTraits = require('./data/traits.json');
     const rawProcessing = require('./data/processing.json');
-    const rawSynthesis = require('./data/traitSynthesis.json');
+
+    // Traits: load from CSV → fallback to JSON
+    const traits = this._loadTraitsFromCSV() || this._loadTraitsFromJSON();
+
+    // Units: load from CSV → fallback to JSON
+    const units = this._loadUnitsFromCSV() || this._loadUnitsFromJSON();
+
+    // Trait synthesis: load from CSV → fallback to JSON
+    const traitSynthesis = this._loadSynthesisFromCSV() || this._loadSynthesisFromJSON();
 
     // Flatten nested structures so all systems get plain arrays
     this.data = {
       materials: require('./data/materials.json'),   // already flat array
-      units: rawUnits.units || rawUnits,             // unwrap {units:[...]}
+      units,
       dungeonMap: this._flattenDungeon(rawDungeon),  // flatten {floors:{...}}
       recipes: [                                     // merge basic + hidden
         ...(rawRecipes.basic || []),
         ...(rawRecipes.hidden || [])
       ],
       processing: this._flattenProcessing(rawProcessing),
-      traits: [                                      // merge combat + personality
-        ...(rawTraits.combat || []),
-        ...(rawTraits.personality || [])
-      ],
-      traitSynthesis: this._flattenSynthesis(rawSynthesis)
+      traits,
+      traitSynthesis
     };
 
     // Event queue
@@ -57,6 +60,10 @@ class GameEngine {
       stamina: 30,
       maxStamina: 30,
       soulPower: 50, // 극소량 시작 (alpha_progression: 납품 전까지 경제 압박 없음)
+
+      // 하루 행동 루트 (프린세스메이커식)
+      // null=미선택, 'dungeon'=탐사중, 'training'=조교/교류중
+      dayAction: null,
 
       // Player
       player: {
@@ -442,6 +449,7 @@ class GameEngine {
   advanceDay() {
     this.state.day++;
     this.state.stamina = this.state.maxStamina; // reset stamina
+    this.state.dayAction = null; // 하루 행동 루트 리셋
 
     // Player natural HP recovery (30% per day)
     const player = this.state.player;
@@ -770,6 +778,118 @@ class GameEngine {
       }
     }
     return flat;
+  }
+
+  // ===== CSV loaders (balance/ directory) =====
+
+  _loadTraitsFromCSV() {
+    try {
+      const rows = this.balance.load('traits.csv');
+      const result = [];
+      for (const section of ['combat', 'personality', 'adult', 'body']) {
+        const sectionData = rows[section];
+        if (!sectionData || !Array.isArray(sectionData)) continue;
+        for (const row of sectionData) {
+          if (row._headers || row._kv) continue;
+          const trait = { id: row.id, name: row.name, category: row.category, tier: row.tier };
+          if (row.apCost != null && row.apCost !== '') trait.apCost = row.apCost;
+          if (row.damageMultiplier != null && row.damageMultiplier !== '') trait.damageMultiplier = row.damageMultiplier;
+          if (row.element) trait.element = row.element;
+          if (row.target) trait.target = row.target;
+          if (row.effect) trait.effect = row.effect;
+          if (row.description) trait.description = row.description;
+          if (row.owner) trait.owner = row.owner;
+          // Landscape tags (body category)
+          if (row.ls_smell || row.ls_sound || row.ls_visual || row.ls_temperature || row.ls_texture) {
+            trait.landscapeTags = {};
+            if (row.ls_smell) trait.landscapeTags.smell = row.ls_smell;
+            if (row.ls_sound) trait.landscapeTags.sound = row.ls_sound;
+            if (row.ls_visual) trait.landscapeTags.visual = row.ls_visual;
+            if (row.ls_temperature) trait.landscapeTags.temperature = row.ls_temperature;
+            if (row.ls_texture) trait.landscapeTags.texture = row.ls_texture;
+          }
+          result.push(trait);
+        }
+      }
+      return result.length > 0 ? result : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  _loadTraitsFromJSON() {
+    const raw = require('./data/traits.json');
+    return [
+      ...(raw.combat || []),
+      ...(raw.personality || []),
+      ...(raw.adult || []),
+      ...(raw.body || [])
+    ];
+  }
+
+  _loadUnitsFromCSV() {
+    try {
+      const rows = this.balance.load('units.csv');
+      const unitRows = rows.units;
+      if (!unitRows || !Array.isArray(unitRows)) return null;
+      const result = [];
+      for (const row of unitRows) {
+        if (row._headers || row._kv) continue;
+        const unit = {
+          id: row.id, name: row.name, level: row.level,
+          sigil: row.sigil, sigilName: row.sigilName,
+          category: row.category,
+          primaryElement: row.primaryElement || null,
+          secondaryElement: row.secondaryElement || null,
+          acquisition: row.acquisition || null,
+          baseStats: { hp: row.hp, atk: row.atk, def: row.def, spd: row.spd },
+          combatTraits: (row.combatTraits || '').split(';').filter(Boolean).map(id => ({ id })),
+          personalityTraits: (row.personalityTraits || '').split(';').filter(Boolean).map(id => ({ id })),
+          adultTrait: row.adultTrait ? { id: row.adultTrait } : null,
+          habitat: row.habitat || '',
+          appearance: row.appearance || ''
+        };
+        result.push(unit);
+      }
+      return result.length > 0 ? result : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  _loadUnitsFromJSON() {
+    const raw = require('./data/units.json');
+    return raw.units || raw;
+  }
+
+  _loadSynthesisFromCSV() {
+    try {
+      const rows = this.balance.load('traitSynthesis.csv');
+      const result = [];
+      for (const [section, sectionData] of Object.entries(rows)) {
+        if (!Array.isArray(sectionData)) continue;
+        for (const row of sectionData) {
+          if (row._headers || row._kv) continue;
+          result.push({
+            id: row.id, name: row.name,
+            requiredTraits: (row.requiredTraits || '').split(';').filter(Boolean),
+            resultTrait: row.resultTrait,
+            resultCategory: row.resultCategory || null,
+            tier: row.tier,
+            effect: row.effect || '',
+            description: row.description || ''
+          });
+        }
+      }
+      return result.length > 0 ? result : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  _loadSynthesisFromJSON() {
+    const raw = require('./data/traitSynthesis.json');
+    return this._flattenSynthesis(raw);
   }
 }
 

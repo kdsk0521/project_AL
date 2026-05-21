@@ -142,6 +142,8 @@ class UnitSystem {
       if (!traitDef) return 0;
       if (traitDef.category === '전투') return unit.exp.combat || 0;
       if (traitDef.category === '성격') return unit.exp.personality || 0;
+      if (traitDef.category === '성인') return unit.exp.adult || 0;
+      if (traitDef.category === '신체') return unit.exp.body || 0;
       return (unit.exp.adult || 0) + (unit.exp.body || 0);
     };
 

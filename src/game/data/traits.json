@@ -1583,5 +1583,410 @@
       "description": "포용",
       "owner": "대지모"
     }
+  ],
+  "adult": [
+    {
+      "id": "AT_INEXPERIENCED",
+      "name": "미경험",
+      "category": "성인",
+      "tier": 1,
+      "description": "첫 경험 관련 보정. 초기 상태"
+    },
+    {
+      "id": "AT_DISSOLVING_BODY",
+      "name": "용해체질",
+      "category": "성인",
+      "tier": 1,
+      "description": "감도 변동 폭 증가, 감각이 녹아드는 체질"
+    },
+    {
+      "id": "AT_NUMB_CONSTITUTION",
+      "name": "둔감체질",
+      "category": "성인",
+      "tier": 1,
+      "description": "전부위 감도 상승 속도 감소"
+    },
+    {
+      "id": "AT_SLOW_CONSTITUTION",
+      "name": "둔화체질",
+      "category": "성인",
+      "tier": 1,
+      "description": "상태 변화 전반 느림"
+    },
+    {
+      "id": "AT_SADIST",
+      "name": "S기질",
+      "category": "성인",
+      "tier": 2,
+      "description": "조교자일 때 효과 상승, 가학 계열 보정"
+    },
+    {
+      "id": "AT_SHAME_EXCESS",
+      "name": "수치심 과잉",
+      "category": "성인",
+      "tier": 2,
+      "description": "수치 관련 행위 시 감도 추가 상승, 반감도 상승"
+    },
+    {
+      "id": "AT_HYPERSENSITIVITY",
+      "name": "과감도",
+      "category": "성인",
+      "tier": 2,
+      "description": "전부위 감도 상승 속도 증가"
+    },
+    {
+      "id": "AT_OBSESSIVE_BOND",
+      "name": "집착결속",
+      "category": "성인",
+      "tier": 2,
+      "description": "특정 대상 고정, 관계 수치 변동 극단화"
+    },
+    {
+      "id": "AT_TRUST_UNLOCK",
+      "name": "신뢰개방",
+      "category": "성인",
+      "tier": 1,
+      "description": "호감도 기반 해금 조건 완화"
+    },
+    {
+      "id": "AT_GUARD_RELEASE",
+      "name": "보호벽 해제",
+      "category": "성인",
+      "tier": 2,
+      "description": "해금 시 연모 대량 상승"
+    },
+    {
+      "id": "AT_PLASTICITY",
+      "name": "가소성",
+      "category": "성인",
+      "tier": 1,
+      "description": "감도 성장 방향 가변, 학습형 반응과 시너지"
+    },
+    {
+      "id": "AT_LEARNING_RESPONSE",
+      "name": "학습형 반응",
+      "category": "성인",
+      "tier": 1,
+      "description": "반복 행위 시 해당 부위 감도 상승 가속"
+    },
+    {
+      "id": "AT_SENSORY_CONFUSION",
+      "name": "감각혼선",
+      "category": "성인",
+      "tier": 2,
+      "description": "부위별 감도가 불규칙하게 교차 반응"
+    },
+    {
+      "id": "AT_FICKLE_SENSITIVITY",
+      "name": "변덕감도",
+      "category": "성인",
+      "tier": 2,
+      "description": "감도 수치가 주기적으로 변동"
+    },
+    {
+      "id": "AT_DEFENSELESS",
+      "name": "무방비",
+      "category": "성인",
+      "tier": 1,
+      "description": "반감/공포 상승 불가, 대신 모든 행위 무저항"
+    },
+    {
+      "id": "AT_FAINT_SENSE",
+      "name": "희미한 감각",
+      "category": "성인",
+      "tier": 1,
+      "description": "감도 상승 느리지만 절정 임계점도 낮음"
+    },
+    {
+      "id": "AT_DISSECTION_SENSITIVITY",
+      "name": "해부감도",
+      "category": "성인",
+      "tier": 2,
+      "description": "부위별 감도 차이가 극단적, 분석 계열 시너지"
+    },
+    {
+      "id": "AT_RECORD_CONSTITUTION",
+      "name": "기록체질",
+      "category": "성인",
+      "tier": 2,
+      "description": "경험한 행위의 기록이 수치에 영향, 반복 보정"
+    },
+    {
+      "id": "AT_POISON_SENSITIVITY",
+      "name": "독감도",
+      "category": "성인",
+      "tier": 2,
+      "description": "약물/독 계열 아이템 효과 증폭"
+    },
+    {
+      "id": "AT_ANESTHETIC_SENSITIVITY",
+      "name": "마취감도",
+      "category": "성인",
+      "tier": 2,
+      "description": "마취/무감각 계열 효과 증폭, 공포 상승 감소"
+    },
+    {
+      "id": "AT_MASOCHIST",
+      "name": "M기질",
+      "category": "성인",
+      "tier": 2,
+      "description": "고통→쾌감 변환 보정. S기질의 반대축"
+    },
+    {
+      "id": "AT_HONEST_PLEASURE",
+      "name": "쾌감순응",
+      "category": "성인",
+      "tier": 1,
+      "description": "조교 시 반감 상승 감소, 감도 상승 증가"
+    },
+    {
+      "id": "AT_DENIAL",
+      "name": "쾌감부정",
+      "category": "성인",
+      "tier": 1,
+      "description": "반감 상승 증가, 감도 상승 감소"
+    },
+    {
+      "id": "AT_WET_EASY",
+      "name": "과습체질",
+      "category": "성인",
+      "tier": 1,
+      "description": "윤활 상승 빠름, 특정 행위 해금 조건 완화"
+    },
+    {
+      "id": "AT_DRY_CONSTITUTION",
+      "name": "건조체질",
+      "category": "성인",
+      "tier": 1,
+      "description": "윤활 상승 느림, 고통 상승 증가"
+    },
+    {
+      "id": "AT_DRUG_RESISTANCE",
+      "name": "약물내성",
+      "category": "성인",
+      "tier": 2,
+      "description": "미약/약물 아이템 효과 감소"
+    },
+    {
+      "id": "AT_DRUG_SENSITIVITY",
+      "name": "약물감수성",
+      "category": "성인",
+      "tier": 2,
+      "description": "약물 효과 증폭, 중독 상승 빠름"
+    },
+    {
+      "id": "AT_LACTATION",
+      "name": "비유체질",
+      "category": "성인",
+      "tier": 2,
+      "description": "특수 부위 해금, 가슴 관련 행위 확장"
+    },
+    {
+      "id": "AT_HEAT_CYCLE",
+      "name": "발정주기",
+      "category": "성인",
+      "tier": 2,
+      "description": "주기적 감도 전부위 변동 보정"
+    },
+    {
+      "id": "AT_DEVOTION_RESPONSE",
+      "name": "헌신반응",
+      "category": "성인",
+      "tier": 1,
+      "description": "봉사 계열 행위 시 감도 상승 보정"
+    },
+    {
+      "id": "AT_PAIN_CONVERT",
+      "name": "고통변환",
+      "category": "성인",
+      "tier": 2,
+      "description": "고통 수치 일부가 쾌감으로 전환"
+    },
+    {
+      "id": "AT_CORRUPTION_EASE",
+      "name": "침식용이",
+      "category": "성인",
+      "tier": 2,
+      "description": "성인 경험치 풀 전체 상승 속도 증가"
+    },
+    {
+      "id": "AT_PURITY_WALL",
+      "name": "순결벽",
+      "category": "성인",
+      "tier": 2,
+      "description": "첫 경험 전까지 반감 대폭 상승, 이후 급감"
+    },
+    {
+      "id": "AT_IMPRINT_EASY",
+      "name": "각인용이",
+      "category": "성인",
+      "tier": 2,
+      "description": "각인 획득 속도 증가"
+    }
+  ],
+  "body": [
+    {
+      "id": "BT_SMALL_FRAME",
+      "name": "소체형",
+      "category": "신체",
+      "tier": 1,
+      "description": "DEF 감소, 회피 증가, 고통 상승 보정"
+    },
+    {
+      "id": "BT_LARGE_FRAME",
+      "name": "대체형",
+      "category": "신체",
+      "tier": 1,
+      "description": "DEF 증가, 회피 감소, 체력 보정"
+    },
+    {
+      "id": "BT_RESILIENT",
+      "name": "강인",
+      "category": "신체",
+      "tier": 1,
+      "description": "체력 회복 보정, 상태이상 내성"
+    },
+    {
+      "id": "BT_FRAGILE",
+      "name": "허약",
+      "category": "신체",
+      "tier": 1,
+      "description": "체력 회복 감소, 감도 상승 보정"
+    },
+    {
+      "id": "BT_FLEXIBLE",
+      "name": "유연",
+      "category": "신체",
+      "tier": 1,
+      "description": "특정 조교 행위 해금 조건 완화, 회피 보정"
+    },
+    {
+      "id": "BT_RIGID",
+      "name": "경직",
+      "category": "신체",
+      "tier": 1,
+      "description": "방어 보정, 감도 상승 감소"
+    },
+    {
+      "id": "BT_SCALES",
+      "name": "인분",
+      "category": "신체",
+      "tier": 1,
+      "description": "물리 방어 보정, 열 속성 약점"
+    },
+    {
+      "id": "BT_FUR",
+      "name": "체모",
+      "category": "신체",
+      "tier": 1,
+      "description": "열 내성, 식 속성 약점"
+    },
+    {
+      "id": "BT_SLIME_BODY",
+      "name": "점액체",
+      "category": "신체",
+      "tier": 2,
+      "description": "물리 감소 흡수, 형태 가변"
+    },
+    {
+      "id": "BT_CRYSTAL_BODY",
+      "name": "결정체",
+      "category": "신체",
+      "tier": 2,
+      "description": "광 속성 반사, 물리 취약"
+    },
+    {
+      "id": "BT_WING",
+      "name": "유익",
+      "category": "신체",
+      "tier": 2,
+      "description": "이동 보정, 탐사 보너스"
+    },
+    {
+      "id": "BT_TAIL",
+      "name": "미부",
+      "category": "신체",
+      "tier": 1,
+      "description": "추가 행동 보정, 감정 표현 보조"
+    },
+    {
+      "id": "BT_HORN",
+      "name": "각",
+      "category": "신체",
+      "tier": 1,
+      "description": "감각 보정, 특수 부위"
+    },
+    {
+      "id": "BT_FORGE_AFFINITY",
+      "name": "단조적성",
+      "category": "신체",
+      "tier": 2,
+      "description": "가공 효율 상승, 금속 가공 보정",
+      "landscapeTags": {
+        "smell": "그을음 냄새",
+        "sound": "금속소리",
+        "temperature": "열기"
+      }
+    },
+    {
+      "id": "BT_TAMING_AFFINITY",
+      "name": "조련적성",
+      "category": "신체",
+      "tier": 2,
+      "description": "수급량 증가, 유기체 다루기 보정",
+      "landscapeTags": {
+        "smell": "점액기척",
+        "sound": "생물소리",
+        "temperature": "습기"
+      }
+    },
+    {
+      "id": "BT_GUARD_AFFINITY",
+      "name": "경비적성",
+      "category": "신체",
+      "tier": 2,
+      "description": "탐사 전투 보정, 경비 효율",
+      "landscapeTags": {
+        "sound": "규칙적 발소리",
+        "visual": "정돈된 공기"
+      }
+    },
+    {
+      "id": "BT_HERB_AFFINITY",
+      "name": "약초적성",
+      "category": "신체",
+      "tier": 2,
+      "description": "약초 재료 가공/조합 보정",
+      "landscapeTags": {
+        "smell": "허브 냄새",
+        "sound": "끓는 소리"
+      }
+    },
+    {
+      "id": "BT_ALCHEMY_AFFINITY",
+      "name": "연금적성",
+      "category": "신체",
+      "tier": 2,
+      "description": "촉매 계열, 히든 레시피 보정",
+      "landscapeTags": {
+        "smell": "시약 냄새",
+        "sound": "유리소리",
+        "visual": "증기"
+      }
+    },
+    {
+      "id": "BT_EXPLORATION_BODY",
+      "name": "탐사체질",
+      "category": "신체",
+      "tier": 1,
+      "description": "던전 탐사 스태미나 소비 감소, 채집 보정"
+    },
+    {
+      "id": "BT_COMBAT_BODY",
+      "name": "전투체형",
+      "category": "신체",
+      "tier": 1,
+      "description": "전투 기초 스탯 보정"
+    }
   ]
 }

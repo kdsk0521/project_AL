@@ -1,0 +1,196 @@
+; 트레잇 데이터 (traits.json → traits.csv)
+; 카테고리: 전투, 성격, 성인, 신체
+
+[combat]
+id,name,category,tier,apCost,damageMultiplier,element,target,effect,description,owner
+CT_PIERCE,찌르기,전투,1,1,1,위,single,,위 속성 기본 공격. 단일 대상 찌르기.,가시 임프
+CT_VENOM_STING,독침,전투,1,1,0.8,식,single,독 지속 데미지 3라운드,식 속성. 독 지속 데미지를 부여하는 침.,전갈 소녀
+CT_COLD_RADIATION,냉기방사,전투,1,2,1.2,열,area,,열 속성 — 열을 빨아들여 주변을 냉각. 범위 데미지.,서리 도마뱀 소녀
+CT_HEAT_WALL,내열벽,전투,1,0,0,열,self,열 내성 추가 보정,패시브. 열 속성 피격 시 데미지 감소.,슬래그 골렘
+CT_FLASH_SLASH,섬광참,전투,2,2,1.5,광,single,선제공격 보정,광 속성. 선제공격 보정이 붙는 고데미지 참격.,칼날 여우
+CT_OVERLOAD,과부하,전투,2,3,2,위,single,AP 1 추가 소비로 데미지 증폭,AP 1 추가 소비로 데미지가 크게 증폭된다.,폭뢰 정령
+CT_CORROSION_FIELD,부식장,전투,2,2,0.7,식,area,매 라운드 범위 확대,식 속성 범위 공격. 매 라운드 범위가 확대된다.,잿빛 무녀
+CT_ASH_RESIDUE,소각재,전투,2,0,0,,self,전투 후 재료 드랍 보정,패시브. 전투 종료 후 재료 드랍률에 보정을 준다.,잿빛 무녀
+CT_CRUSHING_CHARGE,분쇄돌진,전투,2,3,1.8,동,single,물리+동 복합. 선제 시 추가 데미지,물리+동 복합 공격. 선제 시 추가 데미지가 붙는다.,뇌각 장수
+CT_INTIMIDATION,위압,전투,2,1,0,,all_enemies,적 전체 공격력 소폭 하락 1라운드,적 전체의 공격력을 소폭 하락시킨다.,뇌각 장수
+CT_HARDEN,경화,전투,1,0,0,,self,피격 시 일정 확률로 방어 상승,패시브. 피격 시 일정 확률로 방어가 상승한다.,진흙 인형
+CT_EROSION_BITE,침식물기,전투,1,1,0.9,식,single,시간 경과로 추가 데미지,식 속성 근접. 시간 경과로 추가 데미지가 발생한다.,이끼 늑대
+CT_BINDING_THREAD,결속사,전투,2,2,0.5,광,single,적 행동 지연,광 속성. 적의 행동을 지연시키는 실을 발사한다.,수정 거미
+CT_SEAL_LIGHT,봉인광,전투,2,2,0.6,광,single,적 트레잇 하나 일시 무력화,광 속성. 적 트레잇 하나를 일시적으로 무력화한다.,호박 정령
+CT_DISSOLVE_FLUID,용해액,전투,1,1,0.8,열,single,적 방어 감소,열 속성 — 녹이는 방향. 적 방어를 감소시킨다.,거품 슬라임
+CT_DISASSEMBLE_ANALYZE,해체분석,전투,1,1,0.6,위,single,적 약점 감지. 다음 공격에 데미지 보정,위 속성. 적 약점을 감지하여 다음 공격에 보정을 부여한다.,야드 스파이더
+CT_CURRENT,해류,전투,2,2,0.4,열,all_allies,아군 회복 보정,열 속성 — 수온 조절로 환경 변화. 아군 회복 보정.,수련 요정
+CT_PARALYSIS_TENTACLE,마비촉수,전투,2,2,0.7,광,single,적 행동 마비 확률,광 속성. 적을 마비시킬 확률이 있다.,해파리 무희
+CT_PINCER_STRIKE,협격,전투,2,2,1.4,열,single,열+동 복합. 집게로 잡아서 열 주입,열+동 복합 공격. 집게로 잡아 열을 주입한다.,온천 대게
+CT_LIGHT_ARMOR,경갑,전투,2,0,0,,self,물리 내성 소폭 상승,패시브. 물리 내성이 소폭 상승한다.,온천 대게
+CT_PURIFY,정화,전투,1,1,0,식,single_ally,아군 상태이상 해제,식 속성. 아군 하나의 상태이상을 해제한다.,약초 요정
+CT_FOCUSED_LIGHT,집속광,전투,1,2,1.6,광,single,,광 속성. 단일 대상 고데미지.,렌즈 도롱뇽
+CT_DISTILL,증류,전투,2,1,0.5,열,single,적 버프 하나 제거,열 속성. 적의 버프 하나를 제거한다.,증류기 인형
+CT_PARALYSIS_POISON,마비독,전투,2,2,0.6,식,single,적 AP 감소,식 속성. 적의 AP를 감소시키는 독.,독나비
+CT_SCALES,인분,전투,2,1,0.4,식,area,범위 미량 지속 데미지,식 속성. 독 인분을 뿌려 범위 미량 지속 데미지.,독나비
+CT_CRYSTAL_BARRIER,결정방벽,전투,2,2,0,동,self,물리 반사 확률,동 속성. 물리 공격을 반사할 확률을 얻는다.,결정 기사
+CT_SELF_REPAIR,자기수복,전투,2,0,0,,self,매 라운드 HP 소량 회복,패시브. 매 라운드 HP가 소량 회복된다.,결정 기사
+CT_IRON_WALL,철벽,전투,2,0,0,,self,피격 시 내구 비례 데미지 감소,패시브. 피격 시 내구에 비례하여 데미지를 감소시킨다.,철벽 기사
+CT_GUARDIAN,수호,전투,2,1,0,,single_ally,인접 아군 피격 대신 받기,인접 아군이 받을 피격을 대신 받는다.,철벽 기사
+CT_AMBUSH,암습,전투,1,2,2,동,single,선제 공격 시 데미지 2배,동 속성. 선제 공격 시 데미지가 2배가 된다.,그림자 고양이
+CT_EROSION_THREAD,침식사,전투,2,2,0.7,식,single,적 장비 내구도 감소,식 속성. 적의 장비 내구도를 감소시키는 실.,침식 거미
+CT_BINDING,속박,전투,2,1,0,식,single,적 속도 감소 1라운드,적을 속박하여 속도를 감소시킨다.,침식 거미
+CT_DISMANTLE,해체,전투,2,2,1.3,광,single,적 방어 구조 분석. 방어 무시 확률,광 속성. 적의 방어 구조를 분석해 방어를 무시할 확률을 얻는다.,해부인형
+CT_POISON_MIST,독무,전투,2,2,0.5,식,area,매 라운드 지속,식 속성 범위 독무. 매 라운드 지속 데미지.,독무 무용수
+CT_EVASION_DANCE,회피무,전투,2,0,0,,self,회피율 상승,패시브. 회피율이 상승한다.,독무 무용수
+CT_PRECISION_INCISION,정밀절개,전투,2,3,2,위,single,방어 무시 고데미지 단일,위 속성. 방어를 무시하는 고데미지 단일 공격.,해골 외과의
+CT_WEAK_POINT_DETECT,약점감지,전투,2,0,0,,self,전투 시작 시 적 약점 공개,패시브. 전투 시작 시 적의 약점을 공개한다.,해골 외과의
+CT_KARMIC_FLAME,업화,전투,2,2,1.2,열,single,연속 공격 시 데미지 누적 증가,열 속성. 연속 공격 시 데미지가 누적으로 증가한다.,업화의 인살
+CT_TRACKER,추적자,전투,2,0,0,,self,적 도망 불가,패시브. 적이 도망칠 수 없다.,업화의 인살
+CT_MIST_FIELD,안개장,전투,1,1,0,동,all_allies,아군 회피 보정,동 속성. 아군 전체의 회피율에 보정을 준다.,안개 해파리
+CT_REFLECT,반사,전투,1,0,0,광,self,피격 데미지 일부 반사,패시브. 피격 데미지의 일부를 반사한다.,거울 여우
+CT_SPORE_SPREAD,포자확산,전투,1,1,0.3,식,all_enemies,적 전체 미량 지속 데미지,식 속성. 적 전체에 미량의 지속 데미지를 부여한다.,공생균 소녀
+CT_SYMBIOSIS,공생,전투,1,0,0,,single_ally,인접 아군 HP 소량 회복,패시브. 인접 아군의 HP를 소량 회복한다.,공생균 소녀
+CT_FRAGRANCE,향기,전투,2,1,0,열,all_enemies,적 전체 AP 소량 감소,열 속성. 적 전체의 AP를 소량 감소시킨다.,향로 인형
+CT_SOOTHE,진정,전투,2,0,0,,all_allies,아군 상태이상 내성 보정,패시브. 아군 전체에 상태이상 내성 보정을 준다.,향로 인형
+CT_PETRIFY_GAZE,석화시선,전투,2,2,0.5,위,single,적 행동 정지 확률,위 속성. 적을 행동 정지시킬 확률이 있다.,쌍두사
+CT_CRYSTALLIZE,결정화,전투,1,0,0,동,self,피격 시 방어 소폭 상승 누적,패시브. 피격 시 방어가 소폭 누적 상승한다.,소금 슬라임
+CT_PETRIFY,석화,전투,1,1,0.5,위,single,적 속도 감소,위 속성. 적의 속도를 감소시킨다.,석상 소녀
+CT_FOSSIL_ARMOR,화석갑,전투,1,0,0,,self,물리 내성 높음, 속도 최저,패시브. 물리 내성이 높지만 속도가 최저.,화석 도마뱀
+CT_CRYSTAL_REFLECT,결정반사,전투,2,0,0,광,self,광 내성 대폭 상승 + 광 공격 반사 확률,패시브. 광 내성이 대폭 상승하고 광 공격을 반사할 확률이 있다.,소금꽃
+CT_PRESERVE,방부,전투,2,1,0.6,식,single,적 회복 무효화,식 속성. 적의 회복 효과를 무효화한다.,미이라 무녀
+CT_SEAL_BIND,봉인포박,전투,2,2,0,식,single,적 트레잇 1개 봉인,적의 트레잇 하나를 봉인한다.,미이라 무녀
+CT_BARRIER,결계,전투,2,3,0,위,all_allies,아군 전체 1회 피격 무효,위 속성. 아군 전체의 다음 피격 1회를 무효화한다.,결계석
+CT_CORAL_EROSION,산호침식,전투,2,2,0.6,식,area,식 속성 지속 데미지 + 범위 확산,식 속성. 지속 데미지를 부여하며 범위가 확산된다.,산호 마녀
+CT_CAUSAL_THREAD,인과사,전투,2,2,0.8,광,single,적 2체를 연결. 한쪽 피격 시 다른 쪽도 데미지,광 속성. 적 2체를 연결하여 한쪽이 받는 데미지를 다른 쪽도 받게 한다.,인과의 직공
+CT_SEAL_ART,봉인술,전투,2,2,0.5,광,single,적 트레잇 봉인,광 속성. 적의 트레잇을 봉인한다.,봉인의 서기관
+CT_TERRITORY_CONTROL,영역장악,전투,2,2,1.2,식,single,,범위 지배 보정,산호 마녀
+CT_IMMOVABLE,부동,전투,2,2,1.2,동,single,,선제 포기 대신 받는 데미지 대폭 감소,현무
+CT_EARTHQUAKE,지진,전투,2,2,1.2,동,single,,동 속성 범위,현무
+CT_MOONLIGHT_DISSOLVE,월광용해,전투,2,2,1.2,광,single,,광+식 복합, 적 방어를 서서히 녹임,인 해월
+CT_FORM_INSTABILITY,형태 불안정,전투,2,2,1.2,광,single,,매 라운드 스탯 소폭 변동,인 해월
+CT_DEEP_PRESSURE,심압,전투,2,2,1.2,위,single,,위 속성, 적 전체 AP 감소,심해 용궁녀
+CT_DRAGON_SCALE,용린,전투,2,2,1.2,위,single,,물리 내성 대폭 상승,심해 용궁녀
+CT_DECODE,해독,전투,2,2,1.2,광,single,,파편 로어 해독 보정,봉인의 서기관
+CT_PRECISION_ALCHEMY,정밀연성,전투,2,2,1.2,열,single,,열 속성, 크리티컬 확률 대폭 상승,백은의 연금술사
+CT_INSIGHT,간파,전투,2,2,1.2,열,single,,적 행동 예측 보정,백은의 연금술사
+CT_DUAL_BODY,이중체,전투,2,2,1.2,위,single,,이중 존재 보정,쌍두사
+CT_FATE_EDIT,운명편집,전투,2,2,1.2,광,single,,특수 보정 효과,인과의 직공
+CT_ECHO,잔향,전투,2,2,1.2,동,single,,동 속성, 아군 전체 버프 — 다음 행동 데미지 증폭,잔향의 인어
+CT_REQUIEM,진혼가,전투,2,2,1.2,동,single,,특수 지원 효과,잔향의 인어
+CT_MANA_AMPLIFY,마력 증폭,전투,2,2,1.2,위,single,,아군 마력 보정,결계석
+CT_EARTH_BLESSING,대지의 축복,전투,2,2,1.2,동,single,,동 속성, 아군 전체 내구 보정,대지모
+CT_NATURAL_HEAL,자연치유,전투,2,2,1.2,동,single,,자연 회복 효과,대지모
+
+[personality]
+id,name,category,tier,description,owner
+PT_FEARLESS,겁없음,성격,1,위험을 두려워하지 않는다. 공격 행동을 선호하고 도주를 꺼린다.,가시 임프
+PT_COMBATIVE,호전적,성격,1,싸움을 즐긴다. 공격 행동을 강하게 선호한다.,전갈 소녀
+PT_TIMID,소심,성격,1,겁이 많다. 방어 행동과 도주를 선호한다.,약초 요정
+PT_WILDNESS,야성,성격,1,야생의 본능으로 행동한다.,서리 도마뱀 소녀
+PT_DULL,둔감,성격,1,반응이 느리다. 방어적이지만 도주하지 않는다.,슬래그 골렘
+PT_VANITY,허영,성격,1,자신을 과시하려 한다.,칼날 여우
+PT_EMOTIONAL_BURST,감정폭발,성격,1,감정이 폭발하면 공격적으로 변한다.,폭뢰 정령
+PT_APATHETIC,무심,성격,1,관심이 없다. 균형잡힌 행동 패턴.,잿빛 무녀
+PT_DOMINATION,지배욕,성격,2,지배하려 한다. 공격 선호, 도주 거부.,뇌각 장수
+PT_PASSIVE,수동적,성격,1,스스로 행동하기보다 상황에 따른다.,진흙 인형
+PT_VIGILANT,경계심,성격,1,항상 경계한다. 방어적 행동을 선호한다.,이끼 늑대
+PT_POSSESSIVE,소유욕,성격,1,가진 것을 지키려 한다.,수정 거미
+PT_CAUTIOUS,신중,성격,1,신중하게 행동한다.,호박 정령
+PT_DUTY,의무감,성격,1,의무를 다하려 한다. 방어적이고 도주하지 않는다.,철벽 기사
+PT_DEPENDENT,의존,성격,1,누군가에게 의존하려 한다.,거품 슬라임
+PT_OBSERVANT,관찰벽,성격,1,관찰하고 분석하려 한다.,야드 스파이더
+PT_INTROVERTED,내향,성격,1,안으로 향한다. 방어적 행동 선호.,수련 요정
+PT_SEDUCTIVE,유혹,성격,2,유혹적으로 행동한다.,해파리 무희
+PT_LOYAL,의리,성격,1,의리를 지킨다. 도주하지 않는다.,온천 대게
+PT_CURIOUS,호기심,성격,1,호기심이 강하다.,가시 임프
+PT_CRAFTY,교활,성격,1,교활하게 행동한다.,칼날 여우
+PT_LOYAL_FAITHFUL,충직,성격,1,충직하게 따른다.,철벽 기사
+PT_STUBBORN,완고,성격,1,쉽게 물러서지 않는다.,이끼 늑대
+PT_CLEAN_FREAK,결벽,성격,1,불순한 것을 거부한다.,결정 기사
+PT_ARROGANT,오만,성격,2,자신이 가장 우월하다고 여긴다.,백은의 연금술사
+PT_CLINGY,밀착,성격,1,가까이 붙어있으려 한다.,공생균 소녀
+PT_DEVOTED,헌신,성격,1,상대를 위해 헌신한다.,향로 인형
+PT_SHY,수줍음,성격,1,쉽게 부끄러워한다.,소금꽃
+PT_AIRHEAD,천연,성격,1,자연스럽고 꾸밈이 없다.,소금 슬라임
+PT_MOODY,기분파,성격,1,기분에 따라 행동이 바뀐다.,그림자 고양이
+PT_OBSESSIVE,집착,성격,1,한 가지에 집착한다.,침식 거미
+PT_INQUISITIVE,탐구적,성격,1,모든 것을 탐구하려 한다.,해부인형
+PT_EXPRESSIONLESS,무표정,성격,1,표정 변화가 거의 없다.,석상 소녀
+PT_RESIGNED,체념,성격,1,체념하고 있다.,화석 도마뱀
+PT_ENLIGHTENED,달관,성격,2,세상의 이치를 달관했다.,미이라 무녀
+PT_MIMIC,흉내쟁이,성격,1,상대의 행동을 따라한다.,거울 여우
+PT_DUALITY,양면성,성격,2,두 가지 면을 가지고 있다.,쌍두사
+PT_HOARDER,수집벽,성격,,수집벽,산호 마녀
+PT_DETACHED,초연,성격,,초연,현무
+PT_EMBRACE,포용,성격,,포용,인 해월
+PT_NOBLE,고고,성격,,고고,심해 용궁녀
+PT_OBSERVANT_2,관찰벽,성격,,관찰벽,렌즈 도롱뇽
+PT_EMOTIONLESS_SURFACE,무감정(표면),성격,,무감정(표면),증류기 인형
+PT_SADISTIC,가학적,성격,,가학적,독나비
+PT_DETACHED_2,초연,성격,,초연,봉인의 서기관
+PT_DOMINEERING,지배적,성격,,지배적,백은의 연금술사
+PT_MERCILESS,냉혹,성격,,냉혹,독무 무용수
+PT_MANIACAL_RESEARCH,광적 탐구,성격,,광적 탐구,해골 외과의
+PT_TENACITY,집념,성격,,집념,업화의 인살
+PT_PASSIVE_2,수동적,성격,,수동적,안개 해파리
+PT_TRANSCENDENT,초탈,성격,,초탈,인과의 직공
+PT_SELF_SACRIFICE,자기희생,성격,,자기희생,잔향의 인어
+PT_INTROVERTED_2,내향,성격,,내향,소금꽃
+PT_SILENT,침묵,성격,,침묵,결계석
+PT_EMBRACE_2,포용,성격,,포용,대지모
+
+[adult]
+id,name,category,tier,description
+AT_INEXPERIENCED,미경험,성인,1,첫 경험 관련 보정. 초기 상태
+AT_DISSOLVING_BODY,용해체질,성인,1,감도 변동 폭 증가, 감각이 녹아드는 체질
+AT_NUMB_CONSTITUTION,둔감체질,성인,1,전부위 감도 상승 속도 감소
+AT_SLOW_CONSTITUTION,둔화체질,성인,1,상태 변화 전반 느림
+AT_SADIST,S기질,성인,2,조교자일 때 효과 상승, 가학 계열 보정
+AT_SHAME_EXCESS,수치심 과잉,성인,2,수치 관련 행위 시 감도 추가 상승, 반감도 상승
+AT_HYPERSENSITIVITY,과감도,성인,2,전부위 감도 상승 속도 증가
+AT_OBSESSIVE_BOND,집착결속,성인,2,특정 대상 고정, 관계 수치 변동 극단화
+AT_TRUST_UNLOCK,신뢰개방,성인,1,호감도 기반 해금 조건 완화
+AT_GUARD_RELEASE,보호벽 해제,성인,2,해금 시 연모 대량 상승
+AT_PLASTICITY,가소성,성인,1,감도 성장 방향 가변, 학습형 반응과 시너지
+AT_LEARNING_RESPONSE,학습형 반응,성인,1,반복 행위 시 해당 부위 감도 상승 가속
+AT_SENSORY_CONFUSION,감각혼선,성인,2,부위별 감도가 불규칙하게 교차 반응
+AT_FICKLE_SENSITIVITY,변덕감도,성인,2,감도 수치가 주기적으로 변동
+AT_DEFENSELESS,무방비,성인,1,반감/공포 상승 불가, 대신 모든 행위 무저항
+AT_FAINT_SENSE,희미한 감각,성인,1,감도 상승 느리지만 절정 임계점도 낮음
+AT_DISSECTION_SENSITIVITY,해부감도,성인,2,부위별 감도 차이가 극단적, 분석 계열 시너지
+AT_RECORD_CONSTITUTION,기록체질,성인,2,경험한 행위의 기록이 수치에 영향, 반복 보정
+AT_POISON_SENSITIVITY,독감도,성인,2,약물/독 계열 아이템 효과 증폭
+AT_ANESTHETIC_SENSITIVITY,마취감도,성인,2,마취/무감각 계열 효과 증폭, 공포 상승 감소
+AT_MASOCHIST,M기질,성인,2,고통→쾌감 변환 보정. S기질의 반대축
+AT_HONEST_PLEASURE,쾌감순응,성인,1,조교 시 반감 상승 감소, 감도 상승 증가
+AT_DENIAL,쾌감부정,성인,1,반감 상승 증가, 감도 상승 감소
+AT_WET_EASY,과습체질,성인,1,윤활 상승 빠름, 특정 행위 해금 조건 완화
+AT_DRY_CONSTITUTION,건조체질,성인,1,윤활 상승 느림, 고통 상승 증가
+AT_DRUG_RESISTANCE,약물내성,성인,2,미약/약물 아이템 효과 감소
+AT_DRUG_SENSITIVITY,약물감수성,성인,2,약물 효과 증폭, 중독 상승 빠름
+AT_LACTATION,비유체질,성인,2,특수 부위 해금, 가슴 관련 행위 확장
+AT_HEAT_CYCLE,발정주기,성인,2,주기적 감도 전부위 변동 보정
+AT_DEVOTION_RESPONSE,헌신반응,성인,1,봉사 계열 행위 시 감도 상승 보정
+AT_PAIN_CONVERT,고통변환,성인,2,고통 수치 일부가 쾌감으로 전환
+AT_CORRUPTION_EASE,침식용이,성인,2,성인 경험치 풀 전체 상승 속도 증가
+AT_PURITY_WALL,순결벽,성인,2,첫 경험 전까지 반감 대폭 상승, 이후 급감
+AT_IMPRINT_EASY,각인용이,성인,2,각인 획득 속도 증가
+
+[body]
+id,name,category,tier,description,ls_smell,ls_sound,ls_visual,ls_temperature,ls_texture
+BT_SMALL_FRAME,소체형,신체,1,DEF 감소, 회피 증가, 고통 상승 보정,,,,,
+BT_LARGE_FRAME,대체형,신체,1,DEF 증가, 회피 감소, 체력 보정,,,,,
+BT_RESILIENT,강인,신체,1,체력 회복 보정, 상태이상 내성,,,,,
+BT_FRAGILE,허약,신체,1,체력 회복 감소, 감도 상승 보정,,,,,
+BT_FLEXIBLE,유연,신체,1,특정 조교 행위 해금 조건 완화, 회피 보정,,,,,
+BT_RIGID,경직,신체,1,방어 보정, 감도 상승 감소,,,,,
+BT_SCALES,인분,신체,1,물리 방어 보정, 열 속성 약점,,,,,
+BT_FUR,체모,신체,1,열 내성, 식 속성 약점,,,,,
+BT_SLIME_BODY,점액체,신체,2,물리 감소 흡수, 형태 가변,,,,,
+BT_CRYSTAL_BODY,결정체,신체,2,광 속성 반사, 물리 취약,,,,,
+BT_WING,유익,신체,2,이동 보정, 탐사 보너스,,,,,
+BT_TAIL,미부,신체,1,추가 행동 보정, 감정 표현 보조,,,,,
+BT_HORN,각,신체,1,감각 보정, 특수 부위,,,,,
+BT_FORGE_AFFINITY,단조적성,신체,2,가공 효율 상승, 금속 가공 보정,그을음 냄새,금속소리,,열기,
+BT_TAMING_AFFINITY,조련적성,신체,2,수급량 증가, 유기체 다루기 보정,점액기척,생물소리,,습기,
+BT_GUARD_AFFINITY,경비적성,신체,2,탐사 전투 보정, 경비 효율,,규칙적 발소리,정돈된 공기,,
+BT_HERB_AFFINITY,약초적성,신체,2,약초 재료 가공/조합 보정,허브 냄새,끓는 소리,,,
+BT_ALCHEMY_AFFINITY,연금적성,신체,2,촉매 계열, 히든 레시피 보정,시약 냄새,유리소리,증기,,
+BT_EXPLORATION_BODY,탐사체질,신체,1,던전 탐사 스태미나 소비 감소, 채집 보정,,,,,
+BT_COMBAT_BODY,전투체형,신체,1,전투 기초 스탯 보정,,,,,
