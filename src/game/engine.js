@@ -784,29 +784,18 @@ class GameEngine {
 
   _loadTraitsFromCSV() {
     try {
-      const rows = this.balance.load('traits.csv');
+      // 정규화 로더: effects/bridges 파싱 + 모든 컬럼(subMain/acquire/contraPair 등) 보존
+      const cats = this.balance.loadTraits('traits.csv');
       const result = [];
       for (const section of ['combat', 'personality', 'adult', 'body']) {
-        const sectionData = rows[section];
-        if (!sectionData || !Array.isArray(sectionData)) continue;
-        for (const row of sectionData) {
-          if (row._headers || row._kv) continue;
-          const trait = { id: row.id, name: row.name, category: row.category, tier: row.tier };
-          if (row.apCost != null && row.apCost !== '') trait.apCost = row.apCost;
-          if (row.damageMultiplier != null && row.damageMultiplier !== '') trait.damageMultiplier = row.damageMultiplier;
-          if (row.element) trait.element = row.element;
-          if (row.target) trait.target = row.target;
-          if (row.effect) trait.effect = row.effect;
-          if (row.description) trait.description = row.description;
-          if (row.owner) trait.owner = row.owner;
-          // Landscape tags (body category)
-          if (row.ls_smell || row.ls_sound || row.ls_visual || row.ls_temperature || row.ls_texture) {
-            trait.landscapeTags = {};
-            if (row.ls_smell) trait.landscapeTags.smell = row.ls_smell;
-            if (row.ls_sound) trait.landscapeTags.sound = row.ls_sound;
-            if (row.ls_visual) trait.landscapeTags.visual = row.ls_visual;
-            if (row.ls_temperature) trait.landscapeTags.temperature = row.ls_temperature;
-            if (row.ls_texture) trait.landscapeTags.texture = row.ls_texture;
+        for (const trait of (cats[section] || [])) {
+          // landscapeTags 중첩 (body)
+          if (trait.ls_smell || trait.ls_sound || trait.ls_visual || trait.ls_temperature || trait.ls_texture) {
+            trait.landscapeTags = {
+              smell: trait.ls_smell || null, sound: trait.ls_sound || null,
+              visual: trait.ls_visual || null, temperature: trait.ls_temperature || null,
+              texture: trait.ls_texture || null,
+            };
           }
           result.push(trait);
         }

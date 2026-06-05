@@ -1,0 +1,41 @@
+; ===== 트레잇 오써링 CSV (포맷 확정용 샘플) =====
+; loader.js 호환: 섹션[]별 헤더, 콤마 분리 → 필드 내 콤마 금지(마침표·중점 사용)
+; 기존 balance/traits.csv 확장: + rarity,subMain,subSub,acquire,effects,bridges,contraPair
+;
+; ----- 인코딩 규약 (effects / bridges 셀: 항목 구분 = " ; ", 필드 구분 = "|") -----
+; effects:  domain|target|op|value[|when:cond]
+;   domain = 조교|관계|생활|탐사
+;   target = global.연모|감도.부위|쾌감상한.부위|역가.공격숙련.속성|침염.종류|HP|ATK|DEF|회피|defense.속성|호감도|변용도.루트 ...
+;   op     = gainMult|add|mult|set|cap|thresholdMult|immune|unlock|gate
+; bridges:  type|...   (자동전투 훅)
+;   override| <when> | action:weight        (행동 강제)
+;   stat|    <stat>|<op>|<value>[|scaleBy:X]
+;   weight|  <action>|<delta>
+;   target|  <rule: lowHp|weakpoint|threat|random|protectMaster>
+;   special| <effect: enemyAccDown|enemyAiDisrupt|fearResist|hitStaggerImmune>|<value>
+; when/조건: stat:cmp:value  예) hpPct:lt:0.3 / 동석:has:주인 / 성향:is:S
+; acquire = 초기 | 후보풀 | 변용:루트:도 | 합성 | 부위시그
+; contraPair = 모순쌍 상대 id (없으면 빈칸)
+
+[combat]
+id,name,category,tier,rarity,subMain,subSub,acquire,apCost,element,dmgMult,target,effects,bridges,contraPair,description
+CT_PIERCE,찌르기,전투,1,일반,공격형,단일,초기,1,위,1.0,single,,,,위 속성 기본 공격. 단일 대상.
+CT_BERSERKER,광전사,전투,3,시그니처,공격형,승패,합성,,,,,,stat|ATK|mult|1.25 ; override|always|방어:0,,겁없음+호전 합성. ATK증가 방어선택불가.
+CT_IRONWALL,철벽,전투,3,일반,방어형,승패,후보풀,2,,,self,,stat|DEF|mult|2.0|when:hpPct:lt:0.3,,HP30%↓ DEF2배.
+
+[personality]
+id,name,category,tier,rarity,subMain,subSub,acquire,effects,bridges,contraPair,description
+PT_BOLD,겁없음,성격,1,일반,기질,담력,후보풀,,weight|공격|0.3,PT_TIMID,겁이 없음. 공격 가중.
+PT_TIMID,소심,성격,1,일반,기질,담력,후보풀,,weight|회피|0.2,PT_BOLD,겁이 많음. 회피 가중.
+PT_CURIOUS,호기심,성격,1,일반,마음가짐,지향,후보풀,조교|역가.숙련|gainMult|1.2 ; 탐사|발견|gainMult|1.15,,PT_CONSERV,탐구적. 性습득·탐사 가속.
+
+[adult]
+id,name,category,tier,rarity,subMain,subSub,acquire,effects,bridges,contraPair,description
+AT_LONGING,연모,성인,2,시그니처,관계,연모,변용:애착:1,조교|global.연모|gainMult|1.25 ; 관계|호감도|gainMult|1.10,,,연모 시작 가속.
+AT_SADIST,S기질,성인,2,일반,성향,가학,후보풀,조교|global.복종|gainMult|0.8,stat|ATK|add|0.1|when:성향:is:S,AT_MASOCHIST,가학 성향. 복종 둔화 전투 공격성.
+AT_HYPERSENS,과감도,성인,2,일반,감도,전부위,후보풀,조교|감도.전부위|gainMult|1.3,,AT_NUMB,전부위 감도 상승 빠름.
+
+[body]
+id,name,category,tier,rarity,subMain,subSub,acquire,effects,bridges,contraPair,description,ls_smell,ls_sound,ls_visual,ls_temperature,ls_texture
+BT_SMALL_FRAME,소체형,신체,1,일반,체격,체구,초기,,stat|DEF|mult|0.9 ; stat|회피|add|0.1,BT_LARGE_FRAME,작은 체격. 방어약 회피강.,,,,,
+BT_FORGE_AFFINITY,단조적성,신체,1,일반,적성,시설,초기,생활|시설.공방|mult|1.2,,,단조 적성.,그을음,금속소리,,열기,

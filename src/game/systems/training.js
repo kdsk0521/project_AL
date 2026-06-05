@@ -1,5 +1,7 @@
 'use strict';
 
+const TE = require('./trainingEngine'); // v2 침염/변용 레이어
+
 // Training System (조교소) — Adult content training with per-unit trait mechanics
 // Body parts: mouth(입), chest(가슴), v(V), c(C), anal(애널), skin(피부)
 // Actions: caress(애무), stimulate(자극), tease(간지럼), press(압박), lick(핥기), tool(도구사용)
@@ -664,6 +666,9 @@ class TrainingSystem {
     gs.resentment = Math.max(0, Math.min(100, (gs.resentment || 0) + resentGain));
     gs.love = Math.max(0, Math.min(100, (gs.love || 0) + loveGain));
 
+    // v2: 침염/변용 진행 (v1 위 비파괴 추가 레이어)
+    this._applyChimyeomVariation(unit, { 연모: loveGain, 복종: submissionGain, 음란: lewdGain, 공포: fearGain, 반감: resentGain }, totalSenGain * 5); // ×5 = v1 senGain 스케일 보정(잠정)
+
     // Post-processing for 정제감도
     if (adultTrait === 'AT_REFINED_SENSITIVITY') {
       const maxP = this.PARTS.reduce((a, b) => (sen[a] || 0) >= (sen[b] || 0) ? a : b);
@@ -815,6 +820,38 @@ class TrainingSystem {
   }
 
   // Get milestone for part experience level
+  // v2: 침염/변용 진행 — v1 globalState 위에 얹는 추가 레이어 (비파괴).
+  _applyChimyeomVariation(unit, gains, pleasureGain) {
+    if (!unit.침염) unit.침염 = {};
+    if (!unit.변용도) unit.변용도 = {};
+    if (!unit._session) unit._session = { pleasure: 0, gain: {} };
+    const sess = unit._session;
+    sess.pleasure += (pleasureGain || 0);
+    for (const k of Object.keys(gains)) {
+      if (gains[k] > 0) sess.gain[k] = (sess.gain[k] || 0) + gains[k];
+    }
+    const result = { 절정: false, 침염: null, 변용: null };
+    const 내성 = (unit.역가 && unit.역가.내성) ? Math.max(0, ...Object.values(unit.역가.내성)) : 0;
+    const 절정임계 = 100 + 내성 * 20;
+    if (sess.pleasure >= 절정임계 && Object.keys(sess.gain).length) {
+      result.절정 = true;
+      sess.pleasure = 0;
+      const type = Object.keys(sess.gain).sort((a, b) => sess.gain[b] - sess.gain[a])[0];
+      unit.침염[type] = (unit.침염[type] || 0) + 1;
+      result.침염 = type;
+      const view = {
+        침염: unit.침염, 변용도: unit.변용도, 변용잠금: unit.변용잠금,
+        호감도: unit.affection || 0, 감도: unit.sensitivity || {},
+        역가: unit.역가 || { 숙련: {} },
+      };
+      result.변용 = TE.advanceVariation(view, TE.ROUTE_OF[type] || '붕괴');
+      unit.변용잠금 = view.변용잠금;
+      sess.gain = {};
+    }
+    unit._lastChimyeom = result;
+    return result;
+  }
+
   getPartMilestone(exp) {
     let result = this.PART_MILESTONES[0];
     for (const m of this.PART_MILESTONES) {

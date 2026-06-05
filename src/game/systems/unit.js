@@ -1,5 +1,7 @@
 'use strict';
 
+const SE = require('./synthesisEngine'); // v2 모순쌍
+
 // Unit System - Fusion, trait inheritance, experience, training
 class UnitSystem {
   constructor(engine) {
@@ -70,6 +72,8 @@ class UnitSystem {
     const inheritedTraits = this.performTraitInheritance(unitA, unitB, resultInstance, actualDef);
     resultInstance.traits = inheritedTraits.final;
     resultInstance.potential = inheritedTraits.potential;
+    // v2: 모순쌍 공존 검출 (합체 결과 트레잇에 대립쌍이 함께 있으면)
+    resultInstance.contradictions = this._checkContradictions(resultInstance.traits);
 
     // Special sigil effects
     if (unitA.sigil === 7 || unitB.sigil === 7) {
@@ -114,6 +118,21 @@ class UnitSystem {
   }
 
   // Trait inheritance: 3 routes (합성 발동 → 직접 계승 → 잠재력 계승)
+  // v2: 모순쌍 공존 검출 — 트레잇 id 목록 → 이름 매핑 → contradictionPairs 대조
+  _checkContradictions(traitIds) {
+    if (!this._contraPairs) {
+      const rows = (this.engine.balance && this.engine.balance.getRows)
+        ? this.engine.balance.getRows('contradictionPairs.csv', '_default') : [];
+      this._contraPairs = SE.loadContradictions(rows);
+    }
+    const reg = (this.engine.data && this.engine.data.traits) || [];
+    const names = (traitIds || []).map(id => {
+      const t = reg.find(x => x.id === id);
+      return t ? t.name : id;
+    });
+    return SE.checkContradictions(names, this._contraPairs);
+  }
+
   performTraitInheritance(unitA, unitB, resultInstance, resultDef) {
     const allTraitsA = [...(unitA.traits || [])];
     const allTraitsB = [...(unitB.traits || [])];

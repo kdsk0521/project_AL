@@ -1,5 +1,8 @@
 'use strict';
 
+const R = require('../balance/traitResolver');
+const CE = require('./combatEngine');
+
 // Combat System - Auto-battle with AP, simultaneous resolution
 class CombatSystem {
   constructor(engine) {
@@ -177,13 +180,25 @@ class CombatSystem {
       if (Math.random() < 0.9) actionType = 'defend';
     }
 
+    // v2: 데이터 기반 오버라이드 (bridge override, 우선순위 적용)
+    const _ovb = this._unitBridges(unit);
+    if (_ovb.overrides && _ovb.overrides.length) {
+      const _ctx = { hpPct: unit.maxHp ? unit.hp / unit.maxHp : 1 };
+      const _act = _ovb.overrides.filter(o => R.evalCondition(o.when, _ctx) && o.force);
+      if (_act.length) {
+        const _f = CE.weightedPick(_act[0].force);
+        const _m = { '공격': 'attack', '방어': 'defend', '스킬': 'skill', '회피': 'defend' };
+        if (_m[_f]) actionType = _m[_f];
+      }
+    }
+
     // Find a skill trait to use
     const skillTrait = this.findUsableSkill(unit, remainingAp);
 
     if (actionType === 'attack' || actionType === 'skill') {
       const alive = opponents.filter(o => !o.isKO);
       if (alive.length === 0) return null;
-      const target = alive[Math.floor(Math.random() * alive.length)];
+      const target = this._chooseTarget(unit, alive); // v2: 敵対心 가중
 
       if (skillTrait && actionType === 'skill') {
         return this.executeSkill(unit, target, skillTrait);
@@ -203,6 +218,27 @@ class CombatSystem {
     return this.executeBasicAttack(unit, opponents[0]);
   }
 
+  // v2: 유닛의 트레잇 객체 → resolveBridges (engine.data.traits 레지스트리에서 조회)
+  _unitBridges(unit) {
+    const reg = (this.engine && this.engine.data && this.engine.data.traits) || [];
+    const ids = new Set([...(unit.traits || []), ...(unit.personalityTraits || [])]);
+    const objs = reg.filter(t => ids.has(t.id) || ids.has(t.name));
+    const ctx = { hpPct: unit.maxHp ? unit.hp / unit.maxHp : 1, 성향: unit.성향 || null };
+    return R.resolveBridges(objs, ctx);
+  }
+  _aggro(unit) {
+    const br = this._unitBridges(unit);
+    let a = unit.敵対心 || 1;
+    for (const sp of br.specials) if (sp.effect === 'aggroUp' || sp.effect === 'taunt') a += (sp.value || 1);
+    return Math.max(0.1, a);
+  }
+  _chooseTarget(actor, alive) {
+    const br = this._unitBridges(actor);
+    const enriched = alive.map(e => ({ 敵対心: this._aggro(e), hpPct: e.maxHp ? e.hp / e.maxHp : 1, hasWeak: false, _ref: e }));
+    const idx = CE.chooseTarget({ targets: br.targets || [] }, enriched);
+    return enriched[idx]._ref;
+  }
+
   getPersonalityWeights(unit) {
     // Default weights
     let attack = 50, defend = 30, skill = 20;
@@ -220,7 +256,12 @@ class CombatSystem {
       attack = 40; defend = 40; skill = 20;
     }
 
-    return { attack, defend, skill };
+    // v2: bridge 가중 병합 (resolveBridges weights, Korean→en 매핑)
+    const _br = this._unitBridges(unit);
+    const _map = { '공격': 'attack', '방어': 'defend', '회피': 'defend', '스킬': 'skill' };
+    const _w = { attack, defend, skill };
+    for (const _k in _br.weights) { const _t = _map[_k]; if (_t) _w[_t] = Math.max(0, _w[_t] + _br.weights[_k] * 100); }
+    return _w;
   }
 
   findUsableSkill(unit, remainingAp) {

@@ -5,7 +5,7 @@
 ; 신규 로스터 이름(trait_roster.md [신])은 아직 미포함 — id 부여 후 추가
 
 [combat]
-id,name,category,tier,rarity,subMain,subSub,acquire,apCost,element,damageMultiplier,target,effects,bridges,contraPair,description
+id,name,category,tier,rarity,subMain,subSub,acquire,apCost,element,dmgMult,target,effects,bridges,contraPair,description
 CT_PIERCE,찌르기,전투,1,,공격형,위,,1,위,1,single,,,,위 속성 기본 공격. 단일 대상 찌르기.
 CT_VENOM_STING,독침,전투,1,,제어형,식,,1,식,0.8,single,,special|dot독|0.2,,식 속성. 독 지속 데미지를 부여하는 침.
 CT_COLD_RADIATION,냉기방사,전투,1,,공격형,열,,2,열,1.2,area,,,,열 속성 — 열을 빨아들여 주변을 냉각. 범위 데미지.
