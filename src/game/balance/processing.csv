@@ -24,3 +24,20 @@ MAT_WATER,compressor,전도,결정,null,MAT_WATER_COMPRESSED,물결정
 MAT_SLIME_CORE,furnace,수호,유기,동,MAT_SLIME_CORE_FIRED,경화슬라임
 MAT_SLIME_CORE,crusher,전도,분말,동,MAT_SLIME_CORE_CRUSHED,슬라임분말
 MAT_SLIME_CORE,compressor,보존,결정,null,MAT_SLIME_CORE_COMPRESSED,슬라임결정
+
+; === 모순 태그 12쌍 (엘릭서 색 판정 · 조합 창발 공용 — crafting.js 로드) ===
+; 오써링 규칙 4(확정성): 쌍 추가/조정 = 여기 한 줄. 식·자 = 홀로(모순 불참, v4.5)
+[tag_contradictions]
+tagA,tagB,note
+회복,공격,기능
+독성,수호,기능
+억제,분산,기능
+조련,부여,기능
+촉매,마력촉매,기능 — 흑화 베이스 쌍
+경도,가공성,물성
+전도,보존,물성
+열,광,원소
+위,동,원소
+기체,결정,형태
+액체,분말,형태
+식물,광물,형태

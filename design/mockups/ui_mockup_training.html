@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>조교 화면 목업 — v2 침염/변용</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#c8c8c8; font-family:"D2Coding","Consolas",monospace; font-size:14px; line-height:1.6; height:100vh; display:flex; flex-direction:column; }
+  /* ── 헤더 ── */
+  #header { padding:8px 16px; border-bottom:1px solid #2a2a2a; color:#9aa; }
+  #header .loc { color:#e8d9a0; }
+  #header .soul { color:#7fd4ff; }
+  /* ── 상태부 ── */
+  #status { padding:10px 16px; border-bottom:1px solid #2a2a2a; display:flex; gap:28px; flex-shrink:0; }
+  .col { flex:1; min-width:0; }
+  .unit-line { margin-bottom:6px; }
+  .unit-name { color:#fff; font-weight:bold; }
+  .aff-stage { color:#ff9ec4; }
+  h4 { color:#888; font-size:12px; margin:8px 0 3px; font-weight:normal; letter-spacing:1px; }
+  /* 게이지 */
+  .row { display:flex; align-items:center; gap:6px; height:20px; }
+  .row .lbl { width:46px; color:#aab; }
+  .row .lv  { width:74px; color:#667; font-size:12px; }
+  .bar { flex:1; height:9px; background:#1a1a1a; border:1px solid #2c2c2c; position:relative; }
+  .bar i { position:absolute; left:0; top:0; bottom:0; }
+  .row .val { width:30px; text-align:right; color:#889; font-size:12px; }
+  /* 글로벌5 색 */
+  .g-연모 i{background:#ff69b4} .g-복종 i{background:#ffd700} .g-음란 i{background:#c678dd}
+  .g-공포 i{background:#6495ed} .g-반감 i{background:#ff5544}
+  .sen i{background:#5fb0a0}
+  /* 쾌감 세션 게이지 */
+  #pleasure-wrap { margin-top:8px; }
+  #pleasure-bar { height:13px; background:#1a1a1a; border:1px solid #3a3050; position:relative; }
+  #pleasure-bar i { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#7a4f9d,#c678dd); width:0%; transition:width .25s; }
+  #pleasure-lbl { font-size:12px; color:#a98fc9; }
+  /* 고통 세션 게이지 */
+  #pain-wrap { margin-top:4px; }
+  #pain-bar { height:13px; background:#1a1a1a; border:1px solid #4a2a20; position:relative; }
+  #pain-bar i { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#7a3020,#d9603f); width:0%; transition:width .25s; }
+  #pain-lbl { font-size:12px; color:#c98f7a; }
+  .c-고통{color:#d9603f}
+  .l-pain{color:#d98f6f}
+  /* 침염 도장 */
+  .chim { letter-spacing:2px; }
+  .chim b { font-weight:normal; }
+  .c-연모{color:#ff69b4}.c-복종{color:#ffd700}.c-음란{color:#c678dd}.c-공포{color:#6495ed}.c-반감{color:#ff5544}
+  .chim .empty{color:#333}
+  /* 변용 사다리 */
+  .route { display:flex; align-items:center; gap:8px; height:22px; }
+  .route .rname { width:40px; }
+  .r-애착{color:#ff9ec4}.r-예속{color:#e8c860}.r-탐닉{color:#c678dd}.r-붕괴{color:#8a93a8}
+  .route .steps { letter-spacing:3px; }
+  .steps .on{color:inherit} .steps .off{color:#2e2e2e}
+  .route .tag { font-size:11px; color:#666; }
+  .route.locked { opacity:.38; }
+  .lockmark { color:#e8d9a0; font-size:11px; }
+  .coreq { color:#557; font-size:11px; }
+  /* ── 로그 ── */
+  #log { flex:1 1 0; min-height:120px; overflow-y:auto; padding:10px 16px; border-bottom:1px solid #2a2a2a; }
+  #log::-webkit-scrollbar{width:6px} #log::-webkit-scrollbar-track{background:#111} #log::-webkit-scrollbar-thumb{background:#333}
+  .l-flavor{color:#9a9a8a} .l-gain{color:#6f8f6f;font-size:13px}
+  .l-climax{color:#ffb3d9; } .l-chim{color:#c678dd} .l-var{color:#ffd700}
+  .l-sig{color:#7fd4ff}
+  /* ── 입력부 ── */
+  #input { padding:10px 16px 14px; flex-shrink:0; }
+  #actions, .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:2px 18px; margin-top:4px; }
+  .act { cursor:pointer; padding:1px 4px; }
+  .act:hover { background:#181820; }
+  .act .num{color:#e8d9a0} .act .nm{color:#c8c8c8}
+  .act .i1{color:#6f8f6f}.act .i2{color:#8faf6f}.act .i3{color:#cfa050}.act .i4{color:#e07050}.act .i5{color:#ff5544}
+  .act.locked{opacity:.35; cursor:default}
+  .act.nostam{opacity:.30; cursor:default}
+  .act .cost{color:#775555; font-size:11px}
+  .l-warn{color:#e8a060}
+  #hint { color:#556; font-size:12px; margin-top:6px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  【 <span class="loc">조교 공방</span> 】  1년 2월 14일  |  메인 행동: 사용 중  |  영혼력: <span class="soul">9,194</span>
+</div>
+
+<div id="status">
+  <!-- 좌: 부위 감도 + 역가 -->
+  <div class="col">
+    <div class="unit-line"><span class="unit-name">가시 임프</span> Lv.3 · 요괴 · 위/열
+      &nbsp;|&nbsp; 호감도 <span class="aff-stage">78 [유대]</span></div>
+    <div class="row" id="hp-row" style="margin-bottom:4px">
+      <span class="lbl" style="color:#e8a0a0">체력</span>
+      <span class="lv" style="color:#866">소모: 행위·절정</span>
+      <div class="bar" style="border-color:#3a2828"><i id="hpfill" style="width:77%; background:linear-gradient(90deg,#9d4f4f,#d98080)"></i></div>
+      <span class="val" id="hpval" style="width:52px">46/60</span>
+    </div>
+    <h4>부위 감도 <span style="color:#445">(숙련/내성)</span></h4>
+    <div class="row sen"><span class="lbl">입</span><span class="lv">熟2 耐1</span><div class="bar"><i style="width:34%"></i></div><span class="val">34</span></div>
+    <div class="row sen"><span class="lbl">가슴</span><span class="lv">熟1 耐0</span><div class="bar"><i style="width:22%"></i></div><span class="val">22</span></div>
+    <div class="row sen"><span class="lbl" id="vpart">V</span><span class="lv">熟3 耐1 ★名器?</span><div class="bar"><i style="width:67%"></i></div><span class="val">67</span></div>
+    <div class="row sen"><span class="lbl">C</span><span class="lv">熟1 耐0</span><div class="bar"><i style="width:41%"></i></div><span class="val">41</span></div>
+    <div class="row sen"><span class="lbl" id="apart">애널</span><span class="lv">熟0 耐0</span><div class="bar"><i style="width:8%"></i></div><span class="val">8</span></div>
+    <div class="row sen"><span class="lbl" id="spart">피부</span><span class="lv">熟2 耐1</span><div class="bar"><i style="width:55%"></i></div><span class="val">55</span></div>
+    <div style="font-size:12px; color:#778; margin-top:2px">지속 상태: <span id="states" style="color:#a98fc9">없음</span></div>
+    <div id="pleasure-wrap">
+      <span id="pleasure-lbl">쾌감 <span id="pv">38</span> / 100</span>
+      <div id="pleasure-bar"><i id="pfill" style="width:38%"></i></div>
+    </div>
+    <div id="pain-wrap">
+      <span id="pain-lbl">고통 <span id="qv">0</span> / 100 <span style="color:#664">(가학 도구 · 감도 부족 부위 과강도)</span></span>
+      <div id="pain-bar"><i id="qfill" style="width:0%"></i></div>
+    </div>
+  </div>
+
+  <!-- 우: 글로벌5 + 침염 + 변용 -->
+  <div class="col">
+    <h4>상태</h4>
+    <div class="row g-연모"><span class="lbl">연모</span><div class="bar"><i style="width:62%"></i></div><span class="val">62</span></div>
+    <div class="row g-복종"><span class="lbl">복종</span><div class="bar"><i style="width:45%"></i></div><span class="val">45</span></div>
+    <div class="row g-음란"><span class="lbl">음란</span><div class="bar"><i style="width:38%"></i></div><span class="val">38</span></div>
+    <div class="row g-공포"><span class="lbl">공포</span><div class="bar"><i style="width:12%"></i></div><span class="val">12</span></div>
+    <div class="row g-반감"><span class="lbl">반감</span><div class="bar"><i style="width:9%"></i></div><span class="val">9</span></div>
+
+    <h4>침염 <span style="color:#445">(浸染 — 절정의 도장)</span></h4>
+    <div class="chim">
+      <b class="c-연모">연모 ●●●●●<span class="empty">●●●●</span></b>&nbsp;&nbsp;
+      <b class="c-복종">복종 ●●<span class="empty">●●●</span></b>&nbsp;&nbsp;
+      <b class="c-음란">음란 ●<span class="empty">●</span></b>&nbsp;&nbsp;
+      <b class="c-공포">공포 <span class="empty">●●</span></b>&nbsp;&nbsp;
+      <b class="c-고통">고통 <span id="chim-pain"></span><span class="empty">●●</span></b>
+    </div>
+
+    <h4>변용 <span style="color:#445">(變容 — 도 2에서 운명 확정)</span></h4>
+    <div class="route"><span class="rname r-애착">애착</span><span class="steps r-애착"><span class="on">■■</span><span class="off">□□</span></span><span class="tag">도2 — 친애</span><span class="lockmark">★수렴</span><span class="coreq">다음: 침염9 + 호감도 신뢰↑</span></div>
+    <div class="route locked"><span class="rname r-예속">예속</span><span class="steps r-예속"><span class="off">□□□□</span></span><span class="tag">잠김</span></div>
+    <div class="route locked"><span class="rname r-탐닉">탐닉</span><span class="steps r-탐닉"><span class="off">□□□□</span></span><span class="tag">잠김</span></div>
+    <div class="route locked"><span class="rname r-붕괴">붕괴</span><span class="steps r-붕괴"><span class="off">□□□□</span></span><span class="tag">잠김</span></div>
+  </div>
+</div>
+
+<div id="log">
+  <div class="l-flavor">따뜻한 물수건으로 몸을 닦아준다. 가시 임프가 긴장을 풀었다.</div>
+  <div class="l-gain">피부 감도 +3 · 연모 +2 · 복종 +1 · 쾌감 +14</div>
+  <div class="l-flavor">목덜미를 부드럽게 쓸어내린다. 작게 몸을 떨었다.</div>
+  <div class="l-gain">피부 감도 +4 · 연모 +3 · 쾌감 +17</div>
+  <div class="l-climax">★ 절정 — 가시 임프가 몸을 활처럼 휘며 무너졌다.</div>
+  <div class="l-chim">　침염 [연모] +1 — 마음 깊은 곳에 분홍빛이 스몄다. (5/9)</div>
+  <div class="l-var">　변용 — 애착 도2 「친애(親愛)」 도달. 이 아이의 운명이 애착으로 기울었다. ★수렴 잠금</div>
+  <div class="l-sig">　시그니처 트레잇 획득: 친애(親愛) — 관계 이벤트 해금 · 동행 호감 +15%</div>
+</div>
+
+<div id="input">
+  【 행위 선택 】 — 강도(<span style="color:#6f8f6f">1</span>·<span style="color:#8faf6f">2</span>·<span style="color:#cfa050">3</span>·<span style="color:#e07050">4</span>·<span style="color:#ff5544">5</span>) / 숫자 키 입력 가능
+  <div id="actions">
+    <div class="act" data-i="1" data-sen="55"><span class="num">1.</span> <span class="nm">머리쓰다듬기</span> <span class="i1">●</span></div>
+    <div class="act" data-i="1" data-sen="55"><span class="num">2.</span> <span class="nm">손잡기</span> <span class="i1">●</span></div>
+    <div class="act" data-i="2" data-sen="55"><span class="num">3.</span> <span class="nm">포옹</span> <span class="i2">●●</span></div>
+    <div class="act" data-i="2" data-sen="34"><span class="num">4.</span> <span class="nm">키스</span> <span class="i2">●●</span></div>
+    <div class="act" data-i="3" data-sen="55"><span class="num">5.</span> <span class="nm">애무 (피부)</span> <span class="i3">●●●</span></div>
+    <div class="act" data-i="3" data-sen="22"><span class="num">6.</span> <span class="nm">가슴 애무</span> <span class="i3">●●●</span></div>
+    <div class="act" data-i="4" data-sen="67"><span class="num">7.</span> <span class="nm">자극 (V) — 도구</span> <span class="i4">●●●●</span></div>
+    <div class="act" data-i="4" data-sen="41"><span class="num">8.</span> <span class="nm">자극 (C) — 도구</span> <span class="i4">●●●●</span></div>
+    <div class="act" data-i="4" data-sen="8"><span class="num">9.</span> <span class="nm">애널 애무 — 감도 부족</span> <span class="i4">●●●●</span></div>
+    <div class="act" data-i="4" data-pain="1"><span class="num">10.</span> <span class="nm">가학 채찍 — 도구</span> <span class="i4">●●●●</span></div>
+    <div class="act" data-i="3" data-sen="34"><span class="num">11.</span> <span class="nm">봉사 (입)</span> <span class="i3">●●●</span></div>
+    <div class="act" data-i="2" data-sen="55"><span class="num">12.</span> <span class="nm">봉사 (손)</span> <span class="i2">●●</span></div>
+    <div class="act" data-ins="V" data-i="5"><span class="num">13.</span> <span class="nm" id="ins-V-nm">삽입 (V) — 상태</span> <span class="i5">●●●●●</span></div>
+    <div class="act locked"><span class="num">14.</span> <span class="nm">삽입 (A) — 잠김 (감도 부족)</span> <span class="i5">●●●●●</span></div>
+    <div class="act" data-attach="V" data-i="1"><span class="num">15.</span> <span class="nm" id="att-V-nm">진동구 부착 (V)</span> <span class="i1">●</span></div>
+    <div class="act" data-attach="A" data-i="1"><span class="num">16.</span> <span class="nm" id="att-A-nm">진동구 부착 (A)</span> <span class="i1">●</span></div>
+    <div class="act" data-attach="skin" data-i="1"><span class="num">17.</span> <span class="nm" id="att-skin-nm">감응 향유 (전신)</span> <span class="i1">●</span></div>
+    <div class="act" data-menu="consumables"><span class="num">18.</span> <span class="nm" style="color:#9fc97f">소모품 →</span></div>
+    <div class="act" data-end="1"><span class="num">0.</span> <span class="nm" style="color:#889">조교 종료</span></div>
+  </div>
+  <div id="consumables" style="display:none; margin-top:4px" class="grid3">
+    <div class="act" data-use="미약" data-i="1"><span class="num">1.</span> <span class="nm">미약</span> <span class="cost" id="cnt-미약">×2</span> <span style="color:#667;font-size:11px">전부위 감도 +20 (세션)</span></div>
+    <div class="act" data-use="로션" data-i="1"><span class="num">2.</span> <span class="nm">로션</span> <span class="cost" id="cnt-로션">×1</span> <span style="color:#667;font-size:11px">고통 샘 절반 (세션)</span></div>
+    <div class="act" data-use="이뇨제" data-i="1"><span class="num">3.</span> <span class="nm">이뇨제</span> <span class="cost" id="cnt-이뇨제">×1</span> <span style="color:#667;font-size:11px">절박 상태 — 절정 증폭</span></div>
+    <div class="act" data-menu="actions"><span class="num">0.</span> <span class="nm" style="color:#889">← 행위로</span></div>
+  </div>
+  <div id="hint">※ 목업: 클릭/숫자키 = 행위, R = 체력 회복(debug). 수치·문구 전부 잠정.
+  밸런싱 패스 다이얼: 고통식(필요감도=강도×15 · 샘=부족/3) · 숙련=쾌감 증폭 · 내성=절정임계↑+고통 경감 · 감도 성장이 고통을 자연 해소.</div>
+</div>
+
+<script>
+// 목업용 가짜 진행 — 쾌감 게이지가 차고 100 도달 시 절정/침염 연출
+// 체력: 행위마다 강도 비례 소모(2+강도×2), 절정 시 추가 -8(내성이 경감 예정). 바닥나면 조교 강제 종료.
+let pv = 38;
+let qv = 0; // 고통 세션 누적
+let hp = 46; const hpMax = 60;
+// 지속 상태: 부위별 슬롯 — 부착 도구·삽입 전부 같은 구조 (행위마다 틱)
+let attach = { V:false, A:false, skin:false };
+let ins = null;         // 삽입 상태 ('V'|'A'|null)
+let hyperTurns = 0;     // 절정 직후 과민 (쾌감 ×1.3, 2행위)
+let climaxTotal = 0;    // 세션 절정 횟수
+// 소모품: 세션 버프 (1회 사용, 세션 끝까지)
+let buffs = { 미약:false, 로션:false, 이뇨제:false };
+let stock = { 미약:2, 로션:1, 이뇨제:1 };
+function refreshStates(){
+  const list = [];
+  if(ins) list.push("[삽입 " + ins + "]");
+  if(attach.V) list.push("[V: 진동구]");
+  if(attach.A) list.push("[A: 진동구]");
+  if(attach.skin) list.push("[전신: 향유]");
+  if(buffs.미약) list.push("[미약]");
+  if(buffs.로션) list.push("[로션]");
+  if(buffs.이뇨제) list.push("[절박]");
+  document.getElementById("states").textContent = list.length ? list.join(" ") : "없음";
+  document.getElementById("vpart").textContent = "V" + (ins==="V" ? " ◆" : "") + (attach.V ? " ⚙" : "");
+  document.getElementById("apart").textContent = "애널" + (attach.A ? " ⚙" : "");
+  document.getElementById("spart").textContent = "피부" + (attach.skin ? " ⚙" : "");
+}
+let exhausted = false;
+function costOf(inten){ return 2 + inten*2; }
+function refreshHp(){
+  document.getElementById("hpval").textContent = hp + "/" + hpMax;
+  document.getElementById("hpfill").style.width = (hp/hpMax*100) + "%";
+  // 체력이 모자란 행위는 흐리게
+  document.querySelectorAll(".act").forEach(a=>{
+    if(a.classList.contains("locked") || a.dataset.end || a.dataset.menu || a.dataset.use) return;
+    const c = costOf(+a.dataset.i || 1);
+    a.classList.toggle("nostam", exhausted || hp < c);
+  });
+}
+const flavors = [
+  ["부드럽게 쓰다듬는다. 눈을 가늘게 떴다.", "피부 감도 +3 · 연모 +2 · 쾌감 +"],
+  ["천천히 어루만진다. 숨이 조금 빨라졌다.", "감도 +4 · 연모 +3 · 쾌감 +"],
+  ["도구를 가져다 댄다. 움찔, 허리가 떨렸다.", "V 감도 +5 · 음란 +4 · 쾌감 +"],
+];
+const log = document.getElementById("log");
+function addLine(cls, text){ const d=document.createElement("div"); d.className=cls; d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; }
+document.querySelectorAll(".act").forEach(a=>{
+  // 강도 옆에 체력 소모 표기 (목업: 코드에서 자동 부착)
+  if(!a.classList.contains("locked") && !a.dataset.end && !a.dataset.menu && !a.dataset.use){
+    const c = document.createElement("span");
+    c.className = "cost";
+    c.textContent = " 体-" + costOf(+a.dataset.i || 1);
+    a.appendChild(c);
+  }
+  a.addEventListener("click", ()=>{
+    if(a.classList.contains("locked")) return;
+    if(a.dataset.end){ addLine("l-flavor","조교를 마쳤다. 가시 임프가 옷매무새를 가다듬는다."); return; }
+    // 메뉴 전환 (행위 ↔ 소모품)
+    if(a.dataset.menu){
+      document.getElementById("actions").style.display = a.dataset.menu === "actions" ? "grid" : "none";
+      document.getElementById("consumables").style.display = a.dataset.menu === "consumables" ? "grid" : "none";
+      return;
+    }
+    // 소모품 사용 (체력 소모 없음, 세션 버프)
+    if(a.dataset.use){
+      const u = a.dataset.use;
+      if(buffs[u]){ addLine("l-warn", u + " — 이미 적용 중이다."); return; }
+      if(stock[u] <= 0){ addLine("l-warn", u + " — 재고가 없다."); return; }
+      stock[u]--; buffs[u] = true;
+      document.getElementById("cnt-" + u).textContent = "×" + stock[u];
+      const desc = { 미약:"몸이 달아오른다 — 전부위 감도 +20.", 로션:"매끄럽게 스며든다 — 고통이 절반으로.", 이뇨제:"절박함이 차오른다 — 절정이 깊어진다." };
+      addLine("l-pain", "소모품 [" + u + "] 사용 — " + desc[u]);
+      refreshStates();
+      return;
+    }
+    if(exhausted) return;
+    const inten = +a.dataset.i || 1;
+    const cost = costOf(inten);
+    if(hp < cost){ addLine("l-warn","가시 임프가 지쳐 있다 — 이 행위를 버틸 체력이 없다."); return; }
+    hp -= cost;
+    // 부착 도구: 부위별 토글
+    if(a.dataset.attach){
+      const p = a.dataset.attach;
+      attach[p] = !attach[p];
+      const names = { V:"진동구 (V)", A:"진동구 (A)", skin:"감응 향유 (전신)" };
+      document.getElementById("att-" + p + "-nm").textContent = attach[p] ? names[p] + " 해제" : names[p] + " 부착";
+      addLine("l-flavor", attach[p] ? names[p] + " — 적용했다." : names[p] + " — 떼어냈다.");
+      refreshStates(); refreshHp();
+      return;
+    }
+    // 삽입: 지속 상태 토글 (상태 중 다른 행위가 겹침 = 이중 상태)
+    if(a.dataset.ins){
+      ins = ins ? null : a.dataset.ins;
+      document.getElementById("ins-V-nm").textContent = ins ? "삽입 해제 (V)" : "삽입 (V) — 상태";
+      addLine(ins ? "l-climax" : "l-flavor", ins ? "삽입 — 깊게 이어졌다. 이제 모든 행위가 겹쳐 울린다." : "몸을 떼었다. 여운이 길게 남았다.");
+      refreshStates(); refreshHp();
+      return;
+    }
+    // 쾌감/고통 분배: 가학 도구=고통 직행 / 감도 < 강도×15 → 모자란 만큼 고통으로 샘
+    const sen = +a.dataset.sen || 50;
+    let gain, pain;
+    if(a.dataset.pain){
+      gain = 0; pain = 18 + inten*4 + Math.floor(Math.random()*6);
+      addLine("l-flavor","채찍이 공기를 갈랐다. 날카로운 비명.");
+      addLine("l-pain","고통 +" + pain + " · 공포 +3 · 반감 +2 · 체력 -" + cost);
+    } else {
+      const effSen = sen + (buffs.미약 ? 20 : 0);
+      const need = inten * 15;
+      const deficit = Math.max(0, need - effSen);
+      pain = Math.round(deficit / (buffs.로션 ? 6 : 3));
+      gain = Math.max(2, 10 + inten*5 - pain + Math.floor(Math.random()*6));
+      if(hyperTurns > 0){ gain = Math.round(gain * 1.3); hyperTurns--; }
+      const f = flavors[Math.floor(Math.random()*flavors.length)];
+      addLine("l-flavor", pain > 5 ? "익숙하지 않은 자극 — 몸이 굳고 얕은 신음이 샜다." : f[0]);
+      addLine("l-gain", f[1] + gain + (pain > 0 ? " · 고통 +" + pain : "") + " · 체력 -" + cost);
+    }
+    pv += gain; qv += pain;
+    // 지속 상태 틱: 행위마다 부위별로 얹힘 (체력 소모 없음) — 이중 상태의 핵심
+    const hyper = hyperTurns > 0;
+    const ticks = [];
+    if(ins === "V"){ const t = hyper?15:12; pv += t; ticks.push("[삽입 V] +" + t); }
+    if(attach.V){ const t = hyper?10:8; pv += t; ticks.push("[V 진동구] +" + t); }
+    if(attach.A){ pv += 2; qv += 4; ticks.push("[A 진동구] +2 · 고통 +4"); } // 감도 8 — 아직 고통이 더 큼
+    if(attach.skin){ pv += 4; ticks.push("[전신 향유] +4"); }
+    if(ticks.length) addLine("l-gain","　지속 — " + ticks.join(" · "));
+    // 다중 절정: 넘친 만큼 이월, 한 행위에 여러 번 터질 수 있음
+    let burst = 0;
+    while(pv >= 100){
+      burst++; climaxTotal++;
+      pv -= 100;
+      hp = Math.max(0, hp - 8);
+      if(burst === 1){
+        addLine("l-climax","★ 절정 — 가시 임프가 떨림 속에 무너졌다. (체력 -8)");
+        addLine("l-chim","　침염 [연모] +1 — 분홍빛이 한 겹 더 스몄다. (6/9)");
+      } else {
+        addLine("l-climax","★★ 연속 절정 ×" + burst + " — 멈추지 못하고 다시 무너졌다. (체력 -8)");
+        addLine("l-chim","　침염 가속 — 같은 세션 연속 절정, 스밈이 깊다.");
+      }
+      if(buffs.이뇨제) addLine("l-chim","　절박 — 절정이 한층 깊다. 침염 가속 ×2.");
+      hyperTurns = 2; // 절정 직후 과민
+    }
+    if(burst > 0 && (ins || attach.V || attach.A || attach.skin)){ addLine("l-gain","　과민 상태 — 다음 2행위 쾌감 ×1.3 · 지속 틱 강화"); }
+    if(qv >= 100){
+      qv = 0;
+      hp = Math.max(0, hp - 10);
+      addLine("l-pain","✦ 한계 — 비명이 끊기고 몸이 늘어졌다. 공포 +15 · 반감 +8 (체력 -10)");
+      addLine("l-chim","　침염 [고통] +1 — 검붉은 얼룩이 새겨졌다. (1/2) → 붕괴 루트");
+      document.getElementById("chim-pain").textContent = "●";
+    }
+    if(hp <= 0){
+      exhausted = true;
+      addLine("l-warn","탈진 — 가시 임프가 축 늘어졌다. 오늘의 조교는 여기까지.");
+    } else if(hp <= 8){
+      addLine("l-warn","체력이 거의 바닥났다 — 슬슬 마무리해야 한다.");
+    }
+    document.getElementById("pv").textContent = pv;
+    document.getElementById("pfill").style.width = pv + "%";
+    document.getElementById("qv").textContent = qv;
+    document.getElementById("qfill").style.width = qv + "%";
+    refreshHp();
+  });
+});
+refreshHp();
+refreshStates();
+
+// ── 키 입력: 숫자 = 행위 선택 / R = 디버그 체력 회복 ──
+const acts = Array.from(document.querySelectorAll(".act"));
+document.addEventListener("keydown", e=>{
+  if(e.key === "r" || e.key === "R"){
+    hp = hpMax; exhausted = false;
+    addLine("l-warn","[debug] 체력 전회복 (R)");
+    refreshHp();
+    return;
+  }
+  if(/^[0-9]$/.test(e.key)){
+    const target = acts.find(a => a.querySelector(".num") && a.querySelector(".num").textContent === e.key + ".");
+    if(target) target.click();
+  }
+});
+</script>
+</body>
+</html>

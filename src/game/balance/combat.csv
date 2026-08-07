@@ -57,3 +57,7 @@ boss_slime_qty_max,8
 [commander]
 player_injury_on_wipe,0.2
 player_target_rate,0
+
+; 전투 전역 상수 (밸런싱 패스 2026-08-07 — 시뮬 근거 ledger §10)
+[combat_constants]
+damageScale,0.6

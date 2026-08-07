@@ -34,7 +34,7 @@ module.exports = function (App) {
           return p.slot + '(' + suffix + ' t' + p.tier + ')';
         }).join(' | ');
         self._toolList.push(key);
-        self.printOption('' + idx, '  ' + idx + '. ' + tool.name + ' [게이팅:' + gating + '] — ' + partsStr);
+        self.printOption('' + idx, '  ' + idx + '. ' + tool.name + ' [등급 ' + gating + '] — ' + partsStr);
         idx++;
       });
       self.printBlank();
@@ -65,7 +65,7 @@ module.exports = function (App) {
     this.clearOutput();
     this.printSeparator();
     var gating = this.engine.getToolGating(toolKey);
-    this.print('【 ' + tool.name + ' 】 게이팅: ' + gating, 'location');
+    this.print('【 ' + tool.name + ' 】 등급: ' + gating, 'location');
     this.printBlank();
 
     // 부품 상세
@@ -74,7 +74,7 @@ module.exports = function (App) {
     tool.parts.forEach(function (p, i) {
       var suffix = self._partSummary(p);
       var bar = '█'.repeat(Math.min(10, p.tier)) + '·'.repeat(Math.max(0, 10 - p.tier));
-      self.printOption('' + (i + 1), '  ' + (i + 1) + '. [' + p.slot + '] 접미사: ' + suffix + ' | tier: ' + p.tier + ' [' + bar + ']');
+      self.printOption('' + (i + 1), '  ' + (i + 1) + '. [' + p.slot + '] 옵션: ' + suffix + ' | tier: ' + p.tier + ' [' + bar + ']');
     });
     this.printBlank();
 

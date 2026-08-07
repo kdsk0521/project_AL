@@ -9,19 +9,19 @@ id,name,category,tier,rarity,subMain,subSub,acquire,apCost,element,damageMultipl
 CT_PIERCE,찌르기,전투,1,,공격형,위,,1,위,1,single,,,,위 속성 기본 공격. 단일 대상 찌르기.
 CT_VENOM_STING,독침,전투,1,,제어형,식,,1,식,0.8,single,,special|dot독|0.2,,식 속성. 독 지속 데미지를 부여하는 침.
 CT_COLD_RADIATION,냉기방사,전투,1,,공격형,열,,2,열,1.2,area,,,,열 속성 — 열을 빨아들여 주변을 냉각. 범위 데미지.
-CT_HEAT_WALL,내열벽,전투,1,,방어형,열,,0,열,0,self,,stat|defense.열|add|0.3,,패시브. 열 속성 피격 시 데미지 감소.
+CT_HEAT_WALL,내열벽,전투,2,,방어형,열,,0,열,0,self,,stat|defense.열|add|0.3,,패시브. 열 속성 피격 시 데미지 감소.
 CT_FLASH_SLASH,섬광참,전투,2,,공격형,광,,2,광,1.5,single,,,,광 속성. 선제공격 보정이 붙는 고데미지 참격.
 CT_OVERLOAD,과부하,전투,2,,공격형,위,,3,위,2,single,,,,AP 1 추가 소비로 데미지가 크게 증폭된다.
 CT_CORROSION_FIELD,부식장,전투,2,,공격형,식,,2,식,0.7,area,,,,식 속성 범위 공격. 매 라운드 범위가 확대된다.
 CT_ASH_RESIDUE,소각재,전투,2,,지원형,None,,0,None,0,self,탐사|드랍률|mult|1.2,,,패시브. 전투 종료 후 재료 드랍률에 보정을 준다.
 CT_CRUSHING_CHARGE,분쇄돌진,전투,2,,공격형,동,,3,동,1.8,single,,,,물리+동 복합 공격. 선제 시 추가 데미지가 붙는다.
-CT_INTIMIDATION,위압,전투,2,,제어형,None,,1,None,0,all_enemies,,special|enemyAtkDown|0.1,,적 전체의 공격력을 소폭 하락시킨다.
-CT_HARDEN,경화,전투,1,,방어형,None,,0,None,0,self,,stat|DEF|add|0.1|when:피격,,패시브. 피격 시 일정 확률로 방어가 상승한다.
+CT_INTIMIDATION,위압,전투,2,,제어형,None,,1,None,0,all_enemies,,special|enemyAtkDown|0.1 ; special|aggroUp|0.5,,적 전체의 공격력을 소폭 하락시킨다.
+CT_HARDEN,경화,전투,1,,방어형,None,,0,None,0,self,,stat|DEF|mult|1.1|when:피격,,패시브. 피격 시 일정 확률로 방어가 상승한다.
 CT_EROSION_BITE,침식물기,전투,1,,공격형,식,,1,식,0.9,single,,,,식 속성 근접. 시간 경과로 추가 데미지가 발생한다.
 CT_BINDING_THREAD,결속사,전투,2,,제어형,광,,2,광,0.5,single,,special|enemySpeedDown|0.2,,광 속성. 적의 행동을 지연시키는 실을 발사한다.
 CT_SEAL_LIGHT,봉인광,전투,2,,제어형,광,,2,광,0.6,single,,special|sealTrait|1,,광 속성. 적 트레잇 하나를 일시적으로 무력화한다.
 CT_DISSOLVE_FLUID,용해액,전투,1,,제어형,열,,1,열,0.8,single,,special|enemyDefDown|0.2,,열 속성 — 녹이는 방향. 적 방어를 감소시킨다.
-CT_DISASSEMBLE_ANALYZE,해체분석,전투,1,,치명형,위,,1,위,0.6,single,,special|markWeak|1,,위 속성. 적 약점을 감지하여 다음 공격에 보정을 부여한다.
+CT_DISASSEMBLE_ANALYZE,해체분석,전투,2,,치명형,위,,1,위,0.6,single,,special|markWeak|1,,위 속성. 적 약점을 감지하여 다음 공격에 보정을 부여한다.
 CT_CURRENT,해류,전투,2,,지원형,열,,2,열,0.4,all_allies,,special|allyHeal|0.05,,열 속성 — 수온 조절로 환경 변화. 아군 회복 보정.
 CT_PARALYSIS_TENTACLE,마비촉수,전투,2,,제어형,광,,2,광,0.7,single,,special|마비|0.3,,광 속성. 적을 마비시킬 확률이 있다.
 CT_PINCER_STRIKE,협격,전투,2,,공격형,열,,2,열,1.4,single,,,,열+동 복합 공격. 집게로 잡아 열을 주입한다.
@@ -32,9 +32,10 @@ CT_DISTILL,증류,전투,2,,제어형,열,,1,열,0.5,single,,special|enemyBuffSt
 CT_PARALYSIS_POISON,마비독,전투,2,,제어형,식,,2,식,0.6,single,,special|enemyApDown|1,,식 속성. 적의 AP를 감소시키는 독.
 CT_SCALES,인분,전투,2,,방어형,식,,1,식,0.4,area,,stat|defense.물리|add|0.15 ; stat|defense.열|add|-0.1,,식 속성. 독 인분을 뿌려 범위 미량 지속 데미지.
 CT_CRYSTAL_BARRIER,결정방벽,전투,2,,지원형,동,,2,동,0,self,,special|physReflect|0.2,,동 속성. 물리 공격을 반사할 확률을 얻는다.
-CT_SELF_REPAIR,자기수복,전투,2,,지원형,None,,0,None,0,self,,stat|HP|add|0.05|when:라운드,,패시브. 매 라운드 HP가 소량 회복된다.
+CT_SELF_REPAIR,자기수복,전투,2,,지원형,None,,0,None,0,self,,stat|HP|mult|1.05|when:라운드,,패시브. 매 라운드 HP가 소량 회복된다.
 CT_IRON_WALL,철벽,전투,2,,방어형,None,,0,None,0,self,,stat|피해감소|add|scaleBy:DEF,,패시브. 피격 시 내구에 비례하여 데미지를 감소시킨다.
-CT_GUARDIAN,수호,전투,2,,지원형,None,,1,None,0,single_ally,,special|coverAlly|1,,인접 아군이 받을 피격을 대신 받는다.
+CT_GUARDIAN,수호,전투,2,,지원형,None,,1,None,0,single_ally,,special|coverAlly|1 ; special|aggroUp|1,,인접 아군이 받을 피격을 대신 받는다.
+CT_TAUNT,도발,전투,2,,제어형,None,,0,None,0,self,,special|taunt|1,,적의를 한몸에 모은다. 자신이 노려질 확률이 크게 오른다.
 CT_AMBUSH,암습,전투,1,,공격형,동,,2,동,2,single,,,,동 속성. 선제 공격 시 데미지가 2배가 된다.
 CT_EROSION_THREAD,침식사,전투,2,,공격형,식,,2,식,0.7,single,,,,식 속성. 적의 장비 내구도를 감소시키는 실.
 CT_BINDING,속박,전투,2,,제어형,식,,1,식,0,single,,special|enemySpeedDown|0.2,,적을 속박하여 속도를 감소시킨다.
@@ -45,14 +46,14 @@ CT_PRECISION_INCISION,정밀절개,전투,2,,공격형,위,,3,위,2,single,,,,�
 CT_WEAK_POINT_DETECT,약점감지,전투,2,,치명형,None,,0,None,0,self,,special|revealWeak|1 ; target|weakpoint,,패시브. 전투 시작 시 적의 약점을 공개한다.
 CT_KARMIC_FLAME,업화,전투,2,,공격형,열,,2,열,1.2,single,,,,열 속성. 연속 공격 시 데미지가 누적으로 증가한다.
 CT_TRACKER,추적자,전투,2,,지원형,None,,0,None,0,self,,special|preventFlee|1,,패시브. 적이 도망칠 수 없다.
-CT_MIST_FIELD,안개장,전투,1,,지원형,동,,1,동,0,all_allies,,special|allyEvasion|0.1,,동 속성. 아군 전체의 회피율에 보정을 준다.
+CT_MIST_FIELD,안개장,전투,2,,지원형,동,,1,동,0,all_allies,,special|allyEvasion|0.1,,동 속성. 아군 전체의 회피율에 보정을 준다.
 CT_REFLECT,반사,전투,1,,지원형,광,,0,광,0,self,,special|reflect|0.2,,패시브. 피격 데미지의 일부를 반사한다.
 CT_SPORE_SPREAD,포자확산,전투,1,,공격형,식,,1,식,0.3,all_enemies,,,,식 속성. 적 전체에 미량의 지속 데미지를 부여한다.
 CT_SYMBIOSIS,공생,전투,1,,지원형,None,,0,None,0,single_ally,,special|allyHeal|0.05,,패시브. 인접 아군의 HP를 소량 회복한다.
 CT_FRAGRANCE,향기,전투,2,,제어형,열,,1,열,0,all_enemies,,special|enemyApDown|0.1,,열 속성. 적 전체의 AP를 소량 감소시킨다.
 CT_SOOTHE,진정,전투,2,,지원형,None,,0,None,0,all_allies,,special|allyStatusResist|0.2,,패시브. 아군 전체에 상태이상 내성 보정을 준다.
 CT_PETRIFY_GAZE,석화시선,전투,2,,제어형,위,,2,위,0.5,single,,special|행동정지|0.2,,위 속성. 적을 행동 정지시킬 확률이 있다.
-CT_CRYSTALLIZE,결정화,전투,1,,방어형,동,,0,동,0,self,,stat|DEF|add|0.05|when:피격,,패시브. 피격 시 방어가 소폭 누적 상승한다.
+CT_CRYSTALLIZE,결정화,전투,1,,방어형,동,,0,동,0,self,,stat|DEF|mult|1.05|when:피격,,패시브. 피격 시 방어가 소폭 누적 상승한다.
 CT_PETRIFY,석화,전투,1,,제어형,위,,1,위,0.5,single,,special|enemySpeedDown|0.3,,위 속성. 적의 속도를 감소시킨다.
 CT_FOSSIL_ARMOR,화석갑,전투,1,,방어형,None,,0,None,0,self,,stat|defense.물리|add|0.3 ; stat|속도|mult|0.5,,패시브. 물리 내성이 높지만 속도가 최저.
 CT_CRYSTAL_REFLECT,결정반사,전투,2,,방어형,광,,0,광,0,self,,stat|defense.광|add|0.3 ; special|lightReflect|0.2,,패시브. 광 내성이 대폭 상승하고 광 공격을 반사할 확률이 있다.
@@ -78,84 +79,169 @@ CT_ECHO,잔향,전투,2,,지원형,동,,2,동,1.2,single,,special|allyDmgBuff|0.
 CT_REQUIEM,진혼가,전투,2,,지원형,동,,2,동,1.2,single,,special|allySupport|1,,특수 지원 효과
 CT_MANA_AMPLIFY,마력 증폭,전투,2,,지원형,위,,2,위,1.2,single,,special|allyPowerBuff|0.15,,아군 마력 보정
 CT_EARTH_BLESSING,대지의 축복,전투,2,,지원형,동,,2,동,1.2,single,,special|allyDefBuff|0.15,,동 속성· 아군 전체 내구 보정
-CT_NATURAL_HEAL,자연치유,전투,2,,지원형,동,,2,동,1.2,single,,stat|HP|add|0.05|when:라운드,,자연 회복 효과
+CT_NATURAL_HEAL,자연치유,전투,2,,지원형,동,,2,동,1.2,single,,stat|HP|mult|1.05|when:라운드,,자연 회복 효과
 
+CT_CAMOUFLAGE,위장,전투,2,,회피형,None,,0,None,0,self,,stat|회피|add|0.1,,주변에 몸을 숨긴다. 선제당할 확률이 준다.
+CT_GALE,질풍,전투,2,,공격형,동,,1,동,1.1,single,,,,동 속성 쾌속 일격.
+CT_ABSORB,흡수,전투,2,,공격형,식,,2,식,0.8,single,,special|drainHp|0.2,,식 속성. 준 데미지 일부를 흡수해 회복.
+CT_SLEEP_TOXIN,수면독,전투,2,,제어형,광,,2,광,0.5,single,,special|enemySpdDown|0.2,,광(독) 계열. 서서히 잠들게 하는 독.
+CT_ROAR,포효,전투,2,,제어형,None,,1,None,0,all_enemies,,special|enemySpdDown|0.1,,포효로 적 전체를 움츠러들게 한다.
+CT_ADAMANT,불괴,전투,4,,합성계,None,합성,0,None,0,self,조교|global.공포|gainMult|0.8,special|physImmuneRound|1 ; special|selfDefZeroNext|1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_ADVANCE,진격,전투,3,,합성계,None,합성,2,동,1.2,single,,special|selfSpdUp|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_ANATOMY,해부학,전투,3,,합성계,None,합성,0,None,0,self,조교|역가전반|gainMult|1.1,special|critUp|0.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_ANATOMY_WEAK,해부학적 약점,전투,4,,합성계,None,합성,2,위,1.5,single,조교|역가전반|gainMult|1.15,special|hitLowestSlot|1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_AREA_CORROSION,영역부식,전투,3,,합성계,None,합성,2,식,0.9,area,,special|areaGrow|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_BIND_NET,구속망,전투,3,,합성계,None,합성,2,광,0.5,single,,special|enemyApDown|1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_CORROSION_CLOUD,부식운,전투,3,,합성계,None,합성,2,식,0.8,area,,special|dot독|0.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_CRITICAL_BURST,임계폭발,전투,3,,합성계,None,합성,3,위,1.6,single,,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_DIFFUSE_REFLECT,난반사,전투,3,,합성계,None,합성,2,광,1.0,area,,special|enemyAccDown|0.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_FASCINATION,매혹술,전투,4,,합성계,None,합성,0,None,0,self,관계|교섭|gainMult|1.4,special|enemyAccDown|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_FOCUS_ARRAY,집광진,전투,4,,합성계,None,합성,0,광,0,self,탐사|발견|gainMult|1.1,special|accUp|0.2 ; special|critUp|0.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_GRAY_WOLF,회색 늑대,전투,4,,합성계,None,합성,3,None,2.0,single,생활|가공|gainMult|1.1,special|allInStrike|1 ; special|exhaustNextRound|1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_GREEN_LION,녹사자,전투,4,,합성계,None,합성,3,식,1.6,single,탐사|보상|gainMult|1.1,special|defShred|0.2,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_HEAT_RUNAWAY,열폭주,전투,3,,합성계,None,합성,2,열,1.5,single,,stat|defense.열|add|-0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_IMMOVABLE_FORT,부동성채,전투,3,,합성계,None,합성,0,None,0,self,,stat|DEF|mult|1.3 ; weight|방어|0.3,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_LETHAL_POISON,치명독,전투,4,,합성계,None,합성,3,식,1.2,all_enemies,조교|약효|gainMult|1.15,special|dot독|0.25 ; special|enemyApDown|1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_MAGNETIC_FIELD,자장,전투,3,,합성계,None,합성,0,자,0,self,,special|aggroUp|0.3,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_MAGNET_CORE,자심,전투,4,,합성계,None,합성,2,자,0.8,single,조교|global.연모|gainMult|1.1,special|aggroUp|0.5 ; special|pullTarget|1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_NURSING,간호,전투,3,,합성계,None,합성,0,None,0,self,생활|회복|gainMult|1.15,special|allyHeal|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_PELICAN,펠리컨,전투,4,,합성계,None,합성,2,None,0,single_ally,관계|호감도|gainMult|1.15,special|allyHeal|0.2 ; special|selfHpCost|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_PIERCE_WAVE,관통파,전투,3,,합성계,None,합성,2,위,1.2,single,,special|defPierce|0.3,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_PURE_LIGHT,정광,전투,3,,합성계,None,합성,0,광,0,self,,special|accUp|0.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_RAM_BREAKER,붕성추,전투,4,,합성계,None,합성,3,위,1.7,single,생활|생산|gainMult|1.1,special|defPierce|0.5,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_REPULSION,척력,전투,3,,합성계,None,합성,2,자,0.9,single,,special|knockback|0.5,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_REPULSION_FIELD,척력장,전투,4,,합성계,None,합성,3,자,1.2,all_enemies,조교|global.공포|gainMult|0.85,special|knockback|1 ; special|enemyAccDown|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_RESONANCE,공명,전투,3,,합성계,None,합성,1,동,0.9,single,,special|stackDmg|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_RESONANCE_WAVE,공진파,전투,4,,합성계,None,합성,2,동,1.1,single,조교|감도.전부위|gainMult|1.1,special|stackDmg|0.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_SALAMANDER,살라만더,전투,4,,합성계,None,합성,2,열,1.2,single,조교|global.음란|gainMult|1.1,special|dot열|0.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_SHADOWLESS,무영,전투,3,,합성계,None,합성,0,None,0,self,,stat|회피|add|0.12,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_SKYFALL,천붕,전투,4,,합성계,None,합성,3,동,1.5,all_enemies,탐사|발견|gainMult|1.1,special|knockback|1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_STAG,수사슴,전투,4,,합성계,None,합성,0,None,0,self,탐사|발견|gainMult|1.15,stat|회피|add|0.15 ; weight|회피|0.2,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_STONE_PRESS,석압,전투,3,,합성계,None,합성,2,위,1.1,single,,special|enemySpdDown|0.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_TEMPER_FLAME,달굼불,전투,3,,합성계,None,합성,1,열,0.8,single,,special|dot열|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_TON_WEIGHT,천근추,전투,4,,합성계,None,합성,2,위,1.0,single,조교|global.복종|gainMult|1.1,special|enemySpdDown|0.25,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_TOTAL_BIND,완전속박,전투,4,,합성계,None,합성,3,광,0,single,조교|역가전반|gainMult|1.1,special|stun|1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_VOLCANO,화산,전투,4,,합성계,None,합성,3,열,1.8,area,조교|global.공포|gainMult|1.1,special|selfDefDown|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_WHITE_NIGHT,백야,전투,4,,합성계,None,합성,3,광,1.4,all_enemies,관계|교섭|gainMult|1.1,special|enemyAccDown|0.2,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+CT_SPRAY_MANIA,난사광,전투,2,,공격형,None,후보풀,1,None,0.7,single,,special|autoExtraAttack|0.7,,매 라운드 AP 남으면 자동 추가공격 — B-1
+CT_TRIGGER_HAPPY,트리거 해피,전투,4,,다리,None,합성,1,None,0.8,single,조교|감도.전부위|gainMult|1.1,special|onHitSenGain|3 ; special|dmgPerLewd|0.1,,전투×조교 양방향 루프 — B-1 다리 열매
+CT_JUDGE,심판관,전투,1,,선천계,None,초기,2,광,1.2,single,,special|enemySpdDown|0.1,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+CT_SWINDLER,사기꾼,전투,1,,선천계,None,초기,0,None,0,self,탐사|보상|gainMult|1.15,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+CT_TOXIN_SCATTER,독무 산포,전투,1,,선천계,None,초기,1,광,0.5,area,,special|dot독|0.1,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+CT_TAIL_AMBUSH,꼬리 기습,전투,1,,선천계,None,초기,1,광,0.9,single,,special|firstStrike|0.15,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+CT_AREA_SUPPRESS,광역제압,전투,2,,합성계,None,합성,2,광,0.6,all_enemies,,special|enemySpdDown|0.15,,B-2 실현 — T1+T1=T2
+CT_RAID_STRIKE,기습약탈,전투,2,,합성계,None,합성,1,None,1.1,single,탐사|보상|gainMult|1.1,special|firstStrike|0.2,,B-2 실현 — T1+T1=T2
+CT_SKY_EYE,창공시야,전투,1,,우화,None,초기,0,None,0,self,,stat|회피|add|0.05 ; weight|회피|0.1,,독수리 — 높은 곳에서 먼저 본다. 회피 결.
+CT_UPDRAFT,상승기류,전투,2,,우화,None,초기,1,동,1.0,single,,stat|회피|add|0.05,,독수리 — 바람을 타고 오른다. 동 결.
+CT_WATER_SONG,수가,전투,1,,우화,None,초기,1,동,0,all_enemies,,special|enemyAccDown|0.05,,세이렌 — 물결의 노래.
+CT_SCREAM,비명,전투,2,,우화,None,초기,2,동,0.4,all_enemies,,special|enemySpdDown|0.1,,만드라고라 — 뽑히는 순간의 절규. 제어 결.
+CT_RED_LION,적사자,전투,3,,합성계,None,합성,2,열,1.3,single,,weight|공격|0.15,,재결합 — 정련된 붉은 힘. (효과 미저작)
+CT_TWIN_WATCH,쌍두감시,전투,3,,합성계,None,합성,0,None,0,self,,special|ambushImmune|1 ; stat|회피|add|0.05,,재결합 — 두 눈이 놓치지 않는다. (효과 미저작)
+CT_GLIDE,활공,전투,3,,합성계,None,합성,0,None,0,self,,stat|회피|add|0.12 ; weight|회피|0.15,,재결합 — 바람 위의 회피. (효과 미저작)
+CT_VENOM_EYE,독안,전투,3,,합성계,None,합성,0,None,0,self,,special|critUp|0.2,,재결합 — 독을 머금은 사안. ★치명. (효과 미저작)
+CT_SIREN_SONG,세이렌송,전투,3,,합성계,None,합성,2,동,0.6,all_enemies,조교|global.연모|gainMult|1.1,special|enemyAccDown|0.15,,재결합 — 홀리는 물의 노래. 제어. (효과 미저작)
+CT_SHRIEK,절규,전투,3,,합성계,None,합성,2,동,0.5,all_enemies,,special|enemySpdDown|0.2,,재결합 — 움츠러들게 하는 비명. 제어. (효과 미저작)
+CT_HARD_CRYSTAL,경정,전투,3,,합성계,None,합성,0,None,0,self,,stat|defense.동|add|0.12 ; stat|DEF|mult|1.1,,경정
+CT_ELDER_SCALE,고룡갑,전투,3,,합성계,None,합성,0,None,0,self,,stat|defense.위|add|0.15 ; stat|defense.물리|add|0.1,,고룡갑
+CT_ESCORT_FORM,동행진,전투,3,,합성계,None,합성,0,None,0,self,탐사|발견|gainMult|1.05,special|allyDefUp|0.1,,동행진
+CT_SEAL_TIGHT,밀봉,전투,3,,합성계,None,합성,2,식,0.4,single,,special|sealSkill|1,,밀봉
+CT_STONE_BODY,석신,전투,3,,합성계,None,합성,0,None,0,self,,stat|DEF|mult|1.2 ; stat|회피|add|-0.05,,석신
+CT_HOT_SPRING,온천,전투,3,,합성계,None,합성,0,None,0,self,생활|회복|gainMult|1.2 ; 관계|호감도|gainMult|1.05,,,온천
+CT_CAUSALITY,인과율,전투,3,,합성계,None,합성,0,None,0,self,,special|accUp|0.1 ; special|critUp|0.1,,인과율
+CT_EMBER,잿불,전투,3,,합성계,None,합성,0,None,0,self,생활|회복|gainMult|1.15,special|regen|0.15,,잿불
+CT_SPOTLIGHT,주목,전투,3,,합성계,None,합성,1,None,0,self,,special|taunt|0.5 ; special|aggroUp|0.5,,주목
+CT_CLEANSE,청정,전투,3,,합성계,None,합성,1,식,0,single_ally,생활|회복|gainMult|1.1,special|cleanse|1,,청정
+CT_ABUNDANCE,풍요,전투,3,,합성계,None,합성,0,None,0,self,생활|생산|gainMult|1.15 ; 생활|회복|gainMult|1.1,,,풍요
+CT_DECIPHER,해석,전투,3,,합성계,None,합성,0,None,0,self,탐사|발견|gainMult|1.1,special|revealEnemy|1,,해석
+BT_CRYSTAL_MAIL,결정반사갑,전투,3,,합성계,None,합성,0,None,0,self,,stat|defense.광|add|0.15 ; special|reflect|0.2,,결정반사갑
+CT_AMBUSHER,복병,전투,3,,합성계,None,합성,0,None,0,self,,special|firstStrike|0.3,,복병
+CT_SLEEP_BLOOMER,슬립 블루머,전투,2,,합성계,None,합성,0,None,0,self,,special|enemySpdDown|0.15,,2층 효과 대기 — 체인 정본=synthesis_chains.csv
+CT_COUNTER_SHELL,카운터 쉘,전투,2,,합성계,None,합성,0,None,0,self,,stat|defense.광|add|0.1 ; special|reflect|0.15,,2층 효과 대기 — 체인 정본=synthesis_chains.csv
+CT_TRAPPER,함정술사,전투,3,,합성계,None,합성,1,광,0.6,single,탐사|발견|gainMult|1.1,special|enemySpdDown|0.2,,함정술사
+CT_POISON_SPEAR,독창,전투,3,,합성계,식,합성,1,식,1.1,single,,special|dot독|0.15,,물리와 식이 한 창끝에 — 찌르기에 독이 흐른다.
+CT_AMBUSH_COMBO,기습연참,전투,3,,합성계,광,합성,2,광,1.3,single,,special|firstStrike|0.3 ; special|extraHitOnFirst|1,,선제에 성공하면 연달아 벤다.
+CT_PURE_DISSOLVE,순수용해,전투,3,,합성계,열,합성,2,열,1.0,single,,special|defShred|0.15 ; special|dispel|1,,버프도 방어도 함께 녹인다.
+CT_BERSERKER,광전사,전투,3,,합성계,None,합성,0,None,0,self,,stat|ATK|mult|1.25 ; override|always|방어:0,,두려움 없는 호전성이 광기로 — 공격만 남는다.
+CT_INDOMITABLE,불굴,전투,3,,합성계,None,합성,0,None,0,self,,stat|DEF|mult|2.0|when:hpPct:<=:0.3,,HP가 바닥일수록 단단해진다.
+CT_FULL_ANALYSIS,완전분석,전투,3,,합성계,None,합성,0,None,0,self,,special|revealEnemy|1 ; special|critUp|0.25,,적의 전부를 읽고 약점을 벤다. (구 T4→재티어)
+CT_MARTYR,살신,전투,3,,합성계,None,합성,1,None,0,single_ally,,special|coverAlly|1 ; special|regen|0.1,,제 몸으로 아군의 피해를 받아내고 되살아난다. (구 자기희생(CT) 개명 — 동명 3종 해소)
 [personality]
 id,name,category,tier,rarity,subMain,subSub,acquire,effects,bridges,contraPair,description
 PT_FEARLESS,겁없음,성격,1,,기질,,,,weight|공격|0.3,,위험을 두려워하지 않는다. 공격 행동을 선호하고 도주를 꺼린다.
 PT_COMBATIVE,호전적,성격,1,,기질,,,,weight|공격|0.25,,싸움을 즐긴다. 공격 행동을 강하게 선호한다.
 PT_TIMID,소심,성격,1,,기질,,,,weight|회피|0.2 ; weight|방어|0.2,,겁이 많다. 방어 행동과 도주를 선호한다.
-PT_WILDNESS,야성,성격,1,,기질,,,,weight|공격|0.2,,야생의 본능으로 행동한다.
+PT_WILDNESS,야성,성격,2,,기질,,,,weight|공격|0.2,,야생의 본능으로 행동한다.
 PT_DULL,둔감,성격,1,,기질,,,조교|감도.전부위|gainMult|0.8,,,반응이 느리다. 방어적이지만 도주하지 않는다.
 PT_VANITY,허영,성격,1,,사교,,,관계|호의|gainMult|0.9 ; 관계|선물반응|gainMult|1.2,,,자신을 과시하려 한다.
 PT_EMOTIONAL_BURST,감정폭발,성격,1,,기질,,,조교|global.전체|mult|변동1.3,,,감정이 폭발하면 공격적으로 변한다.
 PT_APATHETIC,무심,성격,1,,기질,,,조교|global.전체|gainMult|0.85,,,관심이 없다. 균형잡힌 행동 패턴.
 PT_DOMINATION,지배욕,성격,2,,관계,,,관계|시설효율|mult|1.2 ; 관계|타유닛관계|mult|0.8,,,지배하려 한다. 공격 선호· 도주 거부.
 PT_PASSIVE,수동적,성격,1,,관계,,,조교|global.복종|gainMult|1.2,weight|방어|0.15,,스스로 행동하기보다 상황에 따른다.
-PT_VIGILANT,경계심,성격,1,,관계,,,관계|호의|gainMult|0.8,weight|회피|0.2,,항상 경계한다. 방어적 행동을 선호한다.
+PT_VIGILANT,경계심,성격,2,,관계,,,관계|호의|gainMult|0.8,weight|회피|0.2,,항상 경계한다. 방어적 행동을 선호한다.
 PT_POSSESSIVE,소유욕,성격,1,,관계,,,관계|질투|gainMult|1.3,,,가진 것을 지키려 한다.
 PT_CAUTIOUS,신중,성격,1,,마음가짐,,,,weight|방어|0.15 ; target|threat,,신중하게 행동한다.
 PT_DUTY,의무감,성격,1,,마음가짐,,,관계|호감도하락|mult|0.7,,,의무를 다하려 한다. 방어적이고 도주하지 않는다.
-PT_DEPENDENT,의존,성격,1,,관계,,,관계|호감도|gainMult|1.2|when:동석,,,누군가에게 의존하려 한다.
+PT_DEPENDENT,의존,성격,2,,관계,,,관계|호감도|gainMult|1.2|when:동석,,,누군가에게 의존하려 한다.
 PT_OBSERVANT,관찰벽,성격,1,,사교,,,탐사|발견|gainMult|1.3,,,관찰하고 분석하려 한다.
 PT_INTROVERTED,내향,성격,1,,사교,,,생활|시설효율|mult|1.05 ; 관계|호감도|gainMult|0.9|when:동행,,,안으로 향한다. 방어적 행동 선호.
 PT_SEDUCTIVE,유혹,성격,2,,관계,,,관계|교섭|gainMult|1.2,,,유혹적으로 행동한다.
 PT_LOYAL,의리,성격,1,,관계,,,관계|호감도하락|mult|0.6,,,의리를 지킨다. 도주하지 않는다.
-PT_CURIOUS,호기심,성격,1,,마음가짐,,,조교|역가.숙련|gainMult|1.2 ; 탐사|발견|gainMult|1.15,,,호기심이 강하다.
-PT_CRAFTY,교활,성격,1,,관계,,,관계|교섭|gainMult|1.2,,,교활하게 행동한다.
-PT_LOYAL_FAITHFUL,충직,성격,1,,관계,,,관계|호감도하락|mult|0.5,stat|ATK|add|0.1|when:호감도단계:gte:유대,,충직하게 따른다.
+PT_CURIOUS,호기심,성격,2,,마음가짐,,,조교|역가.숙련|gainMult|1.2 ; 탐사|발견|gainMult|1.15,,,호기심이 강하다.
+PT_CRAFTY,교활,성격,2,,관계,,,관계|교섭|gainMult|1.2,,,교활하게 행동한다.
+PT_LOYAL_FAITHFUL,충직,성격,2,,관계,,,관계|호감도하락|mult|0.5,stat|ATK|mult|1.1|when:호감도단계:gte:유대,,충직하게 따른다.
 PT_STUBBORN,완고,성격,1,,마음가짐,,,조교|상태변화|gainMult|0.8,stat|DEF|mult|2.0|when:hpPct:lt:0.3,,쉽게 물러서지 않는다.
 PT_CLEAN_FREAK,결벽,성격,1,,마음가짐,,,조교|불결반감|gainMult|1.3,,,불순한 것을 거부한다.
 PT_ARROGANT,오만,성격,2,,관계,,,관계|호의|gainMult|0.9,,,자신이 가장 우월하다고 여긴다.
 PT_CLINGY,밀착,성격,1,,관계,,,관계|호감도|gainMult|1.2|when:동석,,,가까이 붙어있으려 한다.
 PT_DEVOTED,헌신,성격,1,,관계,,,조교|global.복종|gainMult|1.2,,,상대를 위해 헌신한다.
 PT_SHY,수줍음,성격,1,,사교,,,조교|감도|gainMult|1.15|when:노출,,,쉽게 부끄러워한다.
-PT_AIRHEAD,천연,성격,1,,기질,,,,,,자연스럽고 꾸밈이 없다. [flavor]
+PT_AIRHEAD,천연,성격,1,,기질,,,조교|global.공포|gainMult|0.95,,,자연스럽고 꾸밈이 없다. [flavor]
 PT_MOODY,기분파,성격,1,,기질,,,조교|global.전체|mult|변동,,,기분에 따라 행동이 바뀐다.
 PT_OBSESSIVE,집착,성격,1,,관계,,,관계|질투|gainMult|1.4,,,한 가지에 집착한다.
 PT_INQUISITIVE,탐구적,성격,1,,사교,,,탐사|발견|gainMult|1.2 ; 탐사|파편로어|gainMult|1.2,,,모든 것을 탐구하려 한다.
-PT_EXPRESSIONLESS,무표정,성격,1,,사교,,,,,,표정 변화가 거의 없다. [flavor]
-PT_RESIGNED,체념,성격,1,,마음가짐,,,,,,체념하고 있다. [flavor]
-PT_ENLIGHTENED,달관,성격,2,,마음가짐,,,,,,세상의 이치를 달관했다. [flavor]
-PT_MIMIC,흉내쟁이,성격,1,,사교,,,,,,상대의 행동을 따라한다. [flavor]
+PT_EXPRESSIONLESS,무표정,성격,1,,사교,,,조교|노출효과|gainMult|0.9,,,표정 변화가 거의 없다. [flavor]
+PT_RESIGNED,체념,성격,1,,마음가짐,,,조교|global.반감|gainMult|0.9,,,체념하고 있다. [flavor]
+PT_ENLIGHTENED,달관,성격,2,,마음가짐,,,조교|global.공포|gainMult|0.85 ; 관계|호감도|gainMult|0.95,,,세상의 이치를 달관했다. [flavor]
+PT_MIMIC,흉내쟁이,성격,1,,사교,,,조교|역가전반|gainMult|1.05,,,상대의 행동을 따라한다. [flavor]
 PT_DUALITY,양면성,성격,3,,시그니처,,합성,조교|모순공존|gate|1,,,두 가지 면을 가지고 있다.
 PT_HOARDER,수집벽,성격,2,,사교,,,탐사|채집|gainMult|1.3,,,수집벽
-PT_DETACHED,초연,성격,2,,마음가짐,,,,,,초연 [flavor]
+PT_DETACHED,초연,성격,2,,마음가짐,,,조교|global.연모|gainMult|0.9 ; 조교|global.공포|gainMult|0.9,,,초연 [flavor]
 PT_EMBRACE,포용,성격,2,,관계,,,관계|호감도|gainMult|1.15,,,포용
-PT_NOBLE,고고,성격,2,,마음가짐,,,,,,고고 [flavor]
-PT_EMOTIONLESS_SURFACE,무감정(표면),성격,2,,사교,,,,,,무감정(표면) [flavor]
-PT_SADISTIC,가학적,성격,2,,관계,,,조교|가학출력|gainMult|1.2,stat|ATK|add|0.1 ; target|weakpoint,,가학적
+PT_ALOOF,고고,성격,2,,마음가짐,,,관계|호감도|gainMult|0.9 ; 관계|교섭|gainMult|1.1,,,고고 [flavor]
+PT_EMOTIONLESS_SURFACE,무감정(표면),성격,2,,사교,,,조교|global.음란|gainMult|0.9 ; 조교|global.공포|gainMult|0.9,,,무감정(표면) [flavor]
+PT_SADISTIC,가학적,성격,2,,관계,,,조교|가학출력|gainMult|1.2,stat|ATK|mult|1.1 ; target|weakpoint,,가학적
 PT_DOMINEERING,지배적,성격,2,,관계,,,관계|시설효율|mult|1.15,weight|공격|0.15,,지배적
 PT_MERCILESS,냉혹,성격,2,,관계,,,,target|lowHp,,냉혹
 PT_MANIACAL_RESEARCH,광적 탐구,성격,2,,관계,,,탐사|미지|gainMult|1.3,,,광적 탐구
 PT_TENACITY,집념,성격,2,,관계,,,관계|호감도하락|mult|0.5,,,집념
-PT_TRANSCENDENT,초탈,성격,2,,마음가짐,,,,,,초탈 [flavor]
+PT_TRANSCENDENT,초탈,성격,2,,마음가짐,,,조교|고통|gainMult|0.85,,,초탈 [flavor]
 PT_SELF_SACRIFICE,자기희생,성격,2,,관계,,,조교|global.복종|gainMult|1.3 ; 조교|global.반감|gainMult|0,,,자기희생
-PT_SILENT,침묵,성격,2,,마음가짐,,,,,,침묵 [flavor]
+PT_SILENT,침묵,성격,2,,마음가짐,,,관계|호감도|gainMult|0.95,weight|방어|0.1,,침묵 [flavor]
 
 PT_STEADFAST,꿋꿋함,성격,1,,기질,담력,후보풀,조교|고통|gainMult|0.8 ; 생활|기력|mult|1.1,,,꿋꿋함
-PT_SENSITIVE,감수성,성격,1,,기질,감정,후보풀,조교|감도.전부위|gainMult|1.15,,PT_UNFEELING,감수성 효과(잠정)
+PT_SENSITIVE,감수성,성격,2,,기질,감정,후보풀,조교|감도.전부위|gainMult|1.15,,PT_UNFEELING,감수성 효과(잠정)
 PT_UNFEELING,감정결여,성격,1,,기질,감정,후보풀,조교|global.전체|gainMult|0.8,,PT_SENSITIVE,감정결여 효과(잠정)
 PT_SELF_LOVE,자애,성격,1,,기질,자기상,후보풀,관계|호감도|gainMult|1.1,,,자애
-PT_RUEFUL,애석,성격,1,,기질,감정,후보풀,,,,애석 [flavor]
-PT_SELF_DOUBT,자격지심,성격,1,,기질,자기상,후보풀,관계|호감도|gainMult|0.9,,PT_ARROGANT,자격지심 효과(잠정)
+PT_RUEFUL,애석,성격,1,,기질,감정,후보풀,관계|호감도|gainMult|1.05,,,애석 [flavor]
+PT_SELF_DOUBT,자격지심,성격,2,,기질,자기상,후보풀,관계|호감도|gainMult|0.9,,PT_ARROGANT,자격지심 효과(잠정)
+PT_CONFIDENT,자신감,성격,1,,기질,자기상,후보풀,관계|호감도|gainMult|1.05,,,자신감 효과(잠정) — 자격지심 모순 극
 PT_OPTIMIST,낙관,성격,1,,기질,전망,후보풀,조교|global.공포|gainMult|0.8,,PT_PESSIMIST,낙관 효과(잠정)
 PT_PESSIMIST,비관,성격,1,,기질,전망,후보풀,조교|global.공포|gainMult|1.2,,PT_OPTIMIST,비관 효과(잠정)
-PT_WHINY,엄살,성격,1,,기질,고통감수,후보풀,조교|고통|gainMult|1.3 ; 조교|global.공포|gainMult|1.1,,PT_HARDY_MIND,엄살
-PT_HARDY_MIND,의연,성격,1,,기질,고통감수,후보풀,조교|고통|gainMult|0.7,,PT_WHINY,의연
-PT_GLOOMY,음울,성격,1,,기질,공포감수,후보풀,조교|global.공포|gainMult|1.2,,PT_CHEERFUL,음울
-PT_CHEERFUL,명랑,성격,1,,기질,공포감수,후보풀,조교|global.공포|gainMult|0.8,,PT_GLOOMY,명랑
-PT_PRIDE_HIGH,프라이드높음,성격,1,,기질,자기상,후보풀,조교|global.굴복|gainMult|0.8 ; 조교|기교|gainMult|0.9,,PT_PRIDE_LOW,프라이드높음
-PT_PRIDE_LOW,프라이드낮음,성격,1,,기질,자기상,후보풀,조교|global.굴복|gainMult|1.2,,PT_PRIDE_HIGH,프라이드낮음
+PT_WHINY,엄살,성격,3,,기질,고통감수,합성,조교|고통|gainMult|1.3 ; 조교|global.공포|gainMult|1.1,,PT_HARDY_MIND,엄살
+PT_HARDY_MIND,의연,성격,3,,기질,고통감수,합성,조교|고통|gainMult|0.7,,PT_WHINY,의연
+PT_GLOOMY,음울,성격,3,,기질,공포감수,합성,조교|global.공포|gainMult|1.2,,PT_CHEERFUL,음울
+PT_CHEERFUL,명랑,성격,3,,기질,공포감수,합성,조교|global.공포|gainMult|0.8,,PT_GLOOMY,명랑
+PT_PRIDE_HIGH,프라이드높음,성격,3,,기질,자기상,합성,조교|global.굴복|gainMult|0.8 ; 조교|기교|gainMult|0.9,,PT_PRIDE_LOW,프라이드높음
+PT_PRIDE_LOW,프라이드낮음,성격,3,,기질,자기상,합성,조교|global.굴복|gainMult|1.2,,PT_PRIDE_HIGH,프라이드낮음
 PT_HONEST,정직,성격,1,,기질,솔직함,후보풀,조교|global.전체|gainMult|1.1,,PT_TSUNDERE,정직 효과(잠정)
 PT_TSUNDERE,츤데레,성격,1,,기질,솔직함,후보풀,관계|호감도|gainMult|0.8|when:초기,,PT_HONEST,츤데레 효과(잠정)
-PT_SELF_RESTRAINT,자제심,성격,1,,마음가짐,절제,후보풀,조교|쾌락계|gainMult|0.8,,,자제심
+PT_SELF_RESTRAINT,자제심,성격,2,,마음가짐,절제,후보풀,조교|쾌락계|gainMult|0.8,,,자제심
 PT_CONSERVATIVE,보수적,성격,1,,마음가짐,지향,후보풀,조교|변용도|gainMult|0.8,,PT_CURIOUS,보수적 효과(잠정)
-PT_NO_OVERSTEP,일선을넘지않음,성격,1,,마음가짐,절제,후보풀,조교|역가전반|gainMult|0.8,,,일선을넘지않음
+PT_NO_OVERSTEP,일선을넘지않음,성격,2,,마음가짐,절제,후보풀,조교|역가전반|gainMult|0.8,,,일선을넘지않음
 PT_WEAK_POINT,약점,성격,1,,마음가짐,기타,후보풀,조교|커맨드실행|gate|0.8,,,약점
 PT_INDIFFERENT,무관심,성격,1,,마음가짐,기타,후보풀,조교|global.전체|gainMult|0.8,,,무관심
-PT_REPRESSED,억압,성격,1,,마음가짐,해방,후보풀,조교|global.음란|gainMult|0.7,,PT_LIBERATED,억압 효과(잠정)
-PT_LIBERATED,해방,성격,1,,마음가짐,해방,후보풀,조교|global.음란|gainMult|1.3,,PT_REPRESSED,해방 효과(잠정)
+PT_REPRESSED,억압,성격,3,,마음가짐,해방,합성,조교|global.음란|gainMult|0.7,,PT_LIBERATED,억압 효과(잠정)
+PT_LIBERATED,해방,성격,3,,마음가짐,해방,합성,조교|global.음란|gainMult|1.3,,PT_REPRESSED,해방 효과(잠정)
 PT_RESISTANT,저항,성격,1,,마음가짐,기타,후보풀,조교|global.반감|gainMult|1.3 ; 조교|global.욕정|gainMult|0.8,,,저항 효과(잠정)
 PT_TIMID_SOCIAL,소극적,성격,1,,사교,사교,후보풀,관계|호의|gainMult|0.8,,PT_SOCIABLE,소극적 효과(잠정)
 PT_SOCIABLE,사교적,성격,1,,사교,사교,후보풀,관계|호의|gainMult|1.2,,PT_TIMID_SOCIAL,사교적 효과(잠정)
@@ -168,7 +254,7 @@ PT_BASHFUL,부끄럼쟁이,성격,1,,성관련,수치,후보풀,조교|감도|ga
 PT_SHAMELESS,부끄럼없음,성격,1,,성관련,수치,후보풀,조교|노출효과|gainMult|0.8,,PT_BASHFUL,부끄럼없음 효과(잠정)
 PT_JEALOUS,질투많음,성격,1,,성관련,감정,후보풀,관계|질투|gainMult|1.5,,,질투많음
 PT_YANDERE,얀데레,성격,3,,시그니처,집착,합성,관계|호감도|gainMult|1.5 ; 관계|질투|gainMult|2.0,,,얀데레 효과(잠정)
-PT_MADNESS,광기,성격,3,,시그니처,붕괴,변용:붕괴:2,,,,(신규 — effects 미작성)
+PT_MADNESS,광증,성격,3,,시그니처,붕괴,변용:붕괴:2,조교|global.공포|immune|1 ; 관계|호감도|gainMult|0.8,,,(신규 — effects 미작성)
 PT_CHILDISH,유치,성격,2,,시그니처,퇴행,후보풀,조교|global.순종|gainMult|1.2 ; 조교|가슴조교|gainMult|1.2,,,유치
 PT_UNFATHOMABLE,종잡을수없음,성격,2,,시그니처,은폐,후보풀,관계|호감도표시|gate|은폐,,,종잡을수없음
 PT_TIDY,청결,성격,1,,생활,위생,후보풀,생활|위생시설|mult|1.15,,,청결
@@ -180,13 +266,105 @@ PT_THRIFTY,영리한소비,성격,1,,생활,소비,후보풀,생활|동행비용
 PT_NOBLE,고귀,성격,2,,적성,지식,초기,생활|지식.경영|gainMult|1.2 ; 관계|교섭|gainMult|1.1,,,고귀 적성
 PT_ARTISTIC,예술감각,성격,1,,적성,지식,후보풀,생활|지식.예술|gainMult|1.2,,,예술감각 적성
 PT_SCHOLARLY,학구열,성격,1,,적성,지식,후보풀,탐사|지식.魔物|gainMult|1.2 ; 생활|지식.역사|gainMult|1.2,,,학구열 적성
+PT_CRISIS_SENSE,위기감지,성격,3,,모순,통합,모순합성,,weight|회피|0.2 ; stat|회피|add|0.1|when:hpPct:<=:0.3,,소심과 겁없음이 하나로 — 위험을 먼저 읽는다.
+PT_PANIC,공황,성격,3,,모순,분열,모순합성,조교|global.공포|gainMult|1.3,weight|회피|0.3,,모순에 찢겨 위험 앞에서 얼어붙는다.
+PT_EMOTION_CONTROL,감정제어,성격,3,,모순,통합,모순합성,조교|global.공포|gainMult|0.7,,,감수성과 둔감의 합일 — 감정을 다룬다.
+PT_DISSOCIATION,감정해리,성격,3,,모순,분열,모순합성,조교|global.연모|gainMult|0.6 ; 관계|호감도|gainMult|0.7,,,감정이 몸에서 떨어져 나갔다.
+PT_PRIDE_TRUE,자긍,성격,3,,모순,통합,모순합성,관계|호감도|gainMult|1.1,,,흔들리지 않는 자기 확신.
+PT_SELF_DESTRUCT,자기파괴,성격,3,,모순,분열,모순합성,조교|global.반감|gainMult|1.2,stat|DEF|mult|0.9,,자신을 갉아먹는 확신.
+PT_EQUANIMITY,평정,성격,3,,모순,통합,모순합성,조교|global.반감|gainMult|0.8,stat|DEF|mult|1.05,,낙관도 비관도 아닌 고요.
+PT_UNSTABLE_MIND,정서불안,성격,3,,모순,분열,모순합성,조교|global.공포|gainMult|1.3,,,마음의 날씨가 수시로 뒤집힌다.
+PT_CONSISTENCY,일관,성격,3,,모순,통합,모순합성,관계|호감도|gainMult|1.15,,,겉과 속이 같은 사람.
+PT_CAPRICE,변덕,성격,3,,모순,분열,모순합성,관계|호감도|gainMult|0.85,,,어제의 말과 오늘의 말이 다르다.
+PT_SAVOIR,처세,성격,3,,모순,통합,모순합성,관계|호감도|gainMult|1.2,,,나설 때와 물러설 때를 안다.
+PT_SOCIAL_ANXIETY,대인불안,성격,3,,모순,분열,모순합성,관계|호감도|gainMult|0.7,,,사람 곁이 편하지 않다.
+PT_MOOD_SWINGS,기복,성격,3,,모순,분열,모순합성,조교|역가전반|gainMult|0.85,,,오르는 날과 가라앉는 날의 낙차.
+PT_BALANCED_INQUIRY,균형탐구,성격,3,,모순,통합,모순합성,탐사|발견|gainMult|1.2,,,새것을 좇되 뿌리를 놓지 않는다.
+PT_INDECISIVE,우유부단,성격,3,,모순,분열,모순합성,,weight|방어|0.2,,갈림길마다 멈춰 선다.
+PT_DOCILE,온순,성격,1,,기질,,초기,조교|global.반감|gainMult|0.85,,,온순하게 따른다. (잠정)
+PT_COOLHEAD,냉정,성격,1,,마음가짐,,후보풀,조교|global.공포|gainMult|0.8,weight|방어|0.1,,어떤 순간에도 차갑게 판단한다. (잠정)
+PT_SUNNY,해맑음,성격,3,,기질,행성,합성,관계|호감도|gainMult|1.1,,,티 없이 당당한 밝음 — 태양의 기질. (잠정)
+PT_MOONSTRUCK,달뜸,성격,3,,기질,행성,합성,조교|global.음란|gainMult|1.1,,,들뜨고 몽롱한 — 달의 기질. (잠정)
+PT_FIERY,화끈,성격,3,,기질,행성,합성,,weight|공격|0.2,,다혈에 시원시원한 — 화성의 기질. (잠정)
+PT_AMOROUS,금슬,성격,3,,기질,행성,합성,관계|호감도|gainMult|1.15,,,살갑고 애정 깊은 — 금성의 기질. (잠정)
+PT_EASYGOING,수더분,성격,3,,기질,행성,합성,조교|global.반감|gainMult|0.85,,,둥글둥글 유연한 — 수성의 기질. 홀로(모순 불참). (잠정)
+PT_PASTORAL,목가,성격,3,,기질,행성,합성,관계|호감도|gainMult|1.05,,,느긋하고 너그러운 — 목성의 기질. (잠정)
+PT_ROOTED,토박이,성격,3,,기질,행성,합성,,stat|DEF|mult|1.05,,뿌리내려 묵직한 — 토성의 기질. (잠정)
+PT_CLEAR_MOON,제월,성격,4,,별잎,,모순합성,조교|global.공포|gainMult|0.7 ; 관계|호감도|gainMult|1.2,,,비 갠 하늘의 달 — 흐림을 다 지나온 맑음.
+PT_DEVIANCE,일탈,성격,4,,별잎,,모순합성,조교|global.음란|gainMult|1.3 ; 관계|호감도|gainMult|0.85,,,금 밖으로 나가는 순간만 살아있다.
+PT_DIGNITY,긍지,성격,4,,별잎,,모순합성,조교|global.복종|gainMult|0.7 ; 관계|호감도|gainMult|1.15,stat|DEF|mult|1.1,,누가 꺾어도 굽지 않는 자기 가치.
+PT_FAITH,신의,성격,3,,합성계,,합성,관계|호감도|gainMult|1.2 ; 조교|global.반감|gainMult|0.85,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+PT_JUPITER_STAR,세성,성격,4,,별잎,,모순합성,생활|시설효율|gainMult|1.15 ; 관계|호감도|gainMult|1.15,,,해를 세며 기다리는 너그러움 — 도시가 그를 좋아한다.
+PT_LOYALTY,충의,성격,4,,합성계,,합성,관계|호감도|gainMult|1.2,stat|ATK|mult|1.15|when:호감도:>=:80 ; stat|DEF|mult|1.15|when:호감도:>=:80,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+PT_LUNAR_ECLIPSE,월식,성격,4,,별잎,,모순합성,조교|global.음란|gainMult|1.4 ; 관계|호감도|gainMult|0.7,,,달이 해를 삼키는 밤 — 정이 욕에 먹힌다.
+PT_MAJESTY,위광,성격,3,,합성계,,합성,관계|교섭|gainMult|1.2 ; 조교|global.복종|gainMult|1.15,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+PT_MARS_STAR,형혹,성격,4,,별잎,,모순합성,조교|global.반감|gainMult|1.2,special|enemyAiDisrupt|0.5,,붉게 깜빡이며 현혹하는 재앙의 별.
+PT_MODERATION,중용,성격,4,,별잎,,모순합성,조교|역가전반|gainMult|1.2 ; 조교|global.반감|gainMult|0.8 ; 생활|시설효율|gainMult|1.1,,,조여도 풀어도 아닌, 조율된 한가운데.
+PT_OVERFLOW,범람,성격,4,,별잎,,모순합성,조교|감도.전부위|gainMult|1.25 ; 조교|global.공포|gainMult|1.3,weight|공격|0.15,,둑이 터진 감정은 방향을 고르지 않는다.
+PT_REIGN,군림,성격,4,,합성계,,합성,생활|시설효율|gainMult|1.3 ; 관계|호감도|gainMult|0.85,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+PT_SATURN_STAR,진성,성격,4,,별잎,,모순합성,관계|호감도|gainMult|0.8,stat|DEF|mult|1.2 ; weight|방어|0.3,,눌러앉아 움직이지 않는 별 — 지키지만, 무겁다.
+PT_SELF_DECEIT,자기기만,성격,4,,별잎,,모순합성,관계|호감도|gainMult|0.7 ; 조교|global.음란|gainMult|1.2,,,거울을 보고도 다른 사람을 본다.
+PT_SILVER_TONGUE,요설,성격,3,,합성계,,합성,관계|교섭|gainMult|1.25,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+PT_STEADY_HEART,항심,성격,4,,별잎,,모순합성,조교|고통|gainMult|0.6 ; 조교|global.공포|gainMult|0.75,special|fearResist|0.3,,파도가 쳐도 바닥의 돌은 구르지 않는다.
+PT_SUN_MOON,일월,성격,4,,별잎,,모순합성,관계|호감도|gainMult|1.25 ; 조교|global.음란|gainMult|1.15,,,해와 달을 한 몸에 — 낮과 밤이 다 그의 것.
+PT_VARIABLE_STAR,변광,성격,4,,별잎,,모순합성,조교|global.연모|gainMult|1.3 ; 조교|global.공포|gainMult|1.3,special|randomResist|0.15,,깜빡이는 별 — 밝기가 제멋대로 요동친다.
+PT_VENUS_STAR,태백,성격,4,,별잎,,모순합성,관계|호감도|gainMult|1.1,weight|공격|0.2 ; stat|ATK|mult|1.15,,새벽 서쪽의 흰 서슬 — 정련된 열정은 차갑게 벤다.
+PT_INTEGRITY,지조,성격,3,,모순,통합,모순합성,조교|global.음란|gainMult|0.8 ; 관계|호감도|gainMult|1.15,,,지키기로 한 선은 지킨다.
+PT_DEBAUCH,방종,성격,3,,모순,분열,모순합성,조교|global.음란|gainMult|1.25 ; 조교|global.복종|gainMult|0.85,,,선이 없으면 넘어질 일도 없다.
+PT_SHAME_SENSE,염치,성격,3,,모순,통합,모순합성,조교|노출효과|gainMult|1.2 ; 조교|global.반감|gainMult|0.9,,,부끄러움을 아는 몸이 더 뜨겁다.
+PT_BRAZEN,파렴치,성격,3,,모순,분열,모순합성,조교|노출효과|gainMult|1.3 ; 관계|호감도|gainMult|0.85,,,가릴 것이 없으니 두려울 것도 없다.
+PT_WARMTH,온정,성격,3,,모순,통합,모순합성,관계|호감도|gainMult|1.2 ; 조교|global.공포|gainMult|0.85,,,느끼되 데지 않는 온도.
+PT_COLDBLOOD,냉혈심,성격,3,,모순,분열,모순합성,조교|global.연모|gainMult|0.7,special|fearResist|0.3,,차가움은 그 자체로 방패다.
+PT_STILL_ROT,정적의 부패,성격,1,,선천계,,초기,,special|enemyAtkDown|0.05,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+PT_AMORPH_HEART,부정형 심장,성격,1,,선천계,,초기,,special|randomResist|0.1,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+PT_GROOMING,그루밍,성격,1,,선천계,,초기,생활|시설효율|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+PT_EXPLORE_BOND,탐사유대,성격,1,,선천계,,초기,탐사|발견|gainMult|1.05 ; 관계|호감도|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+PT_OBEY_ANTENNA,복종의 안테나,성격,1,,선천계,,초기,조교|global.복종|gainMult|1.1,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+PT_LOYAL_SWAY,충성스러운 미동,성격,1,,선천계,,초기,관계|호감도|gainMult|1.05 ; 조교|global.복종|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+PT_LIONHEART,사자심,성격,1,,우화,,초기,조교|global.공포|gainMult|0.9,weight|공격|0.1,,적사자 — 굴하지 않는 용맹.
+PT_DOUBLE_GAZE,겹시선,성격,1,,우화,,초기,,stat|회피|add|0.05,,쌍두 독수리 — 두 방향을 동시에 본다.
+PT_DAWN_CRY,새벽울음,성격,1,,우화,,초기,,special|firstStrike|0.1,,수탉 — 가장 먼저 깨어 경계한다.
+PT_FOX_WIT,여우꾀,성격,2,,우화,,초기,관계|교섭|gainMult|1.15,weight|회피|0.1,,여우 — 잔꾀와 눈치.
+PT_SWARM_INSTINCT,군집본능,성격,1,,우화,,초기,,stat|DEF|mult|1.05,,벌떼 — 무리로 움직인다.
+PT_PURITY_SENSE,정결감지,성격,2,,우화,,초기,탐사|발견|gainMult|1.1 ; 조교|global.음란|gainMult|0.9,,,유니콘 — 정결한 것을 알아본다.
+PT_SECRETIVE,비밀주의,성격,2,,우화,,초기,관계|호감도|gainMult|0.9,stat|회피|add|0.05,,멜루지네 — 보여주지 않는 시간.
+PT_BROW_LETTER,이마글자,성격,2,,우화,,초기,조교|명령계|unlock|1 ; 조교|global.복종|gainMult|1.15,,,골렘 — 이마의 글자로 움직인다. ⚠각인 어휘 회피 명명.
+PT_GENTLE_FLIGHT,온순비상,성격,2,,우화,,초기,조교|global.반감|gainMult|0.85,,,디아나의 비둘기 — 조용히 나는 온순함.
+PT_RISING_SNAKE,승사,성격,1,,우화,,초기,조교|역가전반|gainMult|1.05,,,카두케우스 — 오르는 뱀. 모순 극.
+PT_FALLING_SNAKE,강사,성격,1,,우화,,초기,조교|global.복종|gainMult|1.05,,,카두케우스 — 내리는 뱀. 모순 극.
+PT_GOLD_LURE,황금유혹,성격,1,,우화,,초기,관계|교섭|gainMult|1.1,,,황금 사과 — 멈추게 하는 반짝임.
+PT_SELF_BIND,자박,성격,3,,합성계,,합성,조교|역가전반|gainMult|1.2 ; 조교|global.음란|gainMult|0.9,,,재결합 — 강해지기 위해 스스로 묶는다(헤르메스의 새 명문). (효과 미저작)
+PT_WIT_DUEL,눈치싸움,성격,3,,합성계,,합성,,stat|회피|add|0.1 ; special|firstStrike|0.15,,재결합 — 경계와 꾀의 수싸움. (효과 미저작)
+PT_OBEDIENT_VESSEL,복명체,성격,3,,합성계,,합성,조교|global.복종|gainMult|1.3 ; 조교|명령계|unlock|1,,,재결합 — 글자에 복종하는 그릇. (효과 미저작)
+PT_MOON_HERALD,달전령,성격,3,,합성계,,합성,관계|호감도|gainMult|1.15 ; 조교|global.공포|gainMult|0.85,,,재결합 — 달의 흰 전령. (효과 미저작)
+PT_TWIN_SERPENT,쌍사합주,성격,3,,모순,,모순합성,조교|역가전반|gainMult|1.15 ; 조교|global.복종|gainMult|1.1,,,오르는 뱀과 내리는 뱀이 한 지팡이를 감는다.
+PT_TANGLED,뒤엉킴,성격,3,,모순,,모순합성,조교|역가전반|gainMult|0.85 ; 조교|global.공포|gainMult|1.15,,,얽힌 채 오르지도 내리지도 못한다.
+PT_PERSONA,가면,성격,3,,합성계,,합성,관계|교섭|gainMult|1.2 ; 조교|global.반감|gainMult|0.9,,,가면
+PT_SHOWOFF,과시욕,성격,3,,합성계,,합성,조교|노출효과|gainMult|1.25 ; 관계|호감도|gainMult|1.05,,,과시욕
+PT_DISCIPLINE,규율,성격,3,,합성계,,합성,생활|시설효율|gainMult|1.15 ; 조교|global.복종|gainMult|1.1,,,규율
+PT_ABSTINENCE,금욕,성격,3,,합성계,,합성,조교|global.음란|gainMult|0.7 ; 조교|역가전반|gainMult|1.1,,,금욕
+PT_FROZEN_HEART,동결심,성격,3,,합성계,,합성,조교|global.연모|gainMult|0.75,special|fearResist|0.2,,동결심
+PT_NO_THOUGHT,무념,성격,3,,합성계,,합성,조교|global.공포|gainMult|0.75 ; 조교|global.음란|gainMult|0.9,,,무념
+PT_ELEGY,비가,성격,3,,합성계,,합성,관계|호감도|gainMult|1.15 ; 생활|지식.예술|gainMult|1.2,,,비가
+PT_COLLECT_MANIA,수집광,성격,3,,합성계,,합성,탐사|보상|gainMult|1.2 ; 탐사|발견|gainMult|1.1,,,수집광
+PT_GRIT,오기,성격,3,,합성계,,합성,조교|고통|gainMult|0.8,stat|ATK|mult|1.1|when:hpPct:<=:0.5,,오기
+PT_HERMIT,은자,성격,3,,합성계,,합성,생활|시설효율|gainMult|1.15 ; 관계|호감도|gainMult|0.9,,,은자
+PT_COMPOSURE,침착,성격,3,,합성계,,합성,조교|global.공포|gainMult|0.8,weight|방어|0.15,,침착
+PT_SCHOLAR,학자기질,성격,3,,합성계,,합성,생활|지식.연금|gainMult|1.2 ; 생활|지식.역사|gainMult|1.2,,,학자기질
+AT_MARK_MONO,각인독점,성격,3,,합성계,,합성,조교|global.연모|gainMult|1.2 ; 관계|호감도|gainMult|1.1,,,⚠각인계 개명 후보(印 회피)
+PT_PURE_DOLL,순백인형,성격,4,,합성계,,합성,조교|global.복종|gainMult|1.4 ; 조교|성격획득|unlock|1 ; 관계|호감도|gainMult|1.1,,,순백인형
+PT_DOLLIFY,인형화,성격,3,,합성계,,합성,조교|global.반감|gainMult|0.2 ; 조교|global.복종|gainMult|1.5,,,인형화
+PT_SEPARATION_ANX,분리불안,성격,3,,합성계,,합성,관계|호감도|gainMult|1.3|when:파티동행:has:1 ; 관계|호감도|gainMult|0.7|when:파티이탈:has:1,,,곁에 있으면 배가 되고 떨어지면 반이 된다.
+PT_SECLUSION,은둔,성격,3,,합성계,,합성,생활|시설효율|gainMult|1.1 ; 관계|호감도|gainMult|0.9,,,혼자 있는 자리에서 일이 잘 된다.
+PT_RESEARCH_MANIA,연구광,성격,3,,합성계,,합성,탐사|발견|gainMult|1.2 ; 생활|지식.연금|gainMult|1.15,,,파편 하나에 밤을 새운다.
+PT_MEEK,유순,성격,3,,합성계,,합성,조교|global.반감|immune|1 ; 조교|global.공포|immune|1 ; 조교|global.복종|gainMult|1.5 ; 조교|global.연모|gainMult|1.5,,,거스르는 법을 모른다.
 [adult]
 id,name,category,tier,rarity,subMain,subSub,acquire,effects,bridges,contraPair,description
 AT_INEXPERIENCED,미경험,성인,1,,체질,,,조교|첫경험|gate|1,,,첫 경험 관련 보정. 초기 상태
 AT_DISSOLVING_BODY,용해체질,성인,1,,감도,,,조교|감도.전부위|gainMult|1.2,,,감도 변동 폭 증가· 감각이 녹아드는 체질
 AT_NUMB_CONSTITUTION,둔감체질,성인,1,,감도,,,조교|감도.전부위|gainMult|0.7,,,전부위 감도 상승 속도 감소
 AT_SLOW_CONSTITUTION,둔화체질,성인,1,,체질,,,조교|상태변화|gainMult|0.7,,,상태 변화 전반 느림
-AT_SADIST,S기질,성인,2,,성향,,,조교|global.복종|gainMult|0.8,stat|ATK|add|0.1|when:성향:is:S,,조교자일 때 효과 상승· 가학 계열 보정
+AT_SADIST,S기질,성인,2,,성향,,,조교|global.복종|gainMult|0.8,stat|ATK|mult|1.1|when:성향:is:S,,조교자일 때 효과 상승· 가학 계열 보정
 AT_SHAME_EXCESS,수치심 과잉,성인,2,,성향,,,조교|감도.전부위|gainMult|1.2|when:수치 ; 조교|global.반감|gainMult|1.2,,,수치 관련 행위 시 감도 추가 상승· 반감도 상승
 AT_HYPERSENSITIVITY,과감도,성인,2,,감도,,,조교|감도.전부위|gainMult|1.3,,,전부위 감도 상승 속도 증가
 AT_OBSESSIVE_BOND,집착결속,성인,2,,반응,,,조교|관계변동|mult|1.5,,,특정 대상 고정· 관계 수치 변동 극단화
@@ -217,7 +395,7 @@ AT_CORRUPTION_EASE,침식용이,성인,2,,반응,,,조교|성인경험|gainMult|
 AT_PURITY_WALL,순결벽,성인,2,,반응,,,조교|global.반감|gainMult|2.0|when:첫경험전,,,첫 경험 전까지 반감 대폭 상승· 이후 급감
 AT_IMPRINT_EASY,각인용이,성인,2,,반응,,,조교|침염|gainMult|1.3,,,각인 획득 속도 증가
 
-AT_SADE,새드,성인,2,,성향,가학,후보풀,조교|가학출력|gainMult|1.3,stat|ATK|add|0.05|when:성향:is:S,,새드 효과(잠정)
+AT_SADE,새드,성인,2,,성향,가학,후보풀,조교|가학출력|gainMult|1.3,stat|ATK|mult|1.05|when:성향:is:S,,새드 효과(잠정)
 AT_MASO,마조,성인,2,,성향,피학,후보풀,조교|고통변환|gainMult|1.3,,,마조 효과(잠정)
 AT_PERVERSE,도착적,성인,2,,성향,SM,후보풀,조교|SM출력|gainMult|1.3 ; 조교|성인경험|gainMult|1.1,,,도착적 효과(잠정)
 AT_DUAL_TASTE,변태,성인,3,,성향,양면,합성,조교|가학출력|gainMult|1.3 ; 조교|고통변환|gainMult|1.3,,,변태 효과(잠정)
@@ -229,15 +407,99 @@ AT_SMELL_SENS,냄새민감,성인,1,,결벽,후각,후보풀,조교|구강|gainM
 AT_FILTH_IGNORE,불결무시,성인,1,,결벽,위생,후보풀,조교|불결페널티|immune|1,,,불결무시 효과(잠정)
 AT_SHAVEN,음모없음,성인,1,,결벽,외형,후보풀,조교|global.음란|gainMult|1.1,,,음모없음 효과(잠정)
 AT_SEMEN_TASTE,정애미각,성인,2,,결벽,미각,후보풀,조교|정액중독|gainMult|1.5,,,정애미각 효과(잠정)
+AT_LONGING,연모,성인,2,,변용,애착,변용,조교|global.연모|gainMult|1.25 ; 관계|호감도|gainMult|1.10,,,애착 도1. 마음이 기울기 시작한다.
+AT_AFFECTION,친애,성인,3,,변용,애착,변용,관계|이벤트.거처|unlock|1 ; 관계|호감도|gainMult|1.15,,,애착 도2. 곁을 허락한다.
+AT_DEVOTED_LOVE,상애,성인,4,,변용,애착,변용,관계|호감도|gainMult|2.0|when:동석:has:1,stat|ATK|mult|1.1|when:동석:has:주인 ; stat|DEF|mult|1.1|when:동석:has:주인,,애착 도3. 서로 기대는 사이.
+AT_CONSORT,반려,성인,5,,변용,애착,변용,조교|global.연모|set|100,stat|ATK|mult|1.2|when:동석:has:주인,,애착 종착. 운명이 하나로 굳었다.
+AT_OBEDIENCE,복종,성인,2,,변용,예속,변용,조교|global.복종|gainMult|1.25 ; 조교|global.반감|gainMult|0.8,,,예속 도1. 명령에 따르는 법을 익힌다.
+AT_SUBMISSION,굴복,성인,3,,변용,예속,변용,조교|global.공포|gainMult|0.7,,,예속 도2. 저항이 꺾인다.
+AT_BRAND,낙인,성인,4,,변용,예속,변용,조교|global.반감|gainMult|0.5 ; 관계|호감도|gainMult|1.1,,,예속 도3. 지워지지 않는 표식.
+AT_ENSLAVED,예속,성인,5,,변용,예속,변용,조교|global.복종|set|100,override|always|회피:0|방어:0|공격:1.0 ; special|aggroUp|1,,예속 종착. 의지를 주인에게 맡겼다.
+AT_LEWD,음란,성인,2,,변용,탐닉,변용,조교|global.음란|gainMult|1.25 ; 조교|감도.전부위|gainMult|1.15,,,탐닉 도1. 쾌락에 눈뜬다.
+AT_LEWDENING,음화,성인,3,,변용,탐닉,변용,조교|쾌감상한.부위|cap|-0.3,,,탐닉 도2. 몸이 먼저 반응한다.
+AT_LUST,색정,성인,4,,변용,탐닉,변용,조교|global.음란|add|10|when:세션시작,special|enemyAccDown|0.1,,탐닉 도3. 갈망이 일상을 침식한다.
+AT_SUCCUBUS,음마,성인,5,,변용,탐닉,변용,조교|음란계|unlock|1,special|enemyAiDisrupt|1,,탐닉 종착. 쾌락 그 자체가 된 존재.
+AT_FRACTURE,균열,성인,2,,변용,붕괴,변용,조교|global.공포|mult|1.5 ; 관계|호감도|gainMult|0.5,,,붕괴 도1. 마음에 금이 간다.
+AT_MADNESS,광기,성인,3,,변용,붕괴,변용,조교|하드반응|unlock|1,special|fearResist|0.5,,붕괴 도2. 금 사이로 어둠이 샌다.
+AT_DISSOLUTION,와해,성인,4,,변용,붕괴,변용,조교|global.긍정|gainMult|0.3,special|hitStaggerImmune|1,,붕괴 도3. 형태가 무너져 내린다.
+AT_RECONSTRUCT,재구성,성인,5,,변용,붕괴,변용,조교|불리global|gainMult|0.2,override|always|immune:공포 ; stat|ATK|mult|1.03|scaleBy:missingHpPct,,붕괴 종착. 무너진 자리에서 다른 것이 일어선다.
+AT_SADO_CONFUSION,가학혼란,성인,3,,모순,분열,모순합성,조교|global.반감|gainMult|1.2,,,주고 싶은지 받고 싶은지 뒤엉켰다.
+AT_SENSE_CONTROL,감도제어,성인,3,,모순,통합,모순합성,조교|감도.전부위|gainMult|1.1,,,감각의 고삐를 제 손에 쥐었다.
+AT_SENSE_OVERLOAD,감각폭주,성인,3,,모순,분열,모순합성,조교|감도.전부위|gainMult|1.4 ; 조교|global.공포|gainMult|1.2,,,제어를 잃은 감각이 넘쳐흐른다.
+AT_DEEP_EXPRESSION,깊은표현,성인,3,,모순,통합,모순합성,조교|global.연모|gainMult|1.15,,,긍정도 부정도 아닌 깊은 곳의 목소리.
+AT_PARADOX_RESPONSE,모순반응,성인,3,,모순,분열,모순합성,조교|global.음란|gainMult|1.2 ; 관계|호감도|gainMult|0.8,,,말과 몸이 서로 다른 답을 한다.
+AT_LUBRIC_ADAPT,윤활자재,성인,3,,모순,통합,모순합성,조교|감도.전부위|gainMult|1.1,,,몸이 상황에 맞춰 응한다.
+AT_BODY_DISCORD,체질난조,성인,3,,모순,분열,모순합성,조교|감도.전부위|gainMult|0.8,,,몸의 결이 서로 어긋난다.
+AT_FLOWER_NECTAR,화밀체질,성인,4,,합성계,,합성,조교|감도.전부위|gainMult|1.25 ; 조교|절정산물|unlock|1 ; 생활|생산|gainMult|1.1,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_HONEY_GLAND,밀선,성인,3,,합성계,,합성,조교|감도.가슴|gainMult|1.15 ; 조교|약효|gainMult|1.05,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_NECTAR_BODY,감로체질,성인,4,,합성계,,합성,조교|감도.전부위|gainMult|1.3 ; 조교|쾌감상한.전부위|cap|-0.2 ; 생활|회복|gainMult|1.1,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_NUMB_HAZE,둔마,성인,3,,합성계,,합성,조교|고통|gainMult|0.6 ; 조교|global.공포|gainMult|0.8,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_PARALYTIC_BODY,마비독체질,성인,4,,합성계,,합성,조교|global.공포|immune|1 ; 조교|global.반감|immune|1 ; 조교|global.음란|gainMult|0.5 ; 조교|감도.전부위|gainMult|2,special|dot독|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_QUEEN,여왕,성인,4,,합성계,,합성,조교|가학계|unlock|1 ; 관계|교섭|gainMult|1.3,weight|공격|0.2,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_QUEEN_NATURE,여왕기질,성인,3,,합성계,,합성,조교|global.복종|gainMult|0.6 ; 관계|교섭|gainMult|1.15,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_RESONANT_BODY,감응체질,성인,4,,합성계,,합성,조교|감도.전부위|gainMult|1.25,special|aggroUp|0.3,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_SENSE_CHAOS,감란,성인,3,,합성계,,합성,조교|감도.전부위|gainMult|1.2 ; 조교|global.음란|gainMult|1.15,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_SENSE_STORM,감각폭풍,성인,4,,합성계,,합성,조교|감도랜덤재배정|unlock|1 ; 조교|global.음란|gainMult|2,special|enemyAiDisrupt|0.2,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_SLIME_SHIFT,점액변성,성인,3,,합성계,,합성,조교|감도.피부|gainMult|1.2 ; 생활|회복|gainMult|1.1,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_SYNC_SENSE,통감,성인,3,,합성계,,합성,조교|감도.전부위|gainMult|1.15 ; 조교|감도.피부|gainMult|1.1,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+AT_STIM_WEAPON,자극무기,성인,3,,합성계,,합성,,special|onHitSenGain|2,,공격 적중 시 대상 부위 감도 상승 — B-1
+AT_UNCOND_SERVICE,무조건봉사,성인,1,,선천계,,초기,조교|감도.전부위|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_SADO_REFLUX,가학환류,성인,1,,선천계,,초기,조교|고통|gainMult|1.1 ; 조교|global.음란|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_DOLL_RECORD,인형 조서,성인,1,,선천계,,초기,조교|반복페널티|gainMult|0.9,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_OBSERVER_EFFECT,관측자 효과,성인,1,,선천계,,초기,조교|역가전반|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_GRADUAL_EROSION,점진침식,성인,1,,선천계,,초기,조교|감도.전부위|gainMult|1.08,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_HIBERNATE_TRAIN,동면조교,성인,1,,선천계,,초기,조교|global.공포|gainMult|0.85 ; 조교|감도.전부위|gainMult|0.9,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_HEAT_SIGN,발정징후,성인,1,,선천계,,초기,조교|global.음란|gainMult|1.1,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_CRYSTAL_ECHO,결정공명,성인,1,,선천계,,초기,조교|감도.피부|gainMult|1.1,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_ADDICTIVE_SKIN,중독성 피부,성인,1,,선천계,,초기,조교|global.음란|gainMult|1.05 ; 조교|감도.피부|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_SMALL_HOLE,작은 구멍,성인,1,,선천계,,초기,조교|감도.V|gainMult|1.1 ; 조교|고통|gainMult|1.1,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_SYNESTHESIA,공감각 진동,성인,1,,선천계,,초기,조교|감도.C|gainMult|1.1,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+AT_DUAL_SERVICE,양면봉사,성인,2,,합성계,,합성,조교|감도.전부위|gainMult|1.1 ; 조교|고통|gainMult|0.9,,,B-2 실현 — T1+T1=T2
+AT_STUDY_TRAIN,연구조교,성인,2,,합성계,,합성,조교|역가전반|gainMult|1.15,,,B-2 실현 — T1+T1=T2
+AT_CLOCKWORK_TRAIN,태엽조교,성인,2,,합성계,,합성,조교|반복페널티|gainMult|0.8,,,B-2 실현 — T1+T1=T2
+AT_ENDURE_TOXIN,인내독,성인,2,,우화,,초기,조교|고통|gainMult|0.8,,,말뚝의 뱀 — 못 박힌 채 견디는 독.
+AT_WHITE_ROSE,백장미,성인,1,,우화,,초기,조교|global.음란|gainMult|0.9 ; 관계|호감도|gainMult|1.05,,,알베도의 흰 장미 — 정결. 모순 극.
+AT_RED_ROSE,적장미,성인,1,,우화,,초기,조교|global.음란|gainMult|1.1,,,루베도의 붉은 장미 — 정염. 모순 극.
+AT_ROSE_GARDEN,장미원,성인,3,,모순,,모순합성,조교|감도.전부위|gainMult|1.2 ; 조교|global.음란|gainMult|1.1,,,흰 장미와 붉은 장미가 한 뜰에 만개한다.
+AT_FALLEN_PETAL,낙화,성인,3,,모순,,모순합성,조교|감도.전부위|gainMult|1.3 ; 관계|호감도|gainMult|0.8,,,지는 꽃잎은 바람을 고르지 않는다.
+AT_SADISTIC_STREAK,가학성,성인,3,,합성계,,합성,조교|가학계|unlock|1,weight|공격|0.15,,가학성
+AT_SENSE_CORE,감핵,성인,3,,합성계,,합성,조교|감도.C|gainMult|1.2 ; 조교|감도.가슴|gainMult|1.15,,,감핵
+AT_PURITY_TASTE,결벽감각,성인,3,,합성계,,합성,조교|감도.전부위|gainMult|1.1 ; 조교|global.반감|gainMult|1.1,,,결벽감각
+AT_NO_RESIST,무저항,성인,3,,합성계,,합성,조교|global.복종|gainMult|1.25 ; 조교|global.공포|gainMult|1.1,,,무저항
+AT_NO_SMELL,무취각,성인,3,,합성계,,합성,조교|global.반감|gainMult|0.8,,,무취각
+AT_DRUG_CRAVE,약탐,성인,3,,합성계,,합성,조교|약효|gainMult|1.3,,,약탐
+AT_SELF_PLEASURE,자열,성인,3,,합성계,,합성,조교|global.음란|gainMult|1.15 ; 조교|감도.전부위|gainMult|1.05,,,자열
+AT_SCENT_SENSE,향감,성인,3,,합성계,,합성,조교|감도.전부위|gainMult|1.1 ; 탐사|발견|gainMult|1.1,,,향감
+AT_SENSE_SHIELD,감각차폐,성인,4,,합성계,,합성,조교|쾌감전환.HP|unlock|1 ; 조교|감도.전부위|gainMult|0.7,special|debuffResist|0.2,,감각차폐
+AT_SENSITIVE_PETITE,과민소체,성인,3,,합성계,,합성,조교|감도.V|gainMult|1.3 ; 조교|절정임계|gainMult|0.8,,,과민소체
+AT_ASCETIC_INTAKE,금욕적 섭취,성인,3,,합성계,,합성,조교|쾌감전환.HP|unlock|1 ; 조교|global.음란|gainMult|0.9,,,금욕적 섭취
+AT_TOUGH_TRAIN,내구조교체,성인,2,,합성계,,합성,조교|고통|gainMult|0.75,,,코퍼스 원문 DSL 저작(잠정)
+AT_DRUG_NEEDLE,마약침,성인,2,,합성계,,합성,조교|약효|gainMult|1.15,special|onHitPleasure|0.1,,코퍼스 원문 DSL 저작(잠정)
+AT_DREAM_TRAIN,몽환조교,성인,3,,합성계,,합성,조교|global.공포|gainMult|0.6 ; 조교|감도.전부위|gainMult|0.85,,,몽환조교
+AT_HEAT_RUSH,발정폭주,성인,2,,합성계,,합성,조교|global.음란|gainMult|1.15,stat|ATK|mult|1.1,,코퍼스 원문 DSL 저작(잠정)
+AT_ACID_MUCOSA,산성점막,성인,2,,합성계,,합성,조교|감도.V|gainMult|1.15,special|dot독|0.05,,코퍼스 원문 DSL 저작(잠정)
+AT_DOCILE_ACROBAT,순종적 곡예,성인,2,,합성계,,합성,조교|해금요구|gainMult|0.8 ; 조교|고통|gainMult|0.7,,,코퍼스 원문 DSL 저작(잠정)
+AT_ROLE_REVERSE,역위,성인,3,,합성계,,합성,조교|역가전반|gainMult|1.2 ; 조교|global.음란|gainMult|1.1,,,역위
+CT_HEAT_FRENZY,열광,성인,3,,합성계,,합성,조교|global.음란|gainMult|1.2,stat|ATK|mult|1.1 ; stat|defense.열|add|0.15,,열광
+AT_MELT_FUSION,용해융합,성인,2,,합성계,,합성,조교|감도.피부|gainMult|1.15,,,코퍼스 원문 DSL 저작(잠정)
+AT_FULLBODY_ZONE,전신감대,성인,3,,합성계,,합성,조교|감도.전부위|gainMult|1.25,,,전신감대
+AT_DISSECT_TRAIN,해부조교,성인,3,,합성계,,합성,조교|역가전반|gainMult|1.25,,,해부조교
+AT_BLOOM,개화,성인,3,,합성계,,합성,조교|첫임계보너스|unlock|1 ; 조교|감도.전부위|gainMult|1.1,,,처음 열리는 순간 전신이 함께 깨어난다. (구 TSYN 각성 개명 — 9-C 점유 회피)
+AT_IRON_SENSE,철벽감각,성인,3,,합성계,,합성,조교|감도.전부위|gainMult|0.1 ; 조교|감도하락|immune|1,,,더디게 오르지만 결코 내려가지 않는다.
+AT_WHITE_FLAG,백기,성인,4,,합성계,,상태조건,조교|global.반감|immune|1|when:복종:>=:50 ; 관계|호감도|gainMult|1.1,,,복종이 절반을 넘는 순간 반감이 백기를 든다. (구 TSYN 굴복 개명 · 상태-열매)
+AT_RAMPAGE,폭주,성인,4,,합성계,,상태조건,조교|감도.전부위|gainMult|5|when:음란:>=:90,weight|공격|0.15,,음란이 끓는점을 넘으면 제어가 사라진다. (상태-열매)
+AT_FULL_OPEN,완전개방,성인,3,,합성계,,합성,조교|부위해금전체|unlock|1|when:호감도:>=:80 ; 조교|감도.전부위|add|20|when:호감도:>=:80,,,믿는 상대에게는 전부를 연다.
+AT_CONDITIONED,조건반사,성인,3,,합성계,,합성,조교|지정조합|gainMult|3,,,몸이 먼저 기억하는 조합이 있다.
+AT_DEVOTION_SERVICE,몸바침,성인,3,,합성계,,합성,조교|global.반감|immune|1 ; 조교|global.복종|gainMult|2,,,바치는 것에 아낌이 없다. (구 TSYN 자기희생(PP) 개명 — 동명 3종 해소)
 [body]
 id,name,category,tier,rarity,subMain,subSub,acquire,effects,bridges,contraPair,description,ls_smell,ls_sound,ls_visual,ls_temperature,ls_texture
 BT_SMALL_FRAME,소체형,신체,1,,체격,,,,stat|DEF|mult|0.9 ; stat|회피|add|0.1,,DEF 감소· 회피 증가· 고통 상승 보정,,,,,
 BT_LARGE_FRAME,대체형,신체,1,,체격,,,,stat|DEF|mult|1.15 ; stat|회피|add|-0.1,,DEF 증가· 회피 감소· 체력 보정,,,,,
-BT_RESILIENT,강인,신체,1,,체격,,,생활|회복|mult|1.2 ; 전투|상태이상내성|add|0.2,,,체력 회복 보정· 상태이상 내성,,,,,
+BT_RESILIENT,강인,신체,2,,체격,,,생활|회복|mult|1.2 ; 전투|상태이상내성|add|0.2,,,체력 회복 보정· 상태이상 내성,,,,,
 BT_FRAGILE,허약,신체,1,,체격,,,생활|회복|mult|0.8 ; 조교|감도|gainMult|1.1,,,체력 회복 감소· 감도 상승 보정,,,,,
 BT_FLEXIBLE,유연,신체,1,,체격,,,조교|행위해금|gate|0.8,stat|회피|add|0.05,,특정 조교 행위 해금 조건 완화· 회피 보정,,,,,
-BT_RIGID,경직,신체,1,,체격,,,조교|감도|gainMult|0.9,stat|DEF|add|0.05,,방어 보정· 감도 상승 감소,,,,,
-BT_SCALES,인분,신체,1,,외형,,,,stat|defense.물리|add|0.15 ; stat|defense.열|add|-0.1,,물리 방어 보정· 열 속성 약점,,,,,
+BT_RIGID,경직,신체,1,,체격,,,조교|감도|gainMult|0.9,stat|DEF|mult|1.05,,방어 보정· 감도 상승 감소,,,,,
+BT_SCALES,비늘,신체,1,,외형,,,,stat|defense.물리|add|0.15 ; stat|defense.열|add|-0.1,,물리 방어 보정· 열 속성 약점,,,,,
 BT_FUR,체모,신체,1,,외형,,,,stat|defense.열|add|0.15 ; stat|defense.식|add|-0.1,,열 내성· 식 속성 약점,,,,,
 BT_SLIME_BODY,점액체,신체,2,,외형,,,,stat|defense.물리|mult|0.8,,물리 감소 흡수· 형태 가변,,,,,
 BT_CRYSTAL_BODY,결정체,신체,2,,외형,,,,stat|defense.광|add|0.2 ; stat|defense.물리|add|-0.1,,광 속성 반사· 물리 취약,,,,,
@@ -250,10 +512,10 @@ BT_GUARD_AFFINITY,경비적성,신체,2,,적성,,,생활|시설.탐사경비|mul
 BT_HERB_AFFINITY,약초적성,신체,2,,적성,,,생활|약초가공|mult|1.2,,,약초 재료 가공/조합 보정,,,,,
 BT_ALCHEMY_AFFINITY,연금적성,신체,2,,적성,,,생활|촉매|mult|1.2 ; 생활|히든레시피|gate|1,,,촉매 계열· 히든 레시피 보정,,,,,
 BT_EXPLORATION_BODY,탐사체질,신체,1,,범용,,,탐사|스태미나|mult|1.2 ; 탐사|채집|mult|1.2,,,던전 탐사 스태미나 소비 감소· 채집 보정,,,,,
-BT_COMBAT_BODY,전투체형,신체,1,,범용,,,,stat|ATK|add|0.05 ; stat|DEF|add|0.05,,전투 기초 스탯 보정,,,,,
+BT_COMBAT_BODY,전투체형,신체,1,,범용,,,,stat|ATK|mult|1.05 ; stat|DEF|mult|1.05,,전투 기초 스탯 보정,,,,,
 
-BT_RECOVER_FAST,회복빠름,신체,1,,체질,회복,초기,생활|회복|mult|1.3,,BT_RECOVER_SLOW,회복빠름 효과(잠정),,,,,
-BT_RECOVER_SLOW,회복느림,신체,1,,체질,회복,초기,생활|회복|mult|0.7,,BT_RECOVER_FAST,회복느림 효과(잠정),,,,,
+BT_RECOVER_FAST,회복빠름,신체,2,,체질,회복,초기,생활|회복|mult|1.3,,BT_RECOVER_SLOW,회복빠름 효과(잠정),,,,,
+BT_RECOVER_SLOW,회복느림,신체,2,,체질,회복,초기,생활|회복|mult|0.7,,BT_RECOVER_FAST,회복느림 효과(잠정),,,,,
 BT_ADDICT_EASY,중독되기쉬움,신체,1,,체질,중독,초기,조교|중독|gainMult|1.3,,BT_ADDICT_HARD,중독되기쉬움 효과(잠정),,,,,
 BT_ADDICT_HARD,중독되기어려움,신체,1,,체질,중독,초기,조교|중독|gainMult|0.7,,BT_ADDICT_EASY,중독되기어려움 효과(잠정),,,,,
 BT_SHAPESHIFT,변환자재,신체,3,,체질,가변,합성,조교|체형가변|gate|1,stat|회피|add|0.05,,변환자재 효과(잠정),,,,,
@@ -271,7 +533,7 @@ BT_BIG_HIPS,큰엉덩이,신체,1,,체형,둔부,초기,조교|애널조교|gain
 BT_LACTATING,모유분비,신체,1,,성징,모유,조교,조교|부위.가슴|unlock|1,,,모유분비 효과(잠정),,,,,
 BT_NIPPLE_TYPE,유두타입,신체,1,,성징,유두,초기,조교|감도.가슴|gainMult|1.1,,,유두타입,,,,,
 BT_CLIT_TYPE,음핵타입,신체,1,,성징,음핵,초기,조교|감도.C|gainMult|1.1,,,음핵타입,,,,,
-BT_BODY_HAIR,체모성장,신체,1,,성징,체모,초기,,,,체모성장 [flavor],,,,,
+BT_BODY_HAIR,체모성장,신체,1,,성징,체모,초기,조교|감도.피부|gainMult|1.05,,,체모성장 [flavor],,,,,체모성장
 BT_VAMPIRE,흡혈귀,신체,2,,종족,generic,초기,생활|회복|mult|밤1.3주간0.7,stat|defense.광|add|-0.1,,흡혈귀,,,,,
 BT_DEMON,악마,신체,2,,종족,generic,초기,조교|global.욕정|gainMult|1.2,,,악마,,,,,
 BT_DOLL,인형,신체,2,,종족,generic,초기,조교|고통소모|mult|0.7 ; 조교|global.욕정|gainMult|0.8,,,인형,,,,,
@@ -280,3 +542,91 @@ BT_SPIRIT_BODY,영체,신체,2,,종족,generic,초기,전투|물리피해|mult|0
 BT_COOK_AFFINITY,요리적성,신체,1,,적성,지식,초기,생활|지식.요리|gainMult|1.2 ; 생활|시설.주방|mult|1.15,,,요리적성 적성,,,,,
 BT_SWIM_AFFINITY,수영적성,신체,1,,적성,지식,초기,탐사|지식.수영|gainMult|1.2 ; 탐사|수중|mult|1.2,,,수영적성 적성,,,,,
 BT_FISH_AFFINITY,낚시적성,신체,1,,적성,지식,초기,생활|지식.낚시|gainMult|1.2 ; 생활|시설.낚시터|mult|1.15,,,낚시적성 적성,,,,,
+BT_FORM_UNSTABLE,체형불안정,신체,3,,모순,분열,모순합성,,stat|회피|add|-0.05,,형태가 자리를 잡지 못한다.
+BT_COND_STURDY,조건부강건,신체,3,,모순,통합,모순합성,,stat|DEF|mult|1.1|when:hpPct:<=:0.5,,몰릴수록 단단해지는 몸.
+BT_STAMINA_SWING,체력기복,신체,3,,모순,분열,모순합성,,stat|ATK|mult|1.1|when:hpPct:>=:0.8 ; stat|ATK|mult|0.9|when:hpPct:<=:0.3,,컨디션의 진폭이 크다.
+BT_ADAPTIVE_BODY,적응신체,신체,3,,모순,통합,모순합성,,stat|defense.물리|add|0.1,,유연함과 단단함을 오간다.
+BT_SPASM,경련,신체,3,,모순,분열,모순합성,,stat|회피|add|-0.1,,몸이 제멋대로 떨린다.
+BT_HOMEOSTASIS,항상성,신체,3,,모순,통합,모순합성,생활|회복|gainMult|1.25,,,무너져도 제자리로 돌아오는 몸.
+BT_ERRATIC_RECOVERY,회복난조,신체,3,,모순,분열,모순합성,생활|회복|gainMult|0.7,,,낫는 속도가 종잡을 수 없다.
+BT_IRONFLESH,무쇠,신체,2,,체질,금속,초기,,stat|defense.물리|add|0.15,,철(화성)의 몸 — 물리를 튕겨내는 무쇠 같은 육질. (잠정)
+BT_REDCOPPER,적동,신체,2,,체질,금속,초기,,stat|defense.자|add|0.15,,구리(금성)의 몸 — 끌림을 다스리는 감응의 살갗. (잠정)
+BT_GOLDBODY,황금,신체,2,,체질,금속,초기,,stat|defense.광|add|0.15,,금(태양)의 몸 — 빛에 바래지 않는 불변의 광택. (잠정)
+BT_SILVERBODY,백은,신체,2,,체질,금속,초기,,stat|defense.식|add|0.15,,은(달)의 몸 — 독과 침식에 검게 경고하는 살. 蝕=월식의 글자. (잠정)
+BT_LEADGUARD,연갑,신체,2,,체질,금속,초기,,stat|defense.위|add|0.15,,납(토성)의 몸 — 무엇도 꿰뚫기 어려운 무거운 차폐. (잠정)
+BT_TINBODY,주석,신체,2,,체질,금속,초기,,stat|defense.동|add|0.15,,주석(목성)의 몸 — 구부리면 우는 금속. 진동을 삼킨다. (잠정)
+BT_CINNABAR,진사,신체,2,,체질,금속,초기,,stat|defense.열|add|0.15,,진사(수성)의 몸 — 불을 견뎌 수은을 낳는 붉은 돌. (잠정·재료명과 교차 사용 유의)
+BT_BIO_ARMOR,생체갑주,신체,3,,합성계,,합성,,stat|DEF|mult|1.2 ; special|counter|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_CARAPACE,갑각,신체,3,,합성계,,합성,,stat|defense.물리|add|0.15 ; stat|회피|add|-0.03,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_EXPLORE_MANIA,탐사광,신체,3,,합성계,,합성,탐사|발견|gainMult|1.2 ; 탐사|보상|gainMult|1.1,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_GEO_SENSE,지맥감지,신체,4,,합성계,,합성,탐사|발견|gainMult|1.3 ; 탐사|보상|gainMult|1.15 ; 생활|생산|gainMult|1.1,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_GREEN_HAND,녹수,신체,4,,합성계,,합성,생활|수급.약초|gainMult|1.3 ; 생활|생산|gainMult|1.15 ; 조교|약효|gainMult|1.1,,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_HORN_SCALE,각린,신체,4,,합성계,,합성,조교|감도.피부|gainMult|0.9,stat|defense.물리|add|0.15 ; stat|defense.위|add|0.1 ; stat|DEF|mult|1.15,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_IRON_FRAME,철골,신체,3,,합성계,,합성,,stat|DEF|mult|1.15 ; stat|defense.물리|add|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_MOLTING,탈피,신체,4,,합성계,,합성,생활|회복|gainMult|1.25,special|debuffResist|0.3,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_NOCTURNAL,야행,신체,4,,합성계,,합성,탐사|발견|gainMult|1.25,special|nightBonus|0.3,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_OUTER_SHELL,외각,신체,4,,합성계,,합성,조교|감도.피부|gainMult|0.85,stat|defense.물리|add|0.2 ; special|debuffResist|0.2,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_REGEN_CORE,재생핵,신체,4,,합성계,,합성,생활|회복|gainMult|1.3,special|regen|0.2,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_REGEN_SKIN,재생피부,신체,3,,합성계,,합성,생활|회복|gainMult|1.25,special|regen|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_SHARP_CLAW,첨조,신체,4,,합성계,,합성,탐사|보상|gainMult|1.1,special|critUp|0.25 ; stat|ATK|mult|1.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_SMITH_BODY,야장체질,신체,4,,합성계,,합성,생활|가공|gainMult|1.3 ; 생활|지식.연금|gainMult|1.15,stat|defense.열|add|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_STEEL_ARM,강완,신체,4,,합성계,,합성,생활|가공|gainMult|1.1,stat|ATK|mult|1.25 ; weight|공격|0.2,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_WILD_CLAW,야조,신체,3,,합성계,,합성,,weight|공격|0.15 ; special|critUp|0.1,,(효과 미저작 — 상향 밸런스 패스) 체인 정본=synthesis_chains.csv
+BT_FLEX_BODY,가변신,신체,3,,모순,통합,모순합성,생활|시설효율|gainMult|1.1,stat|회피|add|0.1,,어느 자리든 제 몸을 맞춘다.
+BT_UNEVEN_BODY,불균신,신체,3,,모순,분열,모순합성,조교|감도.전부위|gainMult|1.15,stat|회피|add|-0.05,,뒤틀린 균형이 낳은 예민함.
+BT_HARMONY_BODY,조화신,신체,3,,모순,통합,모순합성,조교|감도.가슴|gainMult|1.2 ; 관계|호감도|gainMult|1.1,,,있는 그대로가 조화다.
+BT_DISHARMONY,부조화,신체,3,,모순,분열,모순합성,조교|감도.가슴|gainMult|1.3 ; 조교|global.공포|gainMult|1.1,,,몸의 낙차가 마음을 흔든다.
+BT_PRESSURE_PROOF,내압강화,신체,1,,선천계,,초기,,stat|defense.위|add|0.05,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+BT_MIRROR_SCALE,거울 비늘,신체,1,,선천계,,초기,,stat|defense.광|add|0.05,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+BT_FINE_CRAFT,정밀기교,신체,1,,선천계,,초기,생활|가공|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+BT_COVERT_SKILL,은밀한 숙련,신체,1,,선천계,,초기,생활|시설효율|gainMult|1.05,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+BT_SPRING_SPIRIT,수원의 정령,신체,1,,선천계,,초기,생활|수급.물|gainMult|1.1,,,티어다운 선천 편입 — 원 효과=cross_staging 참조
+BT_TWO_HEADS,두머리,신체,2,,우화,,초기,,special|ambushImmune|0.5,,쌍두 독수리 — 두 개의 머리.
+BT_WING_WEIGHT,날개무게,신체,1,,우화,,초기,조교|고통|gainMult|0.95,,,헤르메스의 새 — 제 날개를 먹어 길들인 무게.
+BT_WILD_BLOOD,들피,신체,1,,우화,,초기,,weight|공격|0.1,,늑대 — 길들지 않은 피. 모순 극.
+BT_TAME_BLOOD,집피,신체,1,,우화,,초기,관계|호감도|gainMult|1.1,,,개 — 곁을 택한 피. 모순 극.
+BT_HONEY_GLAND2,꿀샘,신체,2,,우화,,초기,조교|부위특수|unlock|1 ; 조교|감도.가슴|gainMult|1.1,,,벌 — 죽음에서 단맛을 빚는 샘. ⚠밀선과 결 분담.
+BT_SINGLE_HORN,일각,신체,1,,우화,,초기,,stat|ATK|mult|1.05,,유니콘 — 하나뿐인 뿔.
+BT_DRAGON_WING,용익,신체,1,,우화,,초기,,stat|회피|add|0.05,,용(날개 有) — 휘발하는 날개.
+BT_EARTH_DRAGON_SCALE,지룡비늘,신체,2,,우화,,초기,,stat|defense.물리|add|0.1,,용(날개 無) — 고정된 비늘.
+BT_EVIL_EYE,사안,신체,2,,우화,,초기,,special|critUp|0.1,,바실리스크 — 마주치면 굳는 눈. 치명 결.
+BT_VENOM_GLAND,맹독샘,신체,1,,우화,,초기,,special|dot독|0.1,,바실리스크 — 독의 원천.
+BT_MOLT_SOUL,탈피혼,신체,1,,우화,,초기,생활|회복|gainMult|1.1,,,말뚝의 뱀 — 허물을 벗는 혼.
+BT_SERPENT_LOWER,사반신,신체,1,,우화,,초기,탐사|수계통행|unlock|1,stat|회피|add|0.05,,멜루지네 — 뱀의 하반신. 유닛 직행 표기.
+BT_CHARM_VOICE,매성,신체,2,,우화,,초기,조교|global.연모|gainMult|1.1,special|aggroUp|0.3,,세이렌 — 홀리는 목소리. 자(磁) 결.
+BT_WEBBED,물갈퀴,신체,1,,우화,,초기,생활|지식.수영|gainMult|1.1,,,운디네 — 물을 가르는 손.
+BT_FLUID_ADAPT,유체적응,신체,2,,우화,,초기,,stat|회피|add|0.08,,운디네 — 흐르는 것에 몸을 맞춘다.
+BT_ROOTING,뿌리내림,신체,1,,우화,,초기,,stat|DEF|mult|1.05 ; weight|방어|0.1,,만드라고라 — 땅에 뿌리를 둔 몸.
+BT_EARTH_BODY,토신,신체,1,,우화,,초기,,stat|defense.위|add|0.05,,골렘 — 흙으로 빚은 몸.
+BT_GOLD_EGG,황금알,신체,2,,우화,,초기,생활|월말생산|unlock|1 ; 생활|생산|gainMult|1.15,,,검은 암탉 — 밤이 낳는 금. 도시 생산 결.
+BT_BLACK_FEATHER,검은깃,신체,1,,우화,,초기,,special|nightBonus|0.1,,검은 암탉 — 검은 날개.
+BT_WHITE_FEATHER,흰깃,신체,1,,우화,,초기,관계|호감도|gainMult|1.05,,,디아나의 비둘기 — 백화의 흰 깃.
+BT_TIPSY_BODY,취기체질,신체,1,,우화,,초기,조교|약물반응|unlock|1 ; 조교|약효|gainMult|1.1,,,포도나무 — 발효를 품는 몸. ★발효 키워드 앵커.
+BT_REBIRTH_SEED,재생종자,신체,1,,우화,,초기,생활|회복|gainMult|1.05,,,밀 — 죽어 묻혀 다시 나는 씨.
+BT_MIXED_BLOOD,이종혈,신체,1,,우화,,초기,,special|randomResist|0.05,,키메라 — 섞인 피.
+BT_BEE_SWARM,봉군,신체,3,,합성계,,합성,생활|생산|gainMult|1.15 ; 관계|호감도|gainMult|1.05,,,재결합 — 무리의 단맛. (효과 미저작)
+BT_UNICORN_NATURE,일각수,신체,3,,합성계,,합성,조교|global.음란|gainMult|0.85 ; 탐사|발견|gainMult|1.15,stat|ATK|mult|1.05,,재결합 — 정결의 뿔. (효과 미저작)
+BT_DRAGON_VEIN,용혈,신체,3,,합성계,,합성,,stat|ATK|mult|1.1 ; stat|DEF|mult|1.1,,재결합 — 휘발과 고정이 흐르는 피. (효과 미저작)
+BT_FIXED_MOLT,고정탈피,신체,3,,합성계,,합성,생활|회복|gainMult|1.2,special|debuffResist|0.2,,재결합 — 못 박힌 채 허물만 벗는다. (효과 미저작)
+BT_SECRET_SCALE,비밀비늘,신체,3,,합성계,,합성,조교|감도.전부위|gainMult|1.1,stat|회피|add|0.1,,재결합 — 감춰둔 하반신. (효과 미저작)
+BT_WATER_BODY,수체,신체,3,,합성계,,합성,생활|지식.수영|gainMult|1.2,stat|회피|add|0.1,,재결합 — 물의 몸. (효과 미저작)
+BT_NIGHT_GOLD_HEN,야금계,신체,3,,합성계,,합성,생활|월말생산|unlock|1 ; 생활|생산|gainMult|1.2,,,재결합 — 밤의 금계. 도시 생산. (효과 미저작)
+BT_RECONCILED_BEAST,화해수,신체,3,,모순,,모순합성,관계|호감도|gainMult|1.15,weight|공격|0.1,,길들었으되 이빨은 남겨두었다.
+BT_KIN_STRIFE,골육상쟁,신체,3,,모순,,모순합성,관계|호감도|gainMult|0.8,weight|공격|0.2,,같은 피끼리 더 사납다.
+BT_HULK,거한,신체,3,,합성계,,합성,,stat|DEF|mult|1.15 ; stat|ATK|mult|1.1 ; stat|회피|add|-0.05,,(id 충돌 수정: BT_GIANT=기존 거구)
+BT_DEMON_LINEAGE,마족혈통,신체,3,,합성계,,합성,조교|global.음란|gainMult|1.15,stat|ATK|mult|1.1,,마족혈통
+BT_MOTHER_BODY,모성체,신체,3,,합성계,,합성,조교|감도.가슴|gainMult|1.2 ; 관계|호감도|gainMult|1.1,,,모성체
+BT_FISHER,어부,신체,3,,합성계,,합성,생활|지식.낚시|gainMult|1.25 ; 생활|지식.수영|gainMult|1.15,,,어부
+BT_GHOST_BODY,유령신체,신체,3,,합성계,,합성,,stat|회피|add|0.15 ; stat|defense.물리|add|0.1,,유령신체
+BT_AUTOMATON,자동인형,신체,3,,합성계,,합성,생활|시설효율|gainMult|1.15 ; 조교|반복페널티|gainMult|0.85,,,자동인형
+BT_PURIFY_BODY,정화체질,신체,3,,합성계,,합성,조교|약효|gainMult|0.8,special|debuffResist|0.2,,정화체질
+BT_TINY_BODY,초소형,신체,3,,합성계,,합성,조교|감도.전부위|gainMult|1.1,stat|회피|add|0.15 ; stat|DEF|mult|0.9,,초소형
+BT_VOLUPTUOUS,풍만,신체,3,,합성계,,합성,조교|감도.가슴|gainMult|1.15 ; 관계|호감도|gainMult|1.05,,,풍만
+BT_TONGUE_SENSE,혀끝감각,신체,3,,합성계,,합성,생활|가공|gainMult|1.1 ; 조교|감도.입|gainMult|1.15,,,혀끝감각
+BT_RECORDER,기록가,신체,3,,합성계,,합성,탐사|발견|gainMult|1.15 ; 조교|역가전반|gainMult|1.05,,,기록가
+BT_PEELER,박리사,신체,3,,합성계,,합성,생활|가공|gainMult|1.15 ; 탐사|보상|gainMult|1.05,,,박리사
+BT_MUTATE_ADAPT,변이적응,신체,3,,합성계,,합성,,special|randomResist|0.2,,변이적응
+BT_CORRODE_WALL,부식 방벽,신체,3,,합성계,,합성,,stat|DEF|mult|1.1 ; special|reflect|0.1,,부식 방벽
+BT_SLIME_SPAWN,점액 산란,신체,3,,합성계,,합성,조교|절정산물|unlock|1 ; 생활|생산|gainMult|1.1,,,점액 산란
+BT_CATALYST_BODY,촉매체질,신체,3,,합성계,,합성,생활|수급.약초|gainMult|1.2 ; 조교|약효|gainMult|1.1,,,촉매체질
+BT_FLAME_SMITH,화염 단조사,신체,3,,합성계,,합성,생활|가공|gainMult|1.2 ; 생활|지식.연금|gainMult|1.1,,,화염 단조사

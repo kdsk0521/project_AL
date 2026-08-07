@@ -61,6 +61,13 @@ class GameEngine {
       maxStamina: 30,
       soulPower: 50, // 극소량 시작 (alpha_progression: 납품 전까지 경제 압박 없음)
 
+      // v2: 하루 행동(AP) — 메인 행동 6종이 1씩 소비, 하루 넘기면 회복
+      ap: 3,
+      apMax: 3,
+
+      // v2: 삼원질 비축 (추출로 획득 → 합체에 주입)
+      prima: { 염: 0, 수은: 0, 유황: 0 },
+
       // 하루 행동 루트 (프린세스메이커식)
       // null=미선택, 'dungeon'=탐사중, 'training'=조교/교류중
       dayAction: null,
@@ -92,12 +99,25 @@ class GameEngine {
 
       // City facilities
       facilities: {
-        well: { level: 0, unitId: null },      // \uC6B0\uBB3C
-        slimeFarm: { level: 0, unitId: null },  // \uC2AC\uB77C\uC784 \uB18D\uC7A5
-        fishery: { level: 0, unitId: null },    // \uB0DA\uC2DC\uD130
-        greenhouse: { level: 0, unitId: null }, // \uC628\uC2E4
-        expeditionHQ: { level: 0, unitId: null }, // \uD0D0\uC0AC \uACBD\uBE44
-        workshop: { level: 1, unitId: null }    // \uAC00\uACF5\uC18C (starts at 1)
+        // 자원 수급 (구현)
+        well: { level: 0, unitId: null },
+        slimeFarm: { level: 0, unitId: null },
+        fishery: { level: 0, unitId: null },
+        greenhouse: { level: 0, unitId: null },
+        // 기능 (구현)
+        expeditionHQ: { level: 0, unitId: null },
+        workshop: { level: 1, unitId: null },
+        // v1.2 확장 10종 (건설·강화·유지비만 — 고유 기능은 TODO)
+        kitchen: { level: 0, unitId: null },
+        storage: { level: 0, unitId: null },
+        compendiumOffice: { level: 0, unitId: null },
+        trainingGround: { level: 0, unitId: null },
+        dormitory: { level: 0, unitId: null },
+        plaza: { level: 0, unitId: null },
+        trainingWorkshop: { level: 0, unitId: null },
+        butterflyFarm: { level: 0, unitId: null },
+        observatory: { level: 0, unitId: null },
+        laboratory: { level: 0, unitId: null }
       },
 
       // 부품 제작 레시피 (도구키_슬롯인덱스 → [재료A, 재료B])
@@ -449,6 +469,7 @@ class GameEngine {
   advanceDay() {
     this.state.day++;
     this.state.stamina = this.state.maxStamina; // reset stamina
+    this.state.ap = this.state.apMax || 3; // v2: 행동 회복
     this.state.dayAction = null; // 하루 행동 루트 리셋
 
     // Player natural HP recovery (30% per day)
@@ -498,18 +519,43 @@ class GameEngine {
     // Facility production
     this.processFacilityProduction();
 
+    // 훅: 트레잇 월말생산 (황금알·야금계 — 밤이 낳는 금)
+    this._processTraitMonthlyProduce();
+
     // Update active sigils for the month
     this.updateActiveSignals();
 
     return this.getMonthReport();
   }
 
+  _processTraitMonthlyProduce() {
+    const reg = (this.data && this.data.traits) || [];
+    const byId = new Map(reg.map(t => [t.id, t]));
+    const PER_UNIT = 25; // 잠정 — 통합 밸런싱
+    let total = 0;
+    const producers = [];
+    for (const u of (this.state.ownedUnits || [])) {
+      const has = (u.traits || []).some(tid => {
+        const t = byId.get(tid);
+        return t && (t.effects || []).some(e => e.target === '월말생산' && e.op === 'unlock');
+      });
+      if (has) { total += PER_UNIT; producers.push(u.name || u.id); }
+    }
+    if (total > 0) {
+      this.state.soulPower += total;
+      this.state.lastTraitProduce = { total, producers };
+    } else {
+      this.state.lastTraitProduce = null;
+    }
+    return total;
+  }
+
   calcMaintenanceCost() {
-    let cost = 20; // base
+    // economy_soul_curve v1.0 §5: 기본 20 + 개방 시설당 30 + 강화 단계당 12
+    let cost = 20;
     if (this.state.equipment.compressor) cost += 15;
-    // Add facility costs
-    for (const [key, fac] of Object.entries(this.state.facilities)) {
-      cost += fac.level * 5;
+    for (const fac of Object.values(this.state.facilities)) {
+      if (fac.level >= 1) cost += 30 + 12 * (fac.level - 1);
     }
     return cost;
   }
@@ -591,6 +637,64 @@ class GameEngine {
     return true;
   }
 
+  // ── v2: AP 행동 / 삼원질 / 변용 헬퍼 ──
+
+  // 구버전 세이브 호환 — v2 필드 lazy init
+  ensureV2State() {
+    const s = this.state;
+    if (!s) return;
+    if (s.apMax == null) s.apMax = 3;
+    if (s.ap == null) s.ap = s.apMax;
+    if (!s.prima) s.prima = { 염: 0, 수은: 0, 유황: 0 };
+    // v1.2: 시설 16종 백필 (구세이브 호환)
+    const FAC16 = ['well','slimeFarm','fishery','greenhouse','expeditionHQ','workshop',
+      'kitchen','storage','compendiumOffice','trainingGround','dormitory','plaza',
+      'trainingWorkshop','butterflyFarm','observatory','laboratory'];
+    if (!s.facilities) s.facilities = {};
+    for (const k of FAC16) if (!s.facilities[k]) s.facilities[k] = { level: 0, unitId: null };
+  }
+
+  // 1-X 진행: 16종 건설 + 전부 적화(Lv5) = 첫 엔딩 (economy_soul_curve v1.0 §0)
+  get1XProgress() {
+    this.ensureV2State();
+    const vals = Object.values(this.state.facilities);
+    const built = vals.filter(f => f.level >= 1).length;
+    const enhSteps = vals.reduce((a, f) => a + Math.max(0, Math.min(5, f.level) - 1), 0);
+    return { built, total: vals.length, enhSteps, enhTotal: vals.length * 4,
+      reached: built === vals.length && enhSteps === vals.length * 4 };
+  }
+
+  canAct(n = 1) {
+    this.ensureV2State();
+    return this.state.ap >= n;
+  }
+
+  spendAction(n = 1) {
+    this.ensureV2State();
+    if (this.state.ap < n) return false;
+    this.state.ap -= n;
+    return true;
+  }
+
+  // 변용 루트 테이블 (variationRoutes.csv, 캐시)
+  getVariationRoutes() {
+    if (!this._varRoutes) {
+      this._varRoutes = (this.balance.getTable('variationRoutes.csv') || []).filter(r => r && r.route);
+    }
+    return this._varRoutes;
+  }
+
+  // route+도 → 시그니처 트레잇 행
+  getVariationTrait(route, degree) {
+    return this.getVariationRoutes().find(r => r.route === route && Number(r['도']) === Number(degree)) || null;
+  }
+
+  // 印 이름 (1~7)
+  getSigilName(n) {
+    const names = { 1: '백양(白羊)', 2: '금우(金牛)', 3: '거해(巨蟹)', 4: '처녀(處女)', 5: '천갈(天蝎)', 6: '쌍어(雙魚)', 7: '염(鹽)' };
+    return names[n] || ('인(' + n + ')');
+  }
+
   // Fusion table builder
   buildFusionTable() {
     const table = {};
@@ -646,20 +750,46 @@ class GameEngine {
     return rewards;
   }
 
-  // Soul power
+  // Soul power — economy_soul_curve.md v1.0 §1
+  // 납품가 = (바닥 + 트레잇 티어 가산 + 육성이력 가산) × 인 보정 × 달력 수요
+  priceFloor(level) {
+    // ERA 구간표(인덱스 1~10) ← AL 레벨(3~47) 로그 매핑
+    // idx = 1 + 3.271·ln(L/3) — 앵커: Lv3→60, Lv8→~440, Lv20→~1,420, Lv40→~3,200, Lv47→3,800
+    const F = [0, 60, 140, 250, 400, 600, 900, 1300, 1900, 2700, 3800];
+    const L = Math.max(3, level);
+    const idx = Math.min(10, 1 + 3.271 * Math.log(L / 3));
+    const lo = Math.floor(idx), hi = Math.min(10, lo + 1), frac = idx - lo;
+    return Math.floor(F[lo] + (F[hi] - F[lo]) * frac);
+  }
+
   calcSoulPowerValue(unitInstance) {
-    let value = unitInstance.level * 10; // base
-    value += (unitInstance.traits.length || 0) * 5; // trait bonus
+    const floor = this.priceFloor(unitInstance.level);
 
-    // Sigil bonus (special sigils)
-    if (unitInstance.sigil === 7) value = Math.floor(value * 1.15);
-
-    // Active sigil bonus
-    if (this.state.activeSignals.includes(unitInstance.sigil)) {
-      value = Math.floor(value * 1.2);
+    // 트레잇 티어 가산 (바닥의 %): T1 3 / T2 6 / T3 10 / T4 13 / T5 15
+    const TIER_PCT = { 1: 3, 2: 6, 3: 10, 4: 13, 5: 15 };
+    if (!this._traitTierMap) {
+      this._traitTierMap = new Map();
+      const arr = Array.isArray(this.data.traits) ? this.data.traits : Object.values(this.data.traits || {});
+      for (const t of arr) this._traitTierMap.set(t.id, t.tier || 1);
+    }
+    let pct = 0;
+    for (const id of (unitInstance.traits || [])) {
+      pct += TIER_PCT[this._traitTierMap.get(id)] || 3;
     }
 
-    return value;
+    // 육성이력 가산: 변용 도 합 ×2% + 침염 누적 ×0.5%
+    const sum = o => o ? Object.values(o).reduce((a, b) => a + (Number(b) || 0), 0) : 0;
+    pct += sum(unitInstance.변용도) * 2 + sum(unitInstance.침염) * 0.5;
+
+    pct = Math.min(pct, 60); // 가산 상한 +60% (풀육성 밴드 천장)
+    let value = floor * (1 + pct / 100);
+
+    // 인 보정 — 납품 전용 (구매가는 정가 고정: 무한루프 3제약)
+    if (unitInstance.sigil === 7) value *= 1.15; // 특수인
+    if (this.state.activeSignals.includes(unitInstance.sigil)) value *= 1.2; // 활성 인
+
+    // 달력 수요 배율 훅 (월별 수요 미구현 — ×1.0 자리)
+    return Math.floor(value);
   }
 
   // Save / Load — 3 slots + auto save
@@ -688,6 +818,7 @@ class GameEngine {
       const saveData = localStorage.getItem(`project_al_save_${slot}`);
       if (saveData) {
         this.state = JSON.parse(saveData);
+        this.ensureV2State();
         return true;
       }
       return false;

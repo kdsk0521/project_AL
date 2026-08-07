@@ -42,9 +42,10 @@ function effectiveStats(unit, ctx, bridges) {
   for (const stat in bridges.stats) {
     const mod = bridges.stats[stat];
     let base = s[stat] != null ? s[stat] : 0;
-    if (mod.scaleBy === 'missingHpPct') base += (mod.add || 0) * (1 - (unit.hpPct != null ? unit.hpPct : 1));
+    // 베이스 불가침(2026-07-17): ATK/DEF/속도/HP는 배율 보정만 — scaleBy도 분수 배율로
+    if (mod.scaleBy === 'missingHpPct') base *= (1 + (mod.add || mod.value || 0) * (1 - (unit.hpPct != null ? unit.hpPct : 1)));
     else if (mod.op === 'mult') base *= (mod.value != null ? mod.value : 1);
-    else base += (mod.value || mod.add || 0);
+    else base += (mod.value || mod.add || 0); // add=분수 풀 전용(회피·敵対心 등)
     s[stat] = base;
   }
   return s;

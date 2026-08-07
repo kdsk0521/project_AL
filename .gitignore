@@ -1,8 +1,28 @@
+# ── 의존성/빌드 ──
 node_modules/
-package-lock.json
-*.log
-.claude/
+dist/
+out/
+build/
+*.tgz
 
-# 내부 문서 (분석 리포트, 아이디어 노트 등)
-docs/
+# ── 테스트 (로컬 전용 — 레티어스 2026-08-07) ──
+tests/
+
+# ── 노트·분석 문서 (로컬 전용 — design/은 repo 포함, 레티어스 2026-08-07) ──
 notes/
+docs/
+
+# ── 로컬 설정·세션 ──
+.claude/
+.hintrc
+
+# ── 로그·임시·세이브 ──
+*.log
+*.tmp
+saves/
+sav/
+
+# ── OS 찌꺼기 ──
+.DS_Store
+Thumbs.db
+desktop.ini

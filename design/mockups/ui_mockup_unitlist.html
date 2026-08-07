@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>유닛 목록 목업 — v2</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#c8c8c8; font-family:"D2Coding","Consolas",monospace; font-size:14px; line-height:1.55; height:100vh; display:flex; flex-direction:column; }
+  /* 헤더 */
+  #header { padding:8px 16px; border-bottom:1px solid #2a2a2a; color:#9aa; flex-shrink:0; }
+  #header .loc { color:#e8d9a0; }
+  #header .soul { color:#7fd4ff; }
+  /* 필터 바 */
+  #filter { padding:6px 16px; border-bottom:1px solid #1e1e1e; color:#778; font-size:12px; flex-shrink:0; display:flex; gap:18px; }
+  #filter .f { cursor:pointer; }
+  #filter .f.on { color:#e8d9a0; }
+  #filter .f:hover { color:#aab; }
+  /* 본문 = 좌 목록 + 우 상세 */
+  #main { flex:1 1 0; display:flex; min-height:0; }
+  #list { width:46%; overflow-y:auto; border-right:1px solid #2a2a2a; }
+  #detail { flex:1; overflow-y:auto; padding:12px 18px; }
+  #list::-webkit-scrollbar,#detail::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:#111} ::-webkit-scrollbar-thumb{background:#333}
+  /* 목록 행 */
+  .u { padding:6px 14px; border-bottom:1px solid #161616; cursor:pointer; }
+  .u:hover { background:#15151c; }
+  .u.sel { background:#1c1c28; border-left:2px solid #c678dd; padding-left:12px; }
+  .u .top { display:flex; align-items:baseline; gap:7px; }
+  .u .num { color:#667; width:20px; }
+  .u .nm { color:#fff; font-weight:bold; }
+  .u .lv { color:#889; font-size:12px; }
+  .u .race { font-size:11px; padding:0 4px; border:1px solid #333; border-radius:2px; }
+  .r-요괴{color:#c678dd;border-color:#5a3a6a} .r-정령{color:#7fd4ff;border-color:#2a5a6a}
+  .r-인조{color:#e0a060;border-color:#6a4a2a} .r-야수{color:#e07050;border-color:#6a3a2a}
+  .r-환상{color:#9fc97f;border-color:#3a5a2a}
+  .u .sub { font-size:11px; color:#667; margin-top:2px; display:flex; gap:10px; }
+  .u .route { font-weight:bold; }
+  .rt-애착{color:#ff9ec4}.rt-예속{color:#e8c860}.rt-탐닉{color:#c678dd}.rt-붕괴{color:#8a93a8}.rt-none{color:#556}
+  .u .mini { display:flex; gap:2px; align-items:center; }
+  .u .dot { width:5px; height:5px; border-radius:50%; display:inline-block; }
+  .badge { font-size:10px; color:#7fd4ff; }
+  /* 상세 */
+  #detail h2 { color:#fff; font-size:18px; margin-bottom:2px; }
+  #detail .dline { color:#889; font-size:12px; margin-bottom:10px; }
+  #detail h4 { color:#778; font-size:12px; margin:12px 0 4px; font-weight:normal; letter-spacing:1px; border-bottom:1px solid #1e1e1e; padding-bottom:2px; }
+  .row { display:flex; align-items:center; gap:6px; height:19px; }
+  .row .lbl { width:54px; color:#aab; font-size:12px; }
+  .bar { flex:1; height:8px; background:#1a1a1a; border:1px solid #2c2c2c; position:relative; max-width:200px; }
+  .bar i { position:absolute; left:0; top:0; bottom:0; }
+  .row .val { width:46px; text-align:right; color:#889; font-size:12px; }
+  .g-연모 i{background:#ff69b4}.g-복종 i{background:#ffd700}.g-음란 i{background:#c678dd}.g-공포 i{background:#6495ed}.g-반감 i{background:#ff5544}
+  .g-호감 i{background:#5fb0a0}
+  .yeokga { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:#99a; }
+  .yeokga b { color:#cfc; font-weight:normal; }
+  .traits { display:flex; flex-wrap:wrap; gap:4px; }
+  .t { font-size:12px; padding:1px 7px; border:1px solid #2e2e2e; border-radius:3px; }
+  .t-CT{color:#e07050;border-color:#5a2e22} .t-PT{color:#9fc97f;border-color:#2e4a22}
+  .t-AT{color:#c678dd;border-color:#4a2e5a} .t-BT{color:#7fd4ff;border-color:#22404a}
+  .t.sig{border-color:#7fd4ff;color:#7fd4ff;box-shadow:0 0 0 1px #1a3a4a inset}
+  .myungi{color:#ffd966}
+  .route-detail { display:flex; align-items:center; gap:8px; height:21px; font-size:12px; }
+  .route-detail .rname { width:42px; }
+  .steps .on{color:inherit} .steps .off{color:#2e2e2e}
+  .steps{letter-spacing:3px}
+  /* 액션 */
+  #actions { padding:10px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; display:flex; gap:20px; flex-wrap:wrap; }
+  .act { cursor:pointer; }
+  .act:hover { color:#fff; }
+  .act .num { color:#e8d9a0; }
+  .hint { color:#556; font-size:12px; margin-top:6px; padding:0 16px 10px; flex-shrink:0; }
+  /* 트레잇 툴팁 */
+  #tip { position:fixed; max-width:280px; background:#14141c; border:1px solid #3a3a4a; padding:7px 10px; font-size:12px; line-height:1.5; color:#bbc; z-index:50; pointer-events:none; display:none; box-shadow:0 3px 14px #000a; }
+  #tip .tname { font-weight:bold; margin-bottom:2px; }
+  #tip.c-CT .tname{color:#e07050} #tip.c-PT .tname{color:#9fc97f} #tip.c-AT .tname{color:#c678dd} #tip.c-BT .tname{color:#7fd4ff}
+  .t { cursor:help; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  【 <span class="loc">유닛 명부</span> 】  1년 2월 14일  |  <span id="roster"></span>  |  영혼력: <span class="soul">9,194</span>
+</div>
+
+<div id="filter">
+  정렬:
+  <span class="f on" data-sort="default">기본</span>
+  <span class="f" data-sort="lv">레벨</span>
+  <span class="f" data-sort="aff">호감도</span>
+  <span class="f" data-sort="route">변용</span>
+  &nbsp;|&nbsp; 필터:
+  <span class="f on" data-filt="all">전체</span>
+  <span class="f" data-filt="시설">시설</span>
+  <span class="f" data-filt="파티">파티</span>
+  <span class="f" data-filt="대기">대기</span>
+</div>
+
+<div id="main">
+  <div id="list"><!-- JS 렌더 --></div>
+  <div id="detail"><!-- JS 렌더 --></div>
+</div>
+
+<div id="actions">
+  <span class="act"><span class="num">[Enter]</span> 조교실로</span>
+  <span class="act"><span class="num">[B]</span> 배치/해제</span>
+  <span class="act"><span class="num">[F]</span> 합체 후보</span>
+  <span class="act"><span class="num">[↑↓]</span> 선택 이동</span>
+</div>
+<div class="hint">※ 목업: 행 클릭 / ↑↓ 로 선택, 정렬·필터 토글, 트레잇에 마우스. 수치·문구 전부 잠정.</div>
+<div id="tip"></div>
+
+<script>
+const units = [
+  { name:"가시 임프", lv:3, race:"요괴", elem:"위/열", aff:78, affStage:"유대", deploy:"조교실",
+    route:"애착", routeStep:2, g:{연모:62,복종:45,음란:38,공포:12,반감:9},
+    yeokga:{ "공격(열)":3, "방어(위)":2, "조교 熟":"V3 皮2", "조교 耐":"V1" },
+    traits:[ {n:"친애",c:"AT",sig:1}, {n:"음란체질",c:"AT"}, {n:"겁없음",c:"PT"}, {n:"화염 친화",c:"CT"}, {n:"가시 비늘",c:"BT"} ],
+    myungi:["V (꽃잎)"] },
+  { name:"수정 나비", lv:5, race:"정령", elem:"광/동", aff:54, affStage:"신뢰", deploy:"대기",
+    route:"예속", routeStep:3, g:{연모:30,복종:71,음란:22,공포:18,반감:14},
+    yeokga:{ "공격(광)":4, "방어(동)":3, "조교 熟":"입2 C3", "조교 耐":"C2" },
+    traits:[ {n:"순종",c:"AT",sig:1}, {n:"예속의 인",c:"AT",sig:1}, {n:"내향",c:"PT"}, {n:"광휘 가루",c:"CT"}, {n:"투명 날개",c:"BT"} ],
+    myungi:["C (수정)"] },
+  { name:"잿빛 늑대", lv:7, race:"야수", elem:"물리", aff:41, affStage:"경계", deploy:"파티",
+    route:"붕괴", routeStep:1, g:{연모:8,복종:24,음란:11,공포:48,반감:33},
+    yeokga:{ "공격(물리)":5, "방어(물리)":4, "조교 熟":"皮2", "조교 耐":"皮1" },
+    traits:[ {n:"광폭",c:"PT"}, {n:"고통 내성",c:"AT"}, {n:"날카로운 송곳니",c:"CT"}, {n:"두꺼운 가죽",c:"BT"}, {n:"위압",c:"PT"} ],
+    myungi:[] },
+  { name:"점토 골렘", lv:4, race:"인조", elem:"식/위", aff:60, affStage:"신뢰", deploy:"공방",
+    route:null, routeStep:0, g:{연모:40,복종:52,음란:15,공포:6,반감:4},
+    yeokga:{ "공격(위)":2, "방어(식)":5, "조교 熟":"皮1", "조교 耐":"皮3", "지식":"단조2" },
+    traits:[ {n:"우직",c:"PT"}, {n:"거구",c:"BT"}, {n:"손재주",c:"BT"}, {n:"대지 강타",c:"CT"} ],
+    myungi:[] },
+  { name:"밤하늘 키메라", lv:9, race:"환상", elem:"동/광", aff:88, affStage:"헌신", deploy:"조교실",
+    route:"애착", routeStep:3, g:{연모:91,복종:60,음란:55,공포:7,반감:3},
+    yeokga:{ "공격(동)":5, "공격(광)":4, "조교 熟":"V4 입3", "조교 耐":"V3" },
+    traits:[ {n:"친애",c:"AT",sig:1}, {n:"동행 각인",c:"AT",sig:1}, {n:"헌신",c:"PT",sig:1}, {n:"성좌 광선",c:"CT"}, {n:"별빛 비늘",c:"BT"}, {n:"名器·V",c:"AT",sig:1} ],
+    myungi:["V (★명기)","입 (혀)"] },
+  { name:"안개 여우", lv:6, race:"요괴", elem:"위/동", aff:35, affStage:"경계", deploy:"대기",
+    route:"탐닉", routeStep:2, g:{연모:18,복종:20,음란:74,공포:22,반감:16},
+    yeokga:{ "공격(위)":3, "방어(동)":2, "조교 熟":"입3 C2", "조교 耐":"입2" },
+    traits:[ {n:"음마화 1단",c:"AT",sig:1}, {n:"요염",c:"AT"}, {n:"호기심",c:"PT"}, {n:"미혹 안개",c:"CT"}, {n:"아홉 꼬리",c:"BT"} ],
+    myungi:["입 (혀)"] },
+  { name:"무쇠 처녀", lv:8, race:"인조", elem:"물리/위", aff:50, affStage:"신뢰", deploy:"파티",
+    route:"예속", routeStep:2, g:{연모:35,복종:66,음란:28,공포:30,반감:12},
+    yeokga:{ "공격(물리)":4, "방어(위)":5, "조교 熟":"皮2", "조교 耐":"皮2", "지식":"연금1" },
+    traits:[ {n:"강철 의지",c:"PT"}, {n:"수호",c:"PT"}, {n:"예속의 인",c:"AT",sig:1}, {n:"철벽",c:"CT"}, {n:"금속 외피",c:"BT"} ],
+    myungi:[] },
+];
+
+// 트레잇 설명 (호버 툴팁용 — 실제론 traits.csv description 컬럼에서)
+const TRAIT_DESC = {
+  "친애":"[AT·시그니처] 애착 변용 도2. 관계 이벤트 해금 · 동행 시 호감 +15%.",
+  "음란체질":"[AT] 모든 부위 감도 성장 +20%. 절정 임계 -10%.",
+  "겁없음":"[PT] 전투 시 공격 행동 가중치 ↑. 공포 침염 저항.",
+  "화염 친화":"[CT] 열 속성 스킬 배율 +15%. 열 역가 성장 +20%.",
+  "가시 비늘":"[BT] 피격 시 반사 피해(소). 방어(위) 보정.",
+  "순종":"[AT] 복종 글로벌 획득 +25%. 예속 루트 가속.",
+  "예속의 인":"[AT·시그니처] 예속 변용. 명령 오버라이드 신뢰도 ↑ · 자발 복종.",
+  "내향":"[PT] 조교 초기 감도 ↓이나 호감 누적 시 급상승. 파티 미세보정 -.",
+  "광휘 가루":"[CT] 광 속성 광역 스킬. 명중 +10%.",
+  "투명 날개":"[BT] 회피 +12%. 탐사 이동 보너스.",
+  "광폭":"[PT] 저HP 시 공격 ×1.5 오버라이드. 제어 무시.",
+  "고통 내성":"[AT] 고통 샘 -40%. 가학 행위에서 붕괴 대신 버팀.",
+  "날카로운 송곳니":"[CT] 물리 치명타율 +15%.",
+  "두꺼운 가죽":"[BT] 물리 방어 +20%. 7슬롯 물리 보정.",
+  "위압":"[PT] 敵対心 +. 적 명중 -5% 디버프 오라.",
+  "우직":"[PT] 상태이상 저항. 조교 내성 성장 +.",
+  "거구":"[BT] 최대 HP +25%. 회피 -10%.",
+  "손재주":"[BT] 단조·연금 적성. 지식 레벨업 +20%.",
+  "대지 강타":"[CT] 위 속성 단일 고배율. 넉백.",
+  "동행 각인":"[AT·시그니처] 애착 깊은 칸. 같은 파티 시 상호 호감 버프.",
+  "헌신":"[PT·시그니처] 주인 노린 적 우선 방어(override). 충의 타겟보정 ×2.",
+  "성좌 광선":"[CT] 동/광 복합 스킬. AP 소모 큼·고배율.",
+  "별빛 비늘":"[BT] 동 방어 +. 야간 풍경 보정.",
+  "名器·V":"[AT·시그니처] V 부위 조교완료 보상. 해당 부위 쾌감 출력 대폭 ↑.",
+  "음마화 1단":"[AT·시그니처] 탐닉 변용 도2. 음란 글로벌 상한 돌파.",
+  "요염":"[AT] 매혹 교섭 보정. 자성(磁) 어그로 소폭.",
+  "호기심":"[PT] 타겟 랜덤화. 신규 행위 학습 가속.",
+  "미혹 안개":"[CT] 위 속성 광역 혼란. 적 회피 -.",
+  "아홉 꼬리":"[BT] 환상 종족 특성. 동 역가 +.",
+  "강철 의지":"[PT] 공포·반감 침염 저항 강. 붕괴 미끄럼 방지.",
+  "수호":"[PT] 敵対心 대폭 + · 아군 피격 대신 받기(override).",
+  "철벽":"[CT] 방어 자세 시 받는 피해 -30%.",
+  "금속 외피":"[BT] 물리/위 방어 +. 회피 -.",
+};
+
+let sel = 0, sortMode="default", filtMode="all";
+const ROUTE_MAX = 4;
+
+function visibleUnits(){
+  let arr = units.map((u,i)=>({u,i}));
+  if(filtMode==="파티") arr = arr.filter(x=>x.u.deploy==="파티");
+  else if(filtMode==="대기") arr = arr.filter(x=>x.u.deploy==="대기");
+  else if(filtMode==="시설") arr = arr.filter(x=>x.u.deploy!=="대기" && x.u.deploy!=="파티");
+  if(sortMode==="lv") arr.sort((a,b)=>b.u.lv-a.u.lv);
+  else if(sortMode==="aff") arr.sort((a,b)=>b.u.aff-a.u.aff);
+  else if(sortMode==="route") arr.sort((a,b)=>(b.u.routeStep)-(a.u.routeStep));
+  return arr;
+}
+
+function gMini(g){
+  const order=["연모","복종","음란","공포","반감"];
+  const col={연모:"#ff69b4",복종:"#ffd700",음란:"#c678dd",공포:"#6495ed",반감:"#ff5544"};
+  // 가장 높은 글로벌 1개를 점으로
+  let top=order[0]; for(const k of order) if(g[k]>g[top]) top=k;
+  return `<span class="dot" style="background:${col[top]}"></span><span style="color:${col[top]};font-size:11px">${top} ${g[top]}</span>`;
+}
+
+function renderList(){
+  const arr=visibleUnits();
+  document.getElementById("list").innerHTML = arr.map(({u,i},pos)=>{
+    const rcls = u.route ? "rt-"+u.route : "rt-none";
+    const rtxt = u.route ? `${u.route} ${u.routeStep}/${ROUTE_MAX}` : "—";
+    const dep = u.deploy==="대기" ? `<span style="color:#566">대기</span>`
+      : u.deploy==="파티" ? `<span style="color:#e07050">⚔ 파티</span>`
+      : `<span style="color:#8a9">${u.deploy}</span>`;
+    const sig = u.traits.filter(t=>t.sig).length;
+    return `<div class="u ${i===sel?'sel':''}" data-i="${i}">
+      <div class="top">
+        <span class="num">${pos+1}.</span>
+        <span class="nm">${u.name}</span>
+        <span class="race r-${u.race}">${u.race}</span>
+        <span class="lv">Lv.${u.lv} · ${u.elem}</span>
+      </div>
+      <div class="sub">
+        <span class="mini">${gMini(u.g)}</span>
+        <span class="route ${rcls}">${rtxt}</span>
+        <span>호감 ${u.aff}</span>
+        ${sig?`<span class="badge">★${sig}</span>`:''}
+        <span style="margin-left:auto">${dep}</span>
+      </div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".u").forEach(el=>el.addEventListener("click",()=>{ sel=+el.dataset.i; render(); }));
+}
+
+function gRow(name,val){
+  return `<div class="row g-${name}"><span class="lbl">${name}</span><div class="bar"><i style="width:${val}%"></i></div><span class="val">${val}</span></div>`;
+}
+
+function renderDetail(){
+  const u=units[sel];
+  const routes=["애착","예속","탐닉","붕괴"];
+  const rcol={애착:"애착",예속:"예속",탐닉:"탐닉",붕괴:"붕괴"};
+  const routeRows = routes.map(r=>{
+    const active = u.route===r;
+    const step = active ? u.routeStep : 0;
+    const on = "■".repeat(step), off="□".repeat(ROUTE_MAX-step);
+    const lock = (u.routeStep>=2 && !active) ? `<span style="color:#544;font-size:11px">수렴 잠금</span>` : "";
+    return `<div class="route-detail" style="${active?'':'opacity:.4'}">
+      <span class="rname rt-${r}">${r}</span>
+      <span class="steps rt-${r}"><span class="on">${on}</span><span class="off">${off}</span></span>
+      ${active?`<span style="color:#778;font-size:11px">도 ${step}</span>`:lock}
+    </div>`;
+  }).join("");
+  const yk = Object.entries(u.yeokga).map(([k,v])=>`<span>${k} <b>${v}</b></span>`).join("");
+  const tr = u.traits.map(t=>`<span class="t t-${t.c} ${t.sig?'sig':''}" data-tip="${(TRAIT_DESC[t.n]||'(설명 미작성)').replace(/"/g,'&quot;')}" data-cat="${t.c}">${t.sig?'★':''}${t.n}</span>`).join("");
+  document.getElementById("detail").innerHTML = `
+    <h2>${u.name} <span class="race r-${u.race}" style="font-size:13px">${u.race}</span></h2>
+    <div class="dline">Lv.${u.lv} · 속성 ${u.elem} · 배치 ${u.deploy} · 호감도 ${u.aff} [${u.affStage}]</div>
+
+    <h4>글로벌 상태</h4>
+    ${gRow("연모",u.g.연모)}${gRow("복종",u.g.복종)}${gRow("음란",u.g.음란)}${gRow("공포",u.g.공포)}${gRow("반감",u.g.반감)}
+
+    <h4>변용 (變容)</h4>
+    ${routeRows}
+
+    <h4>역가 / 지식 (力價)</h4>
+    <div class="yeokga">${yk}</div>
+
+    <h4>트레잇 <span style="color:#445">(★=시그니처 · 마우스 올리면 설명)</span></h4>
+    <div class="traits">${tr}</div>
+  `;
+}
+
+const tip = document.getElementById("tip");
+function bindTips(){
+  document.querySelectorAll("#detail .t").forEach(el=>{
+    el.addEventListener("mouseenter",()=>{
+      tip.className = "c-" + (el.dataset.cat||"");
+      tip.innerHTML = `<div class="tname">${el.textContent}</div>${el.dataset.tip}`;
+      tip.style.display = "block";
+    });
+    el.addEventListener("mousemove",e=>{
+      const w=tip.offsetWidth, h=tip.offsetHeight;
+      let x=e.clientX+14, y=e.clientY+14;
+      if(x+w>innerWidth) x=e.clientX-w-14;
+      if(y+h>innerHeight) y=e.clientY-h-14;
+      tip.style.left=x+"px"; tip.style.top=y+"px";
+    });
+    el.addEventListener("mouseleave",()=>{ tip.style.display="none"; });
+  });
+}
+
+function renderRoster(){
+  const total=units.length;
+  const party=units.filter(u=>u.deploy==="파티").length;
+  const idle=units.filter(u=>u.deploy==="대기").length;
+  const facility=total-party-idle;
+  document.getElementById("roster").innerHTML =
+    `전체 <span class="soul">${total}</span> · 시설 <span style="color:#8a9">${facility}</span> · 파티 <span style="color:#e07050">${party}</span> · 대기 <span style="color:#778">${idle}</span>`;
+}
+
+function render(){ renderRoster(); renderList(); renderDetail(); bindTips(); }
+
+document.querySelectorAll("#filter .f").forEach(f=>{
+  f.addEventListener("click",()=>{
+    if(f.dataset.sort){ document.querySelectorAll("[data-sort]").forEach(x=>x.classList.remove("on")); f.classList.add("on"); sortMode=f.dataset.sort; }
+    if(f.dataset.filt){ document.querySelectorAll("[data-filt]").forEach(x=>x.classList.remove("on")); f.classList.add("on"); filtMode=f.dataset.filt; }
+    render();
+  });
+});
+
+document.addEventListener("keydown",e=>{
+  const arr=visibleUnits().map(x=>x.i);
+  const cur=arr.indexOf(sel);
+  if(e.key==="ArrowDown"){ e.preventDefault(); sel=arr[(cur+1)%arr.length]; render(); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); sel=arr[(cur-1+arr.length)%arr.length]; render(); }
+});
+
+render();
+</script>
+</body>
+</html>

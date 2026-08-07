@@ -1,6 +1,8 @@
 'use strict';
 
 const TE = require('./trainingEngine'); // v2 침염/변용 레이어
+const R = require('../balance/traitResolver'); // v2 훅 리졸버 (2026-07-17 시스템 패스)
+const YK = require('../balance/yeokga'); // 역가 레벨업 (2026-08-07 밸런싱 패스)
 
 // Training System (조교소) — Adult content training with per-unit trait mechanics
 // Body parts: mouth(입), chest(가슴), v(V), c(C), anal(애널), skin(피부)
@@ -92,6 +94,23 @@ class TrainingSystem {
         unlock: {lewdness:75, affection:4, partSensitivity:{v:40}}, expKey: 'insert', flavor: '거칠게 몰아붙인다.' },
       { id: 24, name: '조련', intensity: 5, targets: [{part:'v',ratio:1.5},{part:'c',ratio:1.5},{part:'anal',ratio:1.0},{part:'chest',ratio:1.0},{part:'mouth',ratio:0.5},{part:'skin',ratio:0.5}],
         unlock: {lewdness:80, affection:4}, expKey: 'discipline', flavor: '본격적으로 조련한다.' },
+
+      // ── 전용 아이템 계열 (crafting v4.3: 아이템이 행위 해금 — 예속 개통 2026-08-07. 트레잇 OR 게이트) ──
+      { id: 25, name: '구속 애무', intensity: 3, targets: [{part:'skin',ratio:1.0},{part:'chest',ratio:0.6}],
+        requiresItem: 'ITEM_RESTRAINT', traitCat: '명령계', gains: {복종:1.2, 음란:0.7},
+        unlock: {}, expKey: 'discipline', flavor: '묶인 채로 어루만진다. 저항할 수 없다는 사실이 스며든다.' },
+      { id: 26, name: '구속 개발', intensity: 4, targets: [{part:'v',ratio:1.3},{part:'c',ratio:0.8},{part:'chest',ratio:0.5}],
+        requiresItem: 'ITEM_RESTRAINT', traitCat: '명령계', gains: {복종:1.5, 음란:1.0, 공포:0.3},
+        unlock: {lewdness:30}, expKey: 'discipline', flavor: '구속한 채 깊이 개발한다. 몸이 먼저 따르기 시작한다.' },
+      { id: 27, name: '채찍질', intensity: 3, targets: [{part:'skin',ratio:1.2}],
+        requiresItem: 'ITEM_WHIP', gains: {공포:1.0, 복종:0.8, 음란:0.4, 반감:0.5},
+        unlock: {lewdness:20}, expKey: 'discipline', flavor: '소리가 먼저 닿고, 감각이 뒤따른다.' },
+      { id: 28, name: '명령 조련', intensity: 2, targets: [{part:'skin',ratio:0.8},{part:'mouth',ratio:0.4}],
+        traitCat: '명령계', gains: {복종:1.3, 연모:0.2},
+        unlock: {}, expKey: 'discipline', flavor: '말만으로 움직이게 한다. 글자가 몸에 스민다.' },
+      { id: 29, name: '구속 방치', intensity: 2, targets: [{part:'skin',ratio:0.7}],
+        requiresItem: 'ITEM_RESTRAINT', traitCat: '명령계', gains: {복종:1.4, 공포:0.2},
+        unlock: {}, expKey: 'discipline', flavor: '묶어둔 채 기다리게 한다. 기다림이 곧 가르침이다.' },
     ];
   }
 
@@ -102,6 +121,8 @@ class TrainingSystem {
     const sen = unit.sensitivity;
     const hasTool = this.hasTrainingTool();
     const lockedParts = new Set(this.getAvailableParts(unit).filter(p => p.locked).map(p => p.id));
+    const _m = this._traitMods(unit);
+    const _ease = R.gainRate(_m, '해금요구'); // 훅: 순종적 곡예 — 해금 임계 ×0.8
 
     return this.ACTIONS.map(a => {
       let locked = false;
@@ -113,12 +134,25 @@ class TrainingSystem {
         lockReason = '도구 필요';
       }
 
+      // 훅: 해금형 행위 게이트 — 전용 아이템 OR 기질 트레잇 (crafting v4.3 + 시스템 패스, 겹침 허용)
+      if (!locked && (a.traitCat || a.requiresItem)) {
+        const hasTraitKey = a.traitCat && _m[a.traitCat] && _m[a.traitCat].unlock;
+        const hasItemKey = a.requiresItem && ((this.engine.state.inventory[a.requiresItem] || 0) > 0);
+        if (!hasTraitKey && !hasItemKey) {
+          locked = true;
+          lockReason = a.requiresItem
+            ? `${this.engine.getMaterialName(a.requiresItem)} 필요${a.traitCat ? ` (또는 ${a.traitCat} 기질)` : ''}`
+            : `${a.traitCat} 기질 필요`;
+        }
+      }
+
       // Check unlock conditions
       if (!locked && a.unlock) {
         const req = a.unlock;
-        if (req.lewdness && (gs.lewdness || 0) < req.lewdness) {
+        const _lewdReq = req.lewdness ? Math.ceil(req.lewdness * _ease) : 0;
+        if (_lewdReq && (gs.lewdness || 0) < _lewdReq) {
           locked = true;
-          lockReason = `음란 ${req.lewdness} 필요`;
+          lockReason = `음란 ${_lewdReq} 필요`;
         }
         if (!locked && req.affection && affStage < req.affection) {
           const stageNames = ['경계','인지','친밀','신뢰','유대','헌신'];
@@ -173,6 +207,14 @@ class TrainingSystem {
     const adultTrait = this.getAdultTrait(unit);
     const allParts = [...this.PARTS];
     const locked = [];
+
+    // 훅: 부위해금전체 (완전개방 — 호감도 조건은 effects when이 리졸버에서 평가)
+    {
+      const _m = this._traitMods(unit);
+      if (_m['부위해금전체'] && _m['부위해금전체'].unlock) {
+        return allParts.map(p => ({ id: p, name: this.PART_NAMES[p], locked: false, reason: '' }));
+      }
+    }
 
     // 신뢰개방: 호감도 단계별 해금
     if (adultTrait === 'AT_TRUST_UNLOCK') {
@@ -295,6 +337,16 @@ class TrainingSystem {
         repeatMsg = '행위 변경 (효율 110%)';
       }
     }
+    // 훅: 반복페널티 경감 (인형 조서·태엽조교 등 — gainMult 0.8이면 페널티 20% 경감)
+    // 훅: 조건반사 — 몸이 기억하는 조합(첫 절정 행위) 반복 시 감도 배율
+    {
+      const _tm = this._traitMods(unit);
+      const _rp = R.gainRate(_tm, '반복페널티');
+      if (_rp !== 1 && repeatMul < 1) repeatMul = 1 - (1 - repeatMul) * _rp;
+      if (unit._condCombo && unit._condCombo === actionId) {
+        repeatMul *= R.gainRate(_tm, '지정조합');
+      }
+    }
     rt.lastActionId = actionId;
     rt.lastCategory = action.expKey;
 
@@ -322,6 +374,9 @@ class TrainingSystem {
       if (senGain > 0) {
         totalSenGain += senGain;
         partResults.push({ part: target.part, partName: this.PART_NAMES[target.part], gain: senGain });
+        // 역가: 한 행위 → 力 산출 (받는 부위 숙련 +1pt)
+        const _yk = YK.gain(unit, '숙련', target.part);
+        if (_yk) partResults[partResults.length - 1].숙련업 = _yk.level;
       }
     }
 
@@ -331,6 +386,18 @@ class TrainingSystem {
     let fearGain = 0;
     let resentGain = 0;
     let loveGain = 0;
+    // 전용 행위 gains 프로필 (음란 누출 유지 — 루트 길항 보존, 순수 스위치 아님)
+    if (action.gains) {
+      lewdGain = Math.floor(action.intensity * (action.gains.음란 || 0) * repeatMul);
+      submissionGain = Math.floor(action.intensity * (action.gains.복종 || 0) * repeatMul);
+      fearGain = Math.ceil(action.intensity * (action.gains.공포 || 0));
+      resentGain = Math.ceil(action.intensity * (action.gains.반감 || 0));
+      loveGain = Math.floor(action.intensity * (action.gains.연모 || 0));
+    }
+    // 조련교본(tools.textbook) — 효율 보너스형(v4.3): 명령·전용 행위의 복종 효율 ×1.2
+    if ((action.traitCat === '명령계' || action.requiresItem) && this.hasTextbook()) {
+      submissionGain = Math.floor(submissionGain * 1.2);
+    }
 
     // 트레잇 효과 호환용 — senGain은 totalSenGain의 별칭
     let senGain = totalSenGain;
@@ -667,7 +734,16 @@ class TrainingSystem {
     gs.love = Math.max(0, Math.min(100, (gs.love || 0) + loveGain));
 
     // v2: 침염/변용 진행 (v1 위 비파괴 추가 레이어)
-    this._applyChimyeomVariation(unit, { 연모: loveGain, 복종: submissionGain, 음란: lewdGain, 공포: fearGain, 반감: resentGain }, totalSenGain * 5); // ×5 = v1 senGain 스케일 보정(잠정)
+    const _chv = this._applyChimyeomVariation(unit, { 연모: loveGain, 복종: submissionGain, 음란: lewdGain, 공포: fearGain, 반감: resentGain }, totalSenGain * this._pleasureScale()); // 스케일 = balance/actions.csv [training_constants]
+    // 역가: 절정을 견딤 → 행위 부위 내성 +1pt
+    if (_chv && _chv.절정) {
+      for (const target of action.targets) YK.gain(unit, '내성', target.part);
+    }
+    // 훅: 조건반사 — 첫 절정을 일으킨 행위를 몸이 기억한다
+    if (_chv && _chv.절정 && !unit._condCombo) {
+      const _cm = this._traitMods(unit);
+      if (_cm['지정조합']) unit._condCombo = actionId;
+    }
 
     // Post-processing for 정제감도
     if (adultTrait === 'AT_REFINED_SENSITIVITY') {
@@ -821,18 +897,45 @@ class TrainingSystem {
 
   // Get milestone for part experience level
   // v2: 침염/변용 진행 — v1 globalState 위에 얹는 추가 레이어 (비파괴).
+  // 유닛 트레잇 effects 집계 (조교 훅 소비용 — 시스템 패스 2026-07-17)
+  _traitMods(unit) {
+    const reg = (this.engine.data && this.engine.data.traits) || [];
+    const ids = new Set([...(unit.traits || []), ...(unit.personalityTraits || [])]);
+    const objs = reg.filter(t => ids.has(t.id) || ids.has(t.name));
+    return R.resolveEffects(objs, { 호감도: unit.affection || 0, hpPct: unit.maxHp ? unit.hp / unit.maxHp : 1 });
+  }
+
+  _feedCapPct() {
+    try {
+      const kv = this.engine.balance.getKV('actions.csv', 'training_constants');
+      if (kv && kv.pleasureFeedCapPct != null) return Number(kv.pleasureFeedCapPct);
+    } catch (e) { /* fallback */ }
+    return 0.3;
+  }
+
+  _pleasureScale() {
+    try {
+      const kv = this.engine.balance.getKV('actions.csv', 'training_constants');
+      if (kv && kv.pleasureScale != null) return Number(kv.pleasureScale);
+    } catch (e) { /* fallback */ }
+    return 5;
+  }
+
   _applyChimyeomVariation(unit, gains, pleasureGain) {
     if (!unit.침염) unit.침염 = {};
     if (!unit.변용도) unit.변용도 = {};
     if (!unit._session) unit._session = { pleasure: 0, gain: {} };
     const sess = unit._session;
-    sess.pleasure += (pleasureGain || 0);
+    const result = { 절정: false, 침염: null, 변용: null };
+    const 내성 = (unit.역가 && unit.역가.내성) ? Math.max(0, ...Object.values(unit.역가.내성)) : 0;
+    const _mods = this._traitMods(unit);
+    const 절정임계 = (100 + 내성 * 20) * R.gainRate(_mods, '절정임계'); // 훅: 과민소체 등
+    // 쾌감 피드 상한 = 임계 × capPct (밸런싱 2026-08-07: 고강도 절정 스팸 억제 — 몸이 한 번에 받는 한계. 시뮬 근거 ledger §1)
+    const _capPct = this._feedCapPct();
+    sess.pleasure += Math.min(pleasureGain || 0, 절정임계 * _capPct);
     for (const k of Object.keys(gains)) {
       if (gains[k] > 0) sess.gain[k] = (sess.gain[k] || 0) + gains[k];
     }
-    const result = { 절정: false, 침염: null, 변용: null };
-    const 내성 = (unit.역가 && unit.역가.내성) ? Math.max(0, ...Object.values(unit.역가.내성)) : 0;
-    const 절정임계 = 100 + 내성 * 20;
     if (sess.pleasure >= 절정임계 && Object.keys(sess.gain).length) {
       result.절정 = true;
       sess.pleasure = 0;
@@ -844,8 +947,53 @@ class TrainingSystem {
         호감도: unit.affection || 0, 감도: unit.sensitivity || {},
         역가: unit.역가 || { 숙련: {} },
       };
+      // ═ 절정 훅 3종 (시스템 패스 2026-07-17) ═
+      if (_mods['쾌감전환.HP'] && _mods['쾌감전환.HP'].unlock) {
+        unit.hp = Math.min(unit.maxHp || 100, (unit.hp || 0) + 20); // 잠정 +20
+        result.훅쾌감전환 = true;
+      }
+      if (_mods['절정산물'] && _mods['절정산물'].unlock) {
+        const PRODUCT_OF = { BT_SLIME_SPAWN: 'MAT_SLIME_CORE', AT_FLOWER_NECTAR: 'MAT_CATALYST_HERB' }; // 잠정 매핑
+        for (const tid of (unit.traits || [])) {
+          if (PRODUCT_OF[tid]) { this.engine.addMaterial(PRODUCT_OF[tid], 1); result.훅절정산물 = PRODUCT_OF[tid]; }
+        }
+      }
+      if (_mods['감도랜덤재배정'] && _mods['감도랜덤재배정'].unlock && unit.sensitivity) {
+        const _senImmune = _mods['감도하락'] && _mods['감도하락'].immune; // 훅: 철벽감각 — 결코 내려가지 않는다
+        const keys = Object.keys(unit.sensitivity);
+        const vals = keys.map(k => unit.sensitivity[k]).sort(() => Math.random() - 0.5);
+        keys.forEach((k, i) => { unit.sensitivity[k] = _senImmune ? Math.max(unit.sensitivity[k] || 0, vals[i]) : vals[i]; });
+        result.훅감도재배정 = true;
+      }
+      // 훅: 개화 — 처음 열리는 순간 전신이 함께 깨어난다 (첫 절정 1회, 전부위 +10)
+      if (_mods['첫임계보너스'] && _mods['첫임계보너스'].unlock && !unit._bloomFired && unit.sensitivity) {
+        for (const k of Object.keys(unit.sensitivity)) unit.sensitivity[k] = Math.min(100, (unit.sensitivity[k] || 0) + 10);
+        unit._bloomFired = true;
+        result.훅개화 = true;
+      }
+      // 훅: 순백인형 — 조교 방향(침염)에 따라 성격 1개 자동 획득 (1회)
+      if (_mods['성격획득'] && _mods['성격획득'].unlock && !unit._dollGranted) {
+        const PT_OF = { 연모: 'PT_LOYAL_FAITHFUL', 복종: 'PT_DEVOTED', 음란: 'PT_BRAZEN', 공포: 'PT_TIMID', 반감: 'PT_ALOOF' }; // 잠정 매핑
+        const pid = PT_OF[type];
+        const reg = (this.engine.data && this.engine.data.traits) || [];
+        if (pid && reg.some(t => t.id === pid)) {
+          unit.traits = unit.traits || [];
+          if (!unit.traits.includes(pid)) unit.traits.push(pid);
+          unit._dollGranted = true;
+          result.훅성격획득 = pid;
+        }
+      }
       result.변용 = TE.advanceVariation(view, TE.ROUTE_OF[type] || '붕괴');
       unit.변용잠금 = view.변용잠금;
+      // v2: 변용 칸 도달 → 시그니처 트레잇 실제 부여 (variationRoutes.csv)
+      if (result.변용) {
+        const vt = this.engine.getVariationTrait(result.변용.route, result.변용.도);
+        if (vt && vt.id) {
+          unit.traits = unit.traits || [];
+          if (!unit.traits.includes(vt.id)) unit.traits.push(vt.id);
+          result.변용.trait = { id: vt.id, name: vt.name };
+        }
+      }
       sess.gain = {};
     }
     unit._lastChimyeom = result;

@@ -1,17 +1,18 @@
+; 효과/브릿지 정본 = traits.csv [adult] 변용 16행 (레지스트리 단일화 2026-07-17) — 이 파일은 배치 메타(도임계·coReq)만
 route,도,id,name,침염임계,coReq,effects,bridge,종착
-애착,1,AT_LONGING,연모,2,,조교|global.연모|gainMult|1.25 ; 관계|호감도|gainMult|1.10,,
-애착,2,AT_AFFECTION,친애,5,호감도>=친밀,관계|이벤트.거처|unlock|1 ; 관계|호감도|gainMult|1.15,,
-애착,3,AT_DEVOTED_LOVE,상애,9,호감도>=신뢰,관계|호감도|gainMult|2.0|when:동석:has:1,stat|ATK|add|0.1|when:동석:has:주인 ; stat|DEF|add|0.1|when:동석:has:주인,
-애착,4,AT_CONSORT,반려,14,호감도>=유대,조교|global.연모|set|100,stat|ATK|add|0.2|when:동석:has:주인,종착:9C feeder
-예속,1,AT_OBEDIENCE,복종,2,,조교|global.복종|gainMult|1.25 ; 조교|global.반감|gainMult|0.8,,
-예속,2,AT_SUBMISSION,굴복,5,역가.숙련>=2,조교|global.공포|gainMult|0.7,,
-예속,3,AT_BRAND,낙인,9,역가.숙련>=3,조교|global.반감|gainMult|0.5,,
-예속,4,AT_ENSLAVED,예속,14,역가.숙련>=4,조교|global.복종|set|100,override|always|회피:0|방어:0|공격:1.0,종착
-탐닉,1,AT_LEWD,음란,2,,조교|global.음란|gainMult|1.25 ; 조교|감도.전부위|gainMult|1.15,,
-탐닉,2,AT_LEWDENING,음화,5,감도>=40,조교|쾌감상한.부위|cap|-0.3,,
-탐닉,3,AT_LUST,색정,9,감도>=60,조교|global.음란|add|10|when:세션시작,special|enemyAccDown|0.1,
-탐닉,4,AT_SUCCUBUS,음마,14,감도>=80,조교|음란계|unlock|1,special|enemyAiDisrupt|1,종착
-붕괴,1,AT_FRACTURE,균열,2,,조교|global.공포|mult|1.5 ; 관계|호감도|gainMult|0.5,,
-붕괴,2,AT_MADNESS,광기,5,,조교|하드반응|unlock|1,special|fearResist|0.5,
-붕괴,3,AT_DISSOLUTION,와해,9,,조교|global.긍정|gainMult|0.3,special|hitStaggerImmune|1,
-붕괴,4,AT_RECONSTRUCT,재구성,14,,조교|불리global|gainMult|0.2,override|always|immune:공포 ; stat|ATK|add|0.3|scaleBy:missingHpPct,종착
+애착,1,AT_LONGING,연모,2,,,,
+애착,2,AT_AFFECTION,친애,5,호감도>=친밀,,,
+애착,3,AT_DEVOTED_LOVE,상애,9,호감도>=신뢰,,,
+애착,4,AT_CONSORT,반려,14,호감도>=유대,,,종착
+예속,1,AT_OBEDIENCE,복종,2,,,,
+예속,2,AT_SUBMISSION,굴복,5,역가.숙련>=2,,,
+예속,3,AT_BRAND,낙인,9,역가.숙련>=3,,,
+예속,4,AT_ENSLAVED,예속,14,역가.숙련>=4,,,종착
+탐닉,1,AT_LEWD,음란,2,,,,
+탐닉,2,AT_LEWDENING,음화,5,감도>=40,,,
+탐닉,3,AT_LUST,색정,9,감도>=60,,,
+탐닉,4,AT_SUCCUBUS,음마,14,감도>=80,,,종착
+붕괴,1,AT_FRACTURE,균열,2,,,,
+붕괴,2,AT_MADNESS,광기,5,,,,
+붕괴,3,AT_DISSOLUTION,와해,9,,,,
+붕괴,4,AT_RECONSTRUCT,재구성,14,,,,종착

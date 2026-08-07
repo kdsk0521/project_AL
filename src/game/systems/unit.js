@@ -33,8 +33,16 @@ class UnitSystem {
     };
   }
 
+  // 합체 영혼력 비용 (잠정 — 통합 밸런싱 패스에서 조정)
+  fusionCost(unitA, unitB) {
+    // economy_soul_curve v1.2: 바닥 연동 = 0.4 × (바닥A + 바닥B) — 전 구간 "약 1개월치 순현금" 균질
+    const f = l => this.engine.priceFloor(l || 1);
+    return Math.floor(0.4 * (f(unitA.level) + f(unitB.level)));
+  }
+
   // Execute fusion
-  executeFusion(instanceIdA, instanceIdB) {
+  // opts.prima: '염'|'수은'|'유황' — 비축 삼원질 주입 (state.prima에서 소비)
+  executeFusion(instanceIdA, instanceIdB, opts = {}) {
     const unitA = this.engine.getUnitInstance(instanceIdA);
     const unitB = this.engine.getUnitInstance(instanceIdB);
     if (!unitA || !unitB) return { success: false, reason: '유닛을 찾을 수 없습니다.' };
@@ -43,6 +51,22 @@ class UnitSystem {
     if (unitA.assignedFacility || unitB.assignedFacility) {
       return { success: false, reason: '배치 중인 유닛은 합체할 수 없습니다.' };
     }
+
+    // v2: 비용/주입 검증
+    this.engine.ensureV2State();
+    const cost = this.fusionCost(unitA, unitB);
+    if (this.engine.state.soulPower < cost) {
+      return { success: false, reason: '영혼력이 부족합니다. (필요 ' + cost + ')' };
+    }
+    if (opts.prima && !(this.engine.state.prima[opts.prima] > 0)) {
+      return { success: false, reason: '비축한 ' + opts.prima + '이(가) 없습니다.' };
+    }
+
+    // v2: 삼원질 효과 수집 — 소재 印(7=염) + 비축 주입
+    const primas = [];
+    if (unitA.sigil === 7) primas.push('염');
+    if (unitB.sigil === 7) primas.push('염');
+    if (opts.prima) primas.push(opts.prima);
 
     const resultSigil = this.engine.getFusionResult(unitA.sigil, unitB.sigil);
     const resultLevel = Math.floor((unitA.level + unitB.level) / 2);
@@ -69,16 +93,43 @@ class UnitSystem {
     const resultInstance = this.engine.createUnitInstance(actualDef);
 
     // Trait inheritance (3 routes)
-    const inheritedTraits = this.performTraitInheritance(unitA, unitB, resultInstance, actualDef);
+    const inheritedTraits = this.performTraitInheritance(unitA, unitB, resultInstance, actualDef, primas);
     resultInstance.traits = inheritedTraits.final;
     resultInstance.potential = inheritedTraits.potential;
     // v2: 모순쌍 공존 검출 (합체 결과 트레잇에 대립쌍이 함께 있으면)
     resultInstance.contradictions = this._checkContradictions(resultInstance.traits);
-
-    // Special sigil effects
-    if (unitA.sigil === 7 || unitB.sigil === 7) {
-      // 염(Salt): +1 direct inheritance slot (handled in inheritance)
+    // v2: 모순쌍 발동 규칙 v1 (trait_contradiction_pairs.md) — 방향 판정 + 결과 트레잇 적용
+    if (resultInstance.contradictions && resultInstance.contradictions.length) {
+      const hasMercury = primas.includes('수은');
+      const _reg = (this.engine.data && this.engine.data.traits) || [];
+      const _ctx = {
+        붕괴도: (resultInstance.변용도 && resultInstance.변용도['붕괴']) || 0,
+        침염부정: ((resultInstance.침염 || {})['공포'] || 0) + ((resultInstance.침염 || {})['반감'] || 0),
+      };
+      resultInstance.contradictions = resultInstance.contradictions.map(c => {
+        const d = SE.decideContradiction(c, { mercury: hasMercury, ctx: _ctx });
+        const row = d.resultId ? _reg.find(t => t.id === d.resultId) : null;
+        if (row) {
+          if (d.direction === 'integrate') {
+            // 통합 = 두 극 소거 + 통합 트레잇
+            resultInstance.traits = resultInstance.traits.filter(id => {
+              const t = _reg.find(x => x.id === id);
+              return !t || (t.name !== c.pair[0] && t.name !== c.pair[1]);
+            });
+          } else {
+            // 분열 = 두 극 유지 + 분열 트레잇 + 공포 침염 1 (붕괴 feeder)
+            resultInstance.침염 = resultInstance.침염 || {};
+            resultInstance.침염['공포'] = (resultInstance.침염['공포'] || 0) + 1;
+          }
+          if (!resultInstance.traits.includes(row.id)) resultInstance.traits.push(row.id);
+        }
+        return { ...c, resolution: d.direction, resultTrait: row ? row.id : null };
+      });
     }
+
+    // v2: 비용 지불 + 주입 삼원질 소비
+    this.engine.state.soulPower -= cost;
+    if (opts.prima) this.engine.state.prima[opts.prima]--;
 
     // Remove source units
     this.engine.state.ownedUnits = this.engine.state.ownedUnits.filter(
@@ -103,7 +154,9 @@ class UnitSystem {
       result: resultInstance,
       isAccident,
       consumed: [unitA.name, unitB.name],
-      inheritedTraits
+      inheritedTraits,
+      primas,
+      cost
     };
   }
 
@@ -123,17 +176,14 @@ class UnitSystem {
     if (!this._contraPairs) {
       const rows = (this.engine.balance && this.engine.balance.getRows)
         ? this.engine.balance.getRows('contradictionPairs.csv', '_default') : [];
-      this._contraPairs = SE.loadContradictions(rows);
+      const reg = (this.engine.data && this.engine.data.traits) || [];
+      this._contraPairs = SE.loadContradictions(rows, reg);
     }
-    const reg = (this.engine.data && this.engine.data.traits) || [];
-    const names = (traitIds || []).map(id => {
-      const t = reg.find(x => x.id === id);
-      return t ? t.name : id;
-    });
-    return SE.checkContradictions(names, this._contraPairs);
+    // v2: id 직접 매칭 (이름 매핑 제거 — 이름 중복 오발동 차단)
+    return SE.checkContradictions(traitIds || [], this._contraPairs);
   }
 
-  performTraitInheritance(unitA, unitB, resultInstance, resultDef) {
+  performTraitInheritance(unitA, unitB, resultInstance, resultDef, primas = []) {
     const allTraitsA = [...(unitA.traits || [])];
     const allTraitsB = [...(unitB.traits || [])];
 
@@ -177,8 +227,8 @@ class UnitSystem {
     traitGrowths.sort((a, b) => b.growth - a.growth);
 
     let directSlots = 3;
-    // 염(Salt) bonus: +1 slot
-    if (unitA.sigil === 7 || unitB.sigil === 7) directSlots += 1;
+    // 염(鹽): 직접 계승 슬롯 +1 (소재 印 + 주입 통합)
+    if (primas.includes('염')) directSlots += 1;
 
     const directInherited = traitGrowths.slice(0, directSlots).map(t => t.id);
 
@@ -187,8 +237,10 @@ class UnitSystem {
     const potential = {};
     for (const t of potentialTraits) {
       // 성장도에 비례하여 임계점 인하 (기본 20%, 성장도 높으면 최대 50%)
-      const reduction = Math.min(0.5, 0.2 + (t.growth / 500) * 0.3);
-      potential[t.id] = 1 - reduction; // 0.5 ~ 0.8 배율로 임계점 감소
+      let reduction = Math.min(0.5, 0.2 + (t.growth / 500) * 0.3);
+      // 유황(硫): 잠재력 인하량 2배 (상한 90%)
+      if (primas.includes('유황')) reduction = Math.min(0.9, reduction * 2);
+      potential[t.id] = 1 - reduction; // 임계점 감소 배율
     }
 
     // ═══ 경험치 인자 계승 ═══
@@ -630,7 +682,7 @@ class UnitSystem {
     const unitDef = this.engine.getUnitDef(unitId);
     if (!unitDef) return { success: false, reason: '유닛 데이터를 찾을 수 없습니다.' };
 
-    const price = unitDef.level * 15;
+    const price = this.engine.priceFloor(unitDef.level) * 5; // 전서 정가 = 바닥 ×5 (ERA 5:1, 레벨 고정)
     if (this.engine.state.soulPower < price) {
       return { success: false, reason: `영혼력이 부족합니다. (필요: ${price})` };
     }

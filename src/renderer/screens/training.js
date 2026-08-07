@@ -62,9 +62,52 @@ module.exports = function (App) {
     const expItems = [
       ['애무', de.caress||0], ['자극', de.stimulate||0], ['핥기', de.lick||0], ['키스', de.kiss||0],
       ['삽입', de.insert||0], ['도구', de.toy||0], ['절정', de.orgasm||0], ['봉사', de.service||0],
-      ['조련', de.discipline||0], ['노출', de.exposure||0], ['총회', de.totalSessions||0]
+      ['조련', de.discipline||0], ['노출', de.exposure||0], ['총 횟수', de.totalSessions||0]
     ];
     expEl.innerHTML = expItems.map(([k,v]) => `<span>${k}:${v}</span>`).join('');
+
+    // ── v2: 침염 도장 ──
+    const chimEl = document.getElementById('td-chimyeom');
+    if (chimEl) {
+      const chim = unit.침염 || {};
+      const ckeys = ['연모', '복종', '음란', '공포', '반감', '고통'];
+      const ccol = { 연모: '#ff69b4', 복종: '#ffd700', 음란: '#c678dd', 공포: '#6495ed', 반감: '#ff5544', 고통: '#d9603f' };
+      chimEl.innerHTML = ckeys.map(k => {
+        const n = chim[k] || 0;
+        const dots = n > 0 ? '●'.repeat(Math.min(n, 14)) : '<span class="empty">●●</span>';
+        return `<b style="color:${ccol[k]};font-weight:normal">${k} ${dots}<span style="color:#667;font-size:10px"> ${n}</span></b>`;
+      }).join('&nbsp; ');
+    }
+
+    // ── v2: 변용 사다리 ──
+    const varEl = document.getElementById('td-variation');
+    if (varEl) {
+      const vd = unit.변용도 || {};
+      const lock = unit.변용잠금;
+      const rcol = { 애착: '#ff9ec4', 예속: '#e8c860', 탐닉: '#c678dd', 붕괴: '#8a93a8' };
+      varEl.innerHTML = ['애착', '예속', '탐닉', '붕괴'].map(r => {
+        const step = vd[r] || 0;
+        const lockedOut = lock && lock !== r;
+        const vt = step >= 1 ? this.engine.getVariationTrait(r, step) : null;
+        return `<div class="vrow ${(!step && lockedOut) ? 'locked' : ''}">
+          <span class="rname" style="color:${rcol[r]}">${r}</span>
+          <span style="color:${rcol[r]};letter-spacing:3px">${'■'.repeat(step)}<span style="color:#2e2e2e">${'□'.repeat(4 - step)}</span></span>
+          <span style="font-size:11px;color:#666;margin-left:6px">${step ? `도${step}${vt ? ' — ' + vt.name : ''}` : (lockedOut ? '잠김' : '')}</span>
+          ${lock === r ? '<span class="lockmark">★수렴</span>' : ''}
+        </div>`;
+      }).join('');
+    }
+
+    // ── v2: 쾌감 세션 게이지 (절정 임계 = 100 + 내성×20) ──
+    const plEl = document.getElementById('td-pleasure');
+    if (plEl) {
+      const sess = unit._session || { pleasure: 0 };
+      const tol = (unit.역가 && unit.역가.내성) ? Math.max(0, ...Object.values(unit.역가.내성)) : 0;
+      const threshold = 100 + tol * 20;
+      const pct = Math.min(100, (sess.pleasure || 0) / threshold * 100);
+      plEl.innerHTML = `<span class="plbl">쾌감 ${Math.round(sess.pleasure || 0)} / ${threshold} <span style="color:#664">(차오르면 절정 → 침염)</span></span>
+        <div class="pbar"><i style="width:${pct}%"></i></div>`;
+    }
 
     // Description (result message or default) — 가변 높이 대사창
     const descEl = document.getElementById('td-desc');
@@ -260,7 +303,7 @@ module.exports = function (App) {
       'dim'
     );
     this.print(
-      `  절정 ${String(de.orgasm||0).padStart(4)} | 노출 ${String(de.exposure||0).padStart(4)} | 총회 ${String(de.totalSessions||0).padStart(4)}`,
+      `  절정 ${String(de.orgasm||0).padStart(4)} | 노출 ${String(de.exposure||0).padStart(4)} | 총 횟수 ${String(de.totalSessions||0).padStart(4)}`,
       'dim'
     );
     this.printBlank();
@@ -346,6 +389,18 @@ module.exports = function (App) {
       lines.push(`  [${mulColor} 효율 ${mulPct}%]`);
     }
     for (const text of result.extraText) lines.push(`▸ ${text}`);
+
+    // ── v2: 절정 / 침염 / 변용 결과 ──
+    const ch = unit._lastChimyeom;
+    if (ch && ch.절정) {
+      lines.push(`★ 절정 — ${unit.name}이(가) 떨림 속에 무너졌다.`);
+      if (ch.침염) lines.push(`　침염 [${ch.침염}] +1 — 한 겹 더 스몄다. (누적 ${(unit.침염 && unit.침염[ch.침염]) || 0})`);
+      if (ch.변용) {
+        lines.push(`　변용 — ${ch.변용.route} 도${ch.변용.도}${ch.변용.trait ? ` 「${ch.변용.trait.name}」` : ''} 도달${ch.변용.도 === 2 ? ' ★수렴 잠금' : ''}`);
+        if (ch.변용.trait) lines.push(`　시그니처 트레잇 획득: ${ch.변용.trait.name}`);
+        if (ch.변용.종착) lines.push(`　…… 종착. 이 아이의 운명이 ${ch.변용.route}(으)로 굳었다.`);
+      }
+    }
     if (result.leveled) lines.push(`★ 레벨 업! → Lv.${result.leveled.newLevel}`);
     // 대시보드 갱신 (여러 줄 결과 메시지)
     this._renderTrainingDashboard(unit, lines.join('\n'));

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>메인 / 달력 목업 — v2 (행동 허브)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#c8c8c8; font-family:"D2Coding","Consolas",monospace; font-size:14px; line-height:1.55; height:100vh; display:flex; flex-direction:column; }
+  #header { padding:8px 16px; border-bottom:1px solid #2a2a2a; color:#9aa; flex-shrink:0; display:flex; gap:18px; align-items:center; }
+  #header .date { color:#e8d9a0; font-size:15px; }
+  #header .ap { color:#7fd4a0; }
+  #header .soul { color:#7fd4ff; }
+  #header .food { color:#e0a060; }
+  #header .sigil { color:#bcd; font-size:12px; }
+  #header .sigil b { color:#c8b0e0; }
+  #header .right { margin-left:auto; color:#667; font-size:12px; }
+  #main { flex:1 1 0; display:flex; min-height:0; }
+  /* 좌: 행동 메뉴 */
+  #menu { width:42%; border-right:1px solid #2a2a2a; overflow-y:auto; padding:8px 0; }
+  #menu h4 { color:#778; font-size:12px; margin:10px 16px 4px; font-weight:normal; letter-spacing:1px; }
+  .act { padding:6px 16px; cursor:pointer; display:flex; align-items:baseline; gap:8px; }
+  .act:hover { background:#15151c; }
+  .act .num { color:#e8d9a0; width:20px; }
+  .act .nm { color:#fff; }
+  .act .cost { color:#7fd4a0; font-size:11px; }
+  .act .desc { color:#667; font-size:11px; margin-left:auto; }
+  .act.disabled { opacity:.4; cursor:default; }
+  .act.disabled .nm { color:#889; }
+  /* 우: 상황판 */
+  #board { flex:1; overflow-y:auto; padding:10px 16px; }
+  #board h4 { color:#778; font-size:12px; margin:6px 0 4px; font-weight:normal; letter-spacing:1px; border-bottom:1px solid #1e1e1e; padding-bottom:2px; }
+  .deploy-row { font-size:12px; padding:2px 0; display:flex; gap:8px; }
+  .deploy-row .where { width:80px; color:#9aa; }
+  .deploy-row .who { color:#bbc; }
+  .ev { font-size:12px; padding:2px 0; }
+  .ev .tag { color:#c678dd; }
+  .ev .warn { color:#e0a060; }
+  .resbar { display:flex; align-items:center; gap:6px; font-size:12px; height:20px; }
+  .resbar .lbl { width:60px; color:#aab; }
+  .bar { flex:1; max-width:220px; height:8px; background:#1a1a1a; border:1px solid #2c2c2c; position:relative; }
+  .bar i { position:absolute; left:0; top:0; bottom:0; }
+  .b-food i{background:#e0a060} .b-soul i{background:#7fd4ff}
+  .resbar .val { width:80px; text-align:right; color:#889; }
+  /* 로그 */
+  #daylog { border-top:1px solid #2a2a2a; padding:8px 16px; flex-shrink:0; max-height:110px; overflow-y:auto; }
+  #daylog .l { font-size:12px; color:#9a9; }
+  #daylog .l.tag { color:#c678dd; }
+  .hint { color:#556; font-size:12px; padding:6px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; }
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <span class="date" id="date">1년 2월 14일</span>
+  <span>행동 <span class="ap" id="ap">3</span>/3</span>
+  <span class="soul">영혼력 9,194</span>
+  <span class="food">식량 38</span>
+  <span class="sigil" id="activeSigil">활성 印: <b>천갈(天蝎)</b> — 해부자</span>
+  <span class="right">2월 · 28일까지 · 미궁 개방 중</span>
+</div>
+
+<div id="main">
+  <!-- 행동 메뉴 -->
+  <div id="menu">
+    <h4>오늘의 행동 <span style="color:#445">(하루 3회 · 기력 없음 = 행동 횟수만)</span></h4>
+    <div class="act" data-a="조교"><span class="num">1.</span><span class="nm">조교 공방</span><span class="cost">행동 1</span><span class="desc">유닛 1명 집중 조교</span></div>
+    <div class="act" data-a="탐사"><span class="num">2.</span><span class="nm">미궁 탐사</span><span class="cost">행동 1</span><span class="desc">파티 출격 · 채집/전투</span></div>
+    <div class="act" data-a="가공"><span class="num">3.</span><span class="nm">연성 공방</span><span class="cost">행동 1</span><span class="desc">원소 주입/해방 · 엘릭서</span></div>
+    <div class="act" data-a="합체"><span class="num">4.</span><span class="nm">연성진 (합체/추출)</span><span class="cost">행동 1</span><span class="desc">印 합성 · 삼원질</span></div>
+    <div class="act" data-a="거처"><span class="num">5.</span><span class="nm">유닛 거처 방문</span><span class="cost">행동 1</span><span class="desc">관계 이벤트 · 호감도</span></div>
+    <div class="act" data-a="광장"><span class="num">6.</span><span class="nm">광장</span><span class="cost">행동 1</span><span class="desc">유닛/아이템/영혼력 교환</span></div>
+
+    <h4>상시 (행동 소비 없음)</h4>
+    <div class="act" data-a="명부"><span class="num">7.</span><span class="nm">유닛 명부</span><span class="desc">상태 확인 · 배치 변경</span></div>
+    <div class="act" data-a="시설"><span class="num">8.</span><span class="nm">도시 / 시설</span><span class="desc">배치 · 엘릭서 강화</span></div>
+    <div class="act" data-a="전수서"><span class="num">9.</span><span class="nm">전수서</span><span class="desc">도감 · 레시피 · 로어</span></div>
+    <div class="act" data-a="휴식"><span class="num">0.</span><span class="nm" style="color:#9aa">하루 넘기기 (휴식)</span><span class="desc">행동 회복 · 월말 진행</span></div>
+  </div>
+
+  <!-- 상황판 -->
+  <div id="board">
+    <h4>유닛 배치 현황</h4>
+    <div class="deploy-row"><span class="where">조교실</span><span class="who">가시 임프</span></div>
+    <div class="deploy-row"><span class="where">연성 공방</span><span class="who">점토 골렘 · 소금 인형</span></div>
+    <div class="deploy-row"><span class="where">⚔ 파티</span><span class="who">무쇠 처녀 · 잿빛 늑대</span></div>
+    <div class="deploy-row"><span class="where">유닛 거처</span><span class="who">밤하늘 키메라</span></div>
+    <div class="deploy-row"><span class="where" style="color:#667">대기</span><span class="who" style="color:#889">안개 여우</span></div>
+
+    <h4>관측소 — 활성 印</h4>
+    <div class="ev"><span class="tag">◈</span> 오늘의 활성 印 <b style="color:#c8b0e0">천갈(天蝎)</b> — <span style="color:#9aa">천갈 印 유닛 경험치·해당 풀 트레잇 가중 ↑</span></div>
+    <div class="ev" style="color:#778">해당: 잿빛 늑대 · (印 천갈) — 오늘 조교/전투 시 보너스</div>
+
+    <h4>알림 / 이벤트</h4>
+    <div class="ev"><span class="tag">●</span> 밤하늘 키메라 — 호감도 [헌신] 도달, <span class="tag">관계 이벤트 대기</span></div>
+    <div class="ev"><span class="tag">●</span> 안개 여우 — 탐닉 도2 수렴 임박 (다음 조교 주의)</div>
+    <div class="ev"><span class="warn">▲</span> 식량 38 — 월말 소비 예상 30. 여유 적음</div>
+
+    <h4>자원</h4>
+    <div class="resbar b-food"><span class="lbl">식량</span><div class="bar"><i style="width:38%"></i></div><span class="val">38 / 100</span></div>
+    <div class="resbar b-soul"><span class="lbl">영혼력</span><div class="bar"><i style="width:62%"></i></div><span class="val">9,194</span></div>
+    <div style="font-size:11px;color:#667;margin-top:4px">삼원질 비축: 염 ×1 · 수은 ×0 · 유황 ×2</div>
+  </div>
+</div>
+
+<div id="daylog"><div class="l">2월 14일 — 활성 印 천갈. 행동 3회 가능.</div></div>
+<div class="hint">※ 목업: 행동 클릭 시 가짜 진행. 메인 행동(1~6)은 하루 소비, 상시(7~9)는 무료. 0=하루 넘기기.</div>
+
+<script>
+let day=14, month=2, ap=3; const AP_MAX=3, DAYS=28; // 윤년 없음·한 달 28일 단순
+// 활성 印 — 관측소가 매일 주기 중 하나 표시 (알파 7종 순환 데모)
+const SIGCYCLE=[["천갈","해부자"],["백양","점화자"],["금우","형성자"],["거해","해체자"],["처녀","정제자"],["쌍어","촉매자"],["염","삼원질"]];
+function activeSigil(){ return SIGCYCLE[(day)%SIGCYCLE.length]; }
+const daylog=document.getElementById("daylog");
+function addDay(t,cls=""){ const d=document.createElement("div"); d.className="l "+cls; d.textContent=t; daylog.appendChild(d); daylog.scrollTop=daylog.scrollHeight; }
+function refresh(){
+  document.getElementById("date").textContent=`1년 ${month}월 ${day}일`;
+  document.getElementById("ap").textContent=ap;
+  const s=activeSigil();
+  document.getElementById("activeSigil").innerHTML=`활성 印: <b>${s[0]}</b> — ${s[1]}`;
+}
+
+const MAIN=["조교","탐사","가공","합체","거처","광장"];
+const FREE=["명부","시설","전수서"];
+const NAMES={조교:"조교 공방",탐사:"미궁 탐사",가공:"연성 공방",합체:"연성진",거처:"거처 방문",광장:"광장",명부:"유닛 명부",시설:"도시/시설",전수서:"전수서"};
+
+document.querySelectorAll(".act").forEach(el=>el.addEventListener("click",()=>{
+  const a=el.dataset.a;
+  if(a==="휴식"){
+    const prev=day;
+    if(day>=DAYS){ // 월말 → 다음 달
+      addDay(`▣ ${month}월 ${DAYS}일 월말 — 식량 정산(−30) · 배치 유닛 유지비. 다음 달로.`,"tag");
+      month++; day=1;
+    } else { day++; }
+    ap=AP_MAX;
+    addDay(`— ${month}월 ${prev}일을 마치고 ${month}월 ${day}일로. 행동 ${AP_MAX} 회복.`,"tag");
+    if(day>=DAYS-2 && day<DAYS){ addDay("▲ 월말 임박 — 식량 소비 정산이 다가온다.","tag"); }
+    refresh(); return;
+  }
+  if(FREE.includes(a)){ addDay(`${NAMES[a]} 열람 (행동 소비 없음).`); return; }
+  if(MAIN.includes(a)){
+    if(ap<=0){ addDay("오늘의 행동을 모두 썼다. 하루를 넘겨야 한다.","tag"); return; }
+    ap--; addDay(`▶ ${NAMES[a]}(으)로 이동 — 행동 1 소비 (남은 ${ap}). (목업: 화면 전환)`);
+    refresh();
+  }
+}));
+refresh();
+</script>
+</body>
+</html>

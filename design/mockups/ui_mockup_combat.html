@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>전투 로그 목업 — v2 (자동전투 관전)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#c8c8c8; font-family:"D2Coding","Consolas",monospace; font-size:14px; line-height:1.55; height:100vh; display:flex; flex-direction:column; }
+  #header { padding:8px 16px; border-bottom:1px solid #2a2a2a; color:#9aa; flex-shrink:0; }
+  #header .loc { color:#e8d9a0; }
+  /* 전장 = 파티 vs 적 */
+  #field { display:flex; gap:0; border-bottom:1px solid #2a2a2a; flex-shrink:0; }
+  .side { flex:1; padding:8px 14px; }
+  .side.party { border-right:1px solid #2a2a2a; }
+  .side h4 { color:#778; font-size:12px; margin-bottom:5px; font-weight:normal; letter-spacing:1px; }
+  .side.enemy h4 { color:#a66; }
+  .ent { margin-bottom:6px; }
+  .ent.dead { opacity:.35; }
+  .ent .top { display:flex; align-items:baseline; gap:6px; font-size:13px; }
+  .ent .nm { color:#fff; }
+  .enemy .ent .nm { color:#e0a0a0; }
+  .ent .role { font-size:10px; padding:0 4px; border:1px solid #444; border-radius:2px; color:#99a; }
+  .ent .aggro { font-size:10px; color:#e07050; margin-left:auto; }
+  .hpbar { height:8px; background:#1a1a1a; border:1px solid #2c2c2c; position:relative; margin-top:2px; }
+  .hpbar i { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#4a8a5a,#6fb080); transition:width .3s; }
+  .enemy .hpbar i { background:linear-gradient(90deg,#8a4a4a,#b06060); }
+  .ent .apline { font-size:10px; color:#667; margin-top:1px; }
+  .ent .act-now { color:#e8d9a0; }
+  /* 로그 */
+  #log { flex:1 1 0; min-height:120px; overflow-y:auto; padding:10px 16px; }
+  #log .turn { color:#556; font-size:11px; border-bottom:1px solid #161616; margin:6px 0 3px; padding-bottom:2px; }
+  .le { padding:1px 0; font-size:13px; }
+  .le .actor { color:#9fd0a0; }
+  .le.enemy .actor { color:#e0a0a0; }
+  .le .ov { color:#c678dd; }      /* 오버라이드 */
+  .le .aggro { color:#e07050; }   /* 어그로/타겟 */
+  .le .yk { color:#7fd4ff; }      /* 역가 보정 */
+  .le .dmg { color:#ffb070; }
+  .le .crit { color:#ff8888; }
+  .le .heal { color:#7fd4a0; }
+  .le.faint { color:#a66; }
+  .le.sys { color:#778; }
+  .le.use { color:#7fd4a0; }
+  /* 소모품 바 */
+  #items { padding:7px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  #items .ilab { color:#778; font-size:12px; }
+  .item { border:1px solid #3a3a4a; padding:2px 9px; font-size:12px; cursor:pointer; color:#cde; }
+  .item:hover { background:#15151c; }
+  .item .cnt { color:#778; }
+  .item.no { opacity:.34; cursor:not-allowed; border-color:#3a2a2a; color:#a88; }
+  .item.empty { opacity:.3; cursor:not-allowed; }
+  #items .inote { color:#664; font-size:11px; margin-left:auto; }
+  /* 컨트롤 */
+  #ctrl { padding:10px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; display:flex; gap:18px; align-items:center; }
+  .btn { cursor:pointer; color:#e8d9a0; border:1px solid #4a4a3a; padding:3px 12px; }
+  .btn:hover { background:#1a1a10; }
+  .btn.off { opacity:.4; }
+  #speed { color:#778; font-size:12px; }
+  .hint { color:#556; font-size:12px; margin-left:auto; }
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
+</style>
+</head>
+<body>
+
+<div id="header">
+  【 <span class="loc">탐사 · 조우 전투</span> 】  미궁 3층 · 수계 심부  |  <span id="status">자동전투 — 준비가 전투를 결정한다</span>
+</div>
+
+<div id="field">
+  <div class="side party"><h4>파티</h4><div id="party"></div></div>
+  <div class="side enemy"><h4>적</h4><div id="enemy"></div></div>
+</div>
+
+<div id="log"></div>
+
+<div id="items">
+  <span class="ilab">소모품:</span>
+  <span id="itemlist"></span>
+  <span class="inote">※ 조교 전용(미약·로션 등)은 전투 중 사용 불가</span>
+</div>
+
+<div id="ctrl">
+  <span class="btn" id="step">▶ 한 턴</span>
+  <span class="btn" id="auto">⏩ 자동 진행</span>
+  <span class="btn" id="reset">↺ 리셋</span>
+  <span id="speed">관전 — 개입은 소모품뿐</span>
+  <span class="hint">※ 목업: 가짜 전투. 오버라이드·어그로·역가 보정이 로그에 색으로.</span>
+</div>
+
+<script>
+// ── 엔티티 ──
+function mk(name, hp, atk, def, opts={}){ return Object.assign({name,hp,maxhp:hp,atk,def,ap:0,maxap:opts.ap||4,alive:true},opts); }
+let party, enemy, turn, autoTimer=null;
+
+// ── 소모품 (combat 플래그 = 전투 중 사용 가능 여부) ──
+const items = [
+  { name:"치유 물약", combat:true,  stock:3, effect:"파티 전원 HP +60", desc:"전투 가능" },
+  { name:"해독 향",   combat:true,  stock:1, effect:"상태이상 해제·반감 완화", desc:"전투 가능" },
+  { name:"각성 가루", combat:true,  stock:2, effect:"파티 공격 +20% (3턴)", desc:"전투 가능" },
+  { name:"미약",      combat:false, stock:2, effect:"—", desc:"조교 전용 — 전투 불가" },
+  { name:"감응 향유", combat:false, stock:1, effect:"—", desc:"조교 전용 — 전투 불가" },
+];
+let buffTurns=0;
+
+function setup(){
+  party = [
+    mk("무쇠 처녀", 220, 28, 40, {role:"탱커", aggro:5, persona:"수호", skill:"철벽 강타"}),
+    mk("가시 임프", 120, 46, 14, {role:"딜러", aggro:1, persona:"겁없음", skill:"화염 송곳", elem:"열", yk:3}),
+    mk("잿빛 늑대", 150, 40, 22, {role:"광전사", aggro:2, persona:"광폭", skill:"광폭 연격"}),
+    mk("안개 여우", 100, 30, 16, {role:"교란", aggro:1, persona:"호기심", skill:"미혹 안개"}),
+  ];
+  enemy = [
+    mk("독나비 무리", 90, 22, 10, {aggro:1, target:"random"}),
+    mk("수계 파수꾼", 260, 34, 30, {aggro:3, role:"중핵"}),
+    mk("공생균 소녀", 70, 18, 8, {aggro:1, role:"치유", heal:true}),
+  ];
+  turn=0;
+  document.getElementById("log").innerHTML="";
+  addTurn("전투 시작 — 파티 4 vs 적 3");
+  render();
+}
+
+function render(){
+  document.getElementById("party").innerHTML = party.map(e=>entHTML(e)).join("");
+  document.getElementById("enemy").innerHTML = enemy.map(e=>entHTML(e)).join("");
+  renderItems();
+}
+function renderItems(){
+  const over = (document.getElementById("status").textContent==="승리"||document.getElementById("status").textContent==="패배");
+  document.getElementById("itemlist").innerHTML = items.map((it,i)=>{
+    const cls = it.stock<=0 ? "empty" : (!it.combat ? "no" : "");
+    const title = it.combat ? `${it.effect}` : "조교 전용 — 전투 중 사용 불가";
+    return `<span class="item ${cls}" data-i="${i}" title="${title}">${it.name} <span class="cnt">×${it.stock}</span></span>`;
+  }).join("");
+  document.querySelectorAll(".item").forEach(el=>el.addEventListener("click",()=>{
+    const it=items[+el.dataset.i];
+    if(!it.combat){ addLog(`<span class="sys">${it.name} — 조교 전용이라 전투 중엔 쓸 수 없다.</span>`,"sys"); return; }
+    if(it.stock<=0){ addLog(`<span class="sys">${it.name} — 재고 없음.</span>`,"sys"); return; }
+    if(over){ return; }
+    useItem(it);
+  }));
+}
+function useItem(it){
+  it.stock--;
+  if(it.name==="치유 물약"){ let healed=0; party.forEach(e=>{ if(e.alive){ const h=Math.min(60,e.maxhp-e.hp); e.hp+=h; healed+=h; } });
+    addLog(`<span class="actor">[소모품] 치유 물약</span> — 파티 회복 (총 <span class="heal">+${healed}</span>)`,"use"); }
+  else if(it.name==="해독 향"){ addLog(`<span class="actor">[소모품] 해독 향</span> — 상태이상 해제 · 반감 완화`,"use"); }
+  else if(it.name==="각성 가루"){ buffTurns=3; addLog(`<span class="actor">[소모품] 각성 가루</span> — 파티 공격 <span class="yk">+20%</span> (3턴)`,"use"); }
+  render();
+}
+function entHTML(e){
+  const pct=Math.max(0,e.hp/e.maxhp*100);
+  return `<div class="ent ${e.alive?'':'dead'}">
+    <div class="top"><span class="nm">${e.name}</span>
+      ${e.role?`<span class="role">${e.role}</span>`:''}
+      ${e.alive&&e.aggro>1?`<span class="aggro">敵対 ${e.aggro}</span>`:''}
+    </div>
+    <div class="hpbar"><i style="width:${pct}%"></i></div>
+    <div class="apline">HP ${Math.max(0,Math.round(e.hp))}/${e.maxhp}${e.alive&&e.skill?` · ${e.skill}`:''}</div>
+  </div>`;
+}
+
+const log=document.getElementById("log");
+function addTurn(t){ const d=document.createElement("div"); d.className="turn"; d.textContent="— "+t+" —"; log.appendChild(d); log.scrollTop=log.scrollHeight; }
+function addLog(html, cls=""){ const d=document.createElement("div"); d.className="le "+cls; d.innerHTML=html; log.appendChild(d); log.scrollTop=log.scrollHeight; }
+
+// 어그로 가중 타겟 선택
+function pickTarget(attacker, foes, personaRule){
+  const alive=foes.filter(f=>f.alive); if(!alive.length) return null;
+  let pool=alive.map(f=>{
+    let w=f.aggro||1;
+    let note="";
+    if(personaRule==="저HP" && f.hp/f.maxhp<0.4){ w*=2; note="저HP ×2"; }
+    if(personaRule==="고위협" && (f.role==="중핵"||f.role==="치유")){ w*=1.5; note="고위협 ×1.5"; }
+    return {f,w,note};
+  });
+  const tot=pool.reduce((s,x)=>s+x.w,0);
+  let r=Math.random()*tot;
+  for(const x of pool){ r-=x.w; if(r<=0) return x; }
+  return pool[0];
+}
+
+function act(e, foes, isEnemy){
+  if(!e.alive) return;
+  // ① 오버라이드 (광폭: 저HP 시 강제 공격)
+  let override=null, rule=null;
+  if(e.persona==="광폭" && e.hp/e.maxhp<0.5){ override="광폭 발동 (저HP) — 방어 무시, 강제 공격"; rule="저HP"; }
+  if(e.persona==="수호"){ rule=null; }
+  if(e.persona==="호기심"){ rule="random"; }
+  if(e.persona==="겁없음"){ rule="저HP"; }
+  if(e.heal){
+    // 치유 유닛: 아군 중 가장 다친 쪽 회복
+    const allies=(isEnemy?enemy:party).filter(a=>a.alive&&a!==e);
+    const hurt=allies.sort((a,b)=>a.hp/a.maxhp-b.hp/b.maxhp)[0];
+    if(hurt && hurt.hp<hurt.maxhp*0.9){ const h=24; hurt.hp=Math.min(hurt.maxhp,hurt.hp+h);
+      addLog(`<span class="actor">${e.name}</span> 포자 치유 — <span class="heal">${hurt.name} HP +${h}</span>`, isEnemy?"enemy":""); return; }
+  }
+  if(override) addLog(`<span class="actor">${e.name}</span> <span class="ov">⟪${override}⟫</span>`, isEnemy?"enemy":"");
+
+  const tgt=pickTarget(e, foes, rule==="저HP"||rule==="고위협"?rule:( e.aggro>=3?"고위협":null ));
+  if(!tgt){ return; }
+  const t=tgt.f;
+  // 역가 보정
+  let mult=1.0, ykNote="";
+  if(e.yk){ mult+=e.yk*0.05; ykNote=` <span class="yk">[역가 ${e.elem} Lv${e.yk} +${e.yk*5}%]</span>`; }
+  if(override) mult*=1.4;
+  if(!isEnemy && buffTurns>0){ mult*=1.2; } // 각성 가루 버프 (파티만)
+  // 비율 데미지
+  let dmg=Math.round(e.atk*(e.atk/(e.atk+t.def))*mult);
+  const crit=Math.random()<(e.persona==="겁없음"?0.2:0.1);
+  if(crit) dmg=Math.round(dmg*1.6);
+  t.hp-=dmg;
+  const tgtNote = tgt.note?` <span class="aggro">(${tgt.note} 어그로)</span>`:( t.aggro>=3?` <span class="aggro">(敵対 ${t.aggro} 흡수)</span>`:"");
+  addLog(`<span class="actor">${e.name}</span> → ${t.name}${tgtNote} · ${e.skill||"공격"}${ykNote} <span class="${crit?'crit':'dmg'}">${crit?'치명! ':''}${dmg} 피해</span>`, isEnemy?"enemy":"");
+  if(t.hp<=0){ t.alive=false; t.hp=0; addLog(`　${t.name} 쓰러짐.`, "faint"); }
+}
+
+function doTurn(){
+  if(checkEnd()) return;
+  turn++;
+  addTurn(`턴 ${turn}${buffTurns>0?` · 각성 버프 ${buffTurns}턴`:''}`);
+  if(buffTurns>0) buffTurns--;
+  // 속도순 (여기선 party→enemy 단순화, 살아있는 것만)
+  const order=[...party.map(e=>({e,foes:enemy,isE:false})), ...enemy.map(e=>({e,foes:party,isE:true}))];
+  for(const o of order){ if(o.e.alive && !checkEnd(true)) act(o.e, o.foes, o.isE); }
+  render();
+  checkEnd();
+}
+
+function checkEnd(silent){
+  const pAlive=party.some(e=>e.alive), eAlive=enemy.some(e=>e.alive);
+  if(!eAlive){ if(!silent){ addTurn("승리 — 적 전멸"); stopAuto(); document.getElementById("status").textContent="승리"; } return true; }
+  if(!pAlive){ if(!silent){ addTurn("패배 — 파티 전멸"); stopAuto(); document.getElementById("status").textContent="패배"; } return true; }
+  return false;
+}
+
+function stopAuto(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; document.getElementById("auto").textContent="⏩ 자동 진행"; } }
+
+document.getElementById("step").onclick=()=>doTurn();
+document.getElementById("auto").onclick=()=>{
+  if(autoTimer){ stopAuto(); return; }
+  document.getElementById("auto").textContent="⏸ 멈춤";
+  autoTimer=setInterval(()=>{ if(checkEnd()){ return; } doTurn(); }, 900);
+};
+document.getElementById("reset").onclick=()=>{ stopAuto(); document.getElementById("status").textContent="자동전투 — 준비가 전투를 결정한다"; items.forEach((it,i)=>it.stock=[3,1,2,2,1][i]); buffTurns=0; setup(); };
+
+setup();
+</script>
+</body>
+</html>

@@ -815,5 +815,29 @@
     "effect": "2티어 가공 설비. 위 주입 + 동 해방 가공 가능",
     "source": "특수 레시피",
     "lore": "보스의 동력과 마력 강철이 만나 태어난 기계. 누르면 본질이 바뀐다."
+  },
+  {
+    "id": "ITEM_RESTRAINT",
+    "name": "구속구",
+    "tier": 2,
+    "tags": {
+      "function": "구속",
+      "element": null,
+      "form": "도구"
+    },
+    "source": "조합/드랍(스테이징)",
+    "lore": "움직임을 묶는 물건. 쥔 손이 방향을 정한다."
+  },
+  {
+    "id": "ITEM_WHIP",
+    "name": "채찍",
+    "tier": 2,
+    "tags": {
+      "function": "고통",
+      "element": null,
+      "form": "도구"
+    },
+    "source": "조합/드랍(스테이징)",
+    "lore": "소리가 먼저 가르친다."
   }
 ]

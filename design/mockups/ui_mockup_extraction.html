@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>삼원질 추출 목업 — v2 (변용 환원)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#c8c8c8; font-family:"D2Coding","Consolas",monospace; font-size:14px; line-height:1.55; height:100vh; display:flex; flex-direction:column; }
+  #header { padding:8px 16px; border-bottom:1px solid #2a2a2a; color:#9aa; flex-shrink:0; }
+  #header .loc { color:#e8d9a0; }
+  #header .soul { color:#7fd4ff; }
+  #main { flex:1 1 0; display:flex; min-height:0; }
+  /* 좌: 추출 가능 유닛 (변용 도1+) */
+  #pool { width:30%; border-right:1px solid #2a2a2a; overflow-y:auto; }
+  #pool h4, #panel h4 { color:#778; font-size:12px; margin:10px 12px 4px; font-weight:normal; letter-spacing:1px; }
+  .pu { padding:6px 12px; border-bottom:1px solid #161616; cursor:pointer; font-size:13px; }
+  .pu:hover { background:#15151c; }
+  .pu.sel { background:#1c1c28; border-left:2px solid #c678dd; padding-left:10px; }
+  .pu.no { opacity:.4; cursor:default; }
+  .pu .nm { color:#fff; }
+  .race { font-size:11px; padding:0 4px; border:1px solid #333; border-radius:2px; }
+  .r-요괴{color:#c678dd;border-color:#5a3a6a}.r-정령{color:#7fd4ff;border-color:#2a5a6a}
+  .r-인조{color:#e0a060;border-color:#6a4a2a}.r-야수{color:#e07050;border-color:#6a3a2a}.r-환상{color:#9fc97f;border-color:#3a5a2a}
+  .pu .rt { font-size:11px; }
+  .rt-애착{color:#ff9ec4}.rt-예속{color:#e8c860}.rt-탐닉{color:#c678dd}.rt-붕괴{color:#8a93a8}
+  /* 우: 추출 패널 */
+  #panel { flex:1; overflow-y:auto; padding:0 16px 16px; }
+  #panel .unit-h { padding:12px 0 4px; }
+  #panel .uname { font-size:18px; color:#fff; }
+  #panel .uline { font-size:12px; color:#889; }
+  .sec { border-top:1px solid #1e1e1e; padding:8px 0; }
+  .sec .lab { color:#778; font-size:12px; margin-bottom:4px; letter-spacing:1px; }
+  /* 잃는 것: 공통 */
+  .loss { font-size:12px; padding:2px 0; }
+  .loss .x { color:#e07070; }
+  .t { font-size:11px; padding:0 6px; border:1px solid #2e2e2e; border-radius:3px; }
+  .t.sig{border-color:#7fd4ff;color:#7fd4ff} .t.gone{border-color:#5a2e2e;color:#a55;text-decoration:line-through}
+  /* 종류 선택 = 體神魂 */
+  .prima3 { display:flex; gap:8px; }
+  .pcard { flex:1; border:1px solid #2a2a2a; padding:8px 9px; cursor:pointer; }
+  .pcard:hover { background:#13131a; }
+  .pcard.on.염 { border-color:#5a7a9a; background:#0e1318; }
+  .pcard.on.수은 { border-color:#7a5a9a; background:#130e18; }
+  .pcard.on.유황 { border-color:#9a8a3a; background:#15120a; }
+  .pcard .pn { font-size:14px; }
+  .pcard.염 .pn{color:#9fc0d8}.pcard.수은 .pn{color:#c8b0e0}.pcard.유황 .pn{color:#e0c860}
+  .pcard .layer { font-size:11px; color:#667; }
+  .pcard .cost { font-size:11px; color:#b88; margin-top:4px; }
+  /* 희생 프리뷰 */
+  #preview { font-size:12px; }
+  .row { display:flex; align-items:center; gap:6px; height:19px; }
+  .row .lbl { width:48px; color:#aab; }
+  .bar { flex:1; max-width:200px; height:8px; background:#1a1a1a; border:1px solid #2c2c2c; position:relative; }
+  .bar i { position:absolute; left:0; top:0; bottom:0; background:#5fb0a0; }
+  .bar .drop { position:absolute; top:0; bottom:0; background:#5a2e2e; }
+  .row .val { width:62px; text-align:right; color:#889; }
+  .pick-t { display:flex; flex-wrap:wrap; gap:4px; }
+  .pick-t .t { cursor:pointer; }
+  .pick-t .t.chosen { border-color:#e0c860; color:#e0c860; }
+  #go { margin:12px 0 0; padding:9px; text-align:center; border:1px solid #4a4a3a; color:#e8d9a0; cursor:pointer; }
+  #go:hover { background:#1a1a10; }
+  #go.disabled { opacity:.35; cursor:default; border-color:#2a2a2a; color:#667; }
+  .hint { color:#556; font-size:12px; padding:8px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; }
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
+</style>
+</head>
+<body>
+
+<div id="header">
+  【 <span class="loc">연성진 · 삼원질 추출</span> 】  1년 2월 14일  |  변용을 되돌려 본질을 정련  |  영혼력: <span class="soul">9,194</span>
+</div>
+
+<div id="main">
+  <div id="pool">
+    <h4>추출 가능 <span style="color:#445">(변용 도 1+)</span></h4>
+    <div id="poollist"></div>
+  </div>
+  <div id="panel"><div style="color:#445;text-align:center;padding:50px 10px">왼쪽에서 유닛을 고르세요.</div></div>
+</div>
+
+<div class="hint">※ 목업: 유닛 선택 → 삼원질 종류(體神魂) 선택 시 희생 층 미리보기. 유황은 비울 트레잇 직접 선택. 수치·문구 전부 잠정.</div>
+
+<script>
+// 추출 후보 유닛 (변용 도1+ 만 추출 가능)
+const units = [
+  { name:"밤하늘 키메라", race:"환상", lv:9, route:"애착", routeStep:3,
+    sigTraits:["친애","동행 각인"],
+    sens:{입:62,가슴:40,V:88,C:55,애널:20,피부:70}, myungi:["V"],
+    yeokga:{"공격(동)":5,"공격(광)":4,"지식(역사)":2},
+    traits:[{n:"친애",sig:1},{n:"동행 각인",sig:1},{n:"헌신"},{n:"성좌 광선"},{n:"별빛 비늘"}] },
+  { name:"안개 여우", race:"요괴", lv:6, route:"탐닉", routeStep:2,
+    sigTraits:["음마화 1단"],
+    sens:{입:74,가슴:30,V:50,C:62,애널:18,피부:44}, myungi:["입"],
+    yeokga:{"공격(위)":3,"방어(동)":2,"지식(연금)":1},
+    traits:[{n:"음마화 1단",sig:1},{n:"요염"},{n:"호기심"},{n:"미혹 안개"},{n:"아홉 꼬리"}] },
+  { name:"잿빛 늑대", race:"야수", lv:7, route:"붕괴", routeStep:1,
+    sigTraits:["균열"],
+    sens:{입:20,가슴:15,V:30,C:25,애널:8,피부:40}, myungi:[],
+    yeokga:{"공격(물리)":5,"방어(물리)":4},
+    traits:[{n:"균열",sig:1},{n:"광폭"},{n:"고통 내성"},{n:"두꺼운 가죽"},{n:"위압"}] },
+  { name:"점토 골렘", race:"인조", lv:4, route:null, routeStep:0,
+    sigTraits:[], sens:{}, myungi:[], yeokga:{},
+    traits:[{n:"우직"},{n:"거구"}] },
+];
+
+const PARTS=["입","가슴","V","C","애널","피부"];
+const PRIMA = {
+  염:   { layer:"體", full:"염(鹽)·체",   cost:"감도 하락 (名器 부위 + 일괄)" },
+  수은: { layer:"神", full:"수은(汞)·신", cost:"역가·지식 레벨 하락" },
+  유황: { layer:"魂", full:"유황(硫)·혼", cost:"트레잇 1칸 비우기 (선택)" },
+};
+
+let sel=null, prima=null, chosenTrait=null;
+
+function renderPool(){
+  document.getElementById("poollist").innerHTML = units.map((u,i)=>{
+    const ok = u.routeStep>=1;
+    return `<div class="pu ${i===sel?'sel':''} ${ok?'':'no'}" data-i="${i}" data-ok="${ok}">
+      <div><span class="race r-${u.race}">${u.race}</span> <span class="nm">${u.name}</span> <span style="color:#667;font-size:11px">Lv.${u.lv}</span></div>
+      <div class="rt ${u.route?'rt-'+u.route:''}">${u.route?`변용: ${u.route} 도${u.routeStep}`:'변용 없음 — 추출 불가'}</div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".pu").forEach(el=>el.addEventListener("click",()=>{
+    if(el.dataset.ok!=="true") return;
+    sel=+el.dataset.i; prima=null; chosenTrait=null; renderPanel(); renderPool();
+  }));
+}
+
+function renderPanel(){
+  const p=document.getElementById("panel");
+  if(sel===null){ p.innerHTML=`<div style="color:#445;text-align:center;padding:50px 10px">왼쪽에서 유닛을 고르세요.</div>`; return; }
+  const u=units[sel];
+
+  // 공통 잃는 것
+  const sigGone = u.sigTraits.map(t=>`<span class="t gone">${t}</span>`).join(" ");
+  let html=`<div class="unit-h">
+      <div class="uname">${u.name} <span class="race r-${u.race}">${u.race}</span></div>
+      <div class="uline">Lv.${u.lv} · 변용 <span class="rt-${u.route}">${u.route} 도${u.routeStep}</span></div>
+    </div>
+
+    <div class="sec">
+      <div class="lab">공통 대가 (어느 종류든)</div>
+      <div class="loss"><span class="x">✕</span> 변용 리셋 — <span class="rt-${u.route}">${u.route}</span> 침염·도 소거 → <b style="color:#9a9">수렴 잠금 해제 (다른 루트 재개방)</b></div>
+      <div class="loss"><span class="x">✕</span> 루트 시그니처 상실: ${sigGone||'<span style="color:#556">없음</span>'}</div>
+      <div class="loss"><span class="x">✕</span> 영혼력 <b style="color:#b88">1,200</b></div>
+      <div class="loss" style="color:#7a9">＝ 보존: 호감도 · 印 (로어/엔딩 해금)</div>
+    </div>
+
+    <div class="sec">
+      <div class="lab">정련할 삼원질 — 體神魂 중 하나 (= 희생 층)</div>
+      <div class="prima3">${["염","수은","유황"].map(k=>`
+        <div class="pcard ${k} ${prima===k?'on':''}" data-p="${k}">
+          <div class="pn">${PRIMA[k].full}</div>
+          <div class="layer">${PRIMA[k].layer} 층</div>
+          <div class="cost">− ${PRIMA[k].cost}</div>
+        </div>`).join("")}</div>
+    </div>
+
+    <div class="sec" id="previewSec"><div class="lab">희생 미리보기</div><div id="preview"><span style="color:#556">삼원질 종류를 고르세요.</span></div></div>
+
+    <div id="go" class="${prima && (prima!=='유황'||chosenTrait)?'':'disabled'}">${
+      prima ? (prima==='유황'&&!chosenTrait ? '비울 트레잇을 고르세요' : `◆ ${prima} 추출 — 삼원질 ${prima} ×1 획득`) : '삼원질 종류 선택 필요'
+    }</div>`;
+
+  p.innerHTML=html;
+
+  document.querySelectorAll(".pcard").forEach(el=>el.addEventListener("click",()=>{
+    prima=el.dataset.p; chosenTrait=null; renderPanel();
+  }));
+  if(prima) renderPreview(u);
+  const go=document.getElementById("go");
+  if(go && !go.classList.contains("disabled")) go.onclick=()=>alert(`[목업] ${prima} 추출 — 변용 리셋 + 희생 적용, 삼원질 ${prima} 1개가 비축됩니다.`);
+}
+
+function renderPreview(u){
+  const box=document.getElementById("preview");
+  if(prima==="염"){
+    // 名器 부위는 크게, 나머지 일괄 소폭
+    box.innerHTML = PARTS.map(part=>{
+      const cur=u.sens[part]??0;
+      const isMyungi=u.myungi.includes(part);
+      const after=isMyungi? Math.round(cur*0.4) : Math.max(0, cur-12);
+      const dropW=(cur-after);
+      return `<div class="row"><span class="lbl">${part}${isMyungi?' ◆':''}</span>
+        <div class="bar"><i style="width:${after}%"></i><span class="drop" style="left:${after}%;width:${dropW}%"></span></div>
+        <span class="val">${cur}→${after}</span></div>`;
+    }).join("") + `<div style="color:#778;margin-top:4px">名器(◆) 부위는 크게, 나머지는 일괄 −12 (잠정)</div>`;
+  } else if(prima==="수은"){
+    box.innerHTML = Object.entries(u.yeokga).map(([k,v])=>{
+      const after=Math.max(0,v-1);
+      return `<div class="row"><span class="lbl" style="width:auto;min-width:90px">${k}</span><span class="val" style="width:auto">Lv ${v} → ${after}</span></div>`;
+    }).join("") + `<div style="color:#778;margin-top:4px">역가·지식 전 항목 −1 Lv (잠정)</div>`;
+  } else if(prima==="유황"){
+    const cand=u.traits.filter(t=>!t.sig); // 시그니처 外
+    box.innerHTML = `<div style="color:#aab;margin-bottom:4px">비울 트레잇 1칸 선택 — 칸을 비워 새 트레잇 여지 확보</div>
+      <div class="pick-t">${cand.map(t=>`<span class="t ${chosenTrait===t.n?'chosen':''}" data-t="${t.n}">${t.n}</span>`).join("")}</div>`;
+    box.querySelectorAll(".pick-t .t").forEach(el=>el.addEventListener("click",()=>{ chosenTrait=el.dataset.t; renderPanel(); }));
+  }
+}
+
+renderPool();
+</script>
+</body>
+</html>

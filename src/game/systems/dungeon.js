@@ -176,10 +176,24 @@ class DungeonSystem {
     const results = [];
     const gatherBonus = this.engine.getGatherBonus(node.zone);
 
+    // 훅: 수계통행 (사반신 — 뱀의 하반신) — 수계 존은 통행자 유무로 채집 갈림 (잠정)
+    let waterMul = 1, chance = 0.7;
+    if (node.zone && String(node.zone).includes('수계')) {
+      const party = this.engine.getPartyUnits ? this.engine.getPartyUnits() : [];
+      const reg = (this.engine.data && this.engine.data.traits) || [];
+      const byId = new Map(reg.map(t => [t.id, t]));
+      const pass = party.some(u => (u.traits || []).some(tid => {
+        const t = byId.get(tid);
+        return t && (t.effects || []).some(e => e.target === '수계통행' && e.op === 'unlock');
+      }));
+      if (pass) { waterMul = 1.3; chance = 0.9; }
+      else { waterMul = 0.7; chance = 0.5; }
+    }
+
     for (const matId of materials) {
-      if (Math.random() < 0.7) {
+      if (Math.random() < chance) {
         const baseQty = 1 + Math.floor(Math.random() * 2);
-        const qty = Math.max(1, Math.floor(baseQty * gatherBonus));
+        const qty = Math.max(1, Math.floor(baseQty * gatherBonus * waterMul));
         results.push({ id: matId, qty, name: this.engine.getMaterialName(matId) });
       }
     }

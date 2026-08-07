@@ -5,14 +5,18 @@ class CraftingSystem {
   constructor(engine) {
     this.engine = engine;
 
-    // Contradiction pairs (12 pairs)
-    this.contradictionPairs = [
-      ['회복', '공격'], ['독성', '수호'], ['억제', '분산'],
-      ['조련', '부여'], ['촉매', '마력촉매'],
-      ['경도', '가공성'], ['전도', '보존'],
-      ['열', '광'], ['위', '동'],
-      ['기체', '결정'], ['액체', '분말'], ['식물', '광물']
-    ];
+    // 모순 태그 쌍 — processing.csv [tag_contradictions] (v4.8 데이터화, 하드코딩=폴백)
+    let pairRows = [];
+    try { pairRows = engine.balance ? engine.balance.getRows('processing.csv', 'tag_contradictions') : []; } catch (e) { /* fallback */ }
+    this.contradictionPairs = (pairRows && pairRows.length)
+      ? pairRows.map(r => [r.tagA, r.tagB])
+      : [
+        ['회복', '공격'], ['독성', '수호'], ['억제', '분산'],
+        ['조련', '부여'], ['촉매', '마력촉매'],
+        ['경도', '가공성'], ['전도', '보존'],
+        ['열', '광'], ['위', '동'],
+        ['기체', '결정'], ['액체', '분말'], ['식물', '광물']
+      ];
 
     // Tag name mapping for auto-naming
     this.functionNames = {
@@ -212,6 +216,22 @@ class CraftingSystem {
     const contradictions = this.countContradictions(combinedTags);
 
     if (contradictions >= 5) {
+      // v4.8: 5쌍+ 붕괴 — 마력촉매(엘릭서 결)면 까마귀 머리(고정 아이템), 아니면 일반 미지 결과물
+      const _allT = [...(combinedTags.functions || []), ...(combinedTags.elements || []), ...(combinedTags.forms || [])];
+      if (_allT.includes('마력촉매')) {
+        let caput = this.engine.data.materials.find(m => m.id === 'MAT_CAPUT_CORVI');
+        if (!caput) {
+          caput = {
+            id: 'MAT_CAPUT_CORVI', name: '미지 침전물', tier: 1,
+            tags: { functions: [], elements: [], forms: [] }, category: 'unknown',
+            source: '양조 붕괴',
+            lore: '까마귀 머리(caput corvi) — 다섯 겹의 모순이 한 그릇 안에서 무너져 내린 검은 앙금. 연구소라면 무언가 읽어낼 수 있을지도 모른다.'
+          };
+          this.engine.data.materials.push(caput);
+        }
+        this.engine.addMaterial('MAT_CAPUT_CORVI', 1);
+        return { success: true, result: caput, type: 'collapse', contradictions };
+      }
       // Unknown result
       const unknownId = `UNK_${Date.now()}`;
       const unknownResult = {
@@ -339,8 +359,30 @@ class CraftingSystem {
       effect: this.generateEffect(combinedTags, tier)
     };
 
+    // ═══ v4.8 엘릭서 판정: 마력촉매 앵커 + 활성 모순쌍 1~4 = 색 ═══
+    const elx = this.classifyElixir(combinedTags, contradictions);
+    if (elx) {
+      item.elixir = true;
+      item.color = elx.color;        // 흑|백|황|적
+      item.colorIdx = elx.colorIdx;  // 1~4
+      item.density = item.tier;      // 밀도 = 태그 밀도 (tier 식 재사용, 방법 비지정)
+      item.name = elx.color + '화 엘릭서';
+      item.category = 'elixir';
+      item.lore = CraftingSystem.ELIXIR_LORE[elx.color] || item.lore;
+      item.effect = { type: 'elixir', color: elx.color, density: item.tier, desc: '시설 강화 재료 (' + elx.color + '화 · 밀도 ' + item.tier + ')' };
+    }
+
     this.engine.data.materials.push(item);
     return item;
+  }
+
+  // 엘릭서 색 판정 (v4.8): 활성 모순쌍 수 = 색 (1흑/2백/3황/4적), 마력촉매 태그 = 판정 앵커 (물약과 구분)
+  classifyElixir(tags, contradictions) {
+    if (contradictions < 1 || contradictions > 4) return null;
+    const allT = [...(tags.functions || []), ...(tags.elements || []), ...(tags.forms || [])];
+    if (!allT.includes('마력촉매')) return null;
+    const COLORS = { 1: '흑', 2: '백', 3: '황', 4: '적' };
+    return { color: COLORS[contradictions], colorIdx: contradictions };
   }
 
   countDuplicates(tagsA, tagsB) {
@@ -566,5 +608,12 @@ class CraftingSystem {
     return { success: true, result };
   }
 }
+
+CraftingSystem.ELIXIR_LORE = {
+  '흑': '니그레도 — 모든 작업은 검게 시작한다.',
+  '백': '알베도 — 씻겨나간 것 위로 흰 빛이 남는다.',
+  '황': '키트리니타스 — 노란 새벽이 물질을 통과한다.',
+  '적': '루베도 — 대업의 끝, 붉은 완성.'
+};
 
 module.exports = CraftingSystem;

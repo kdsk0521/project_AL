@@ -123,3 +123,7 @@ month,sigils
 10,3;7
 11,4;1
 12,5;2
+
+; === 엘릭서 상수 (v4.8 — 수치 잠정, 통합 밸런싱 대상) ===
+[elixir_constants]
+densityEffBonus,0.25

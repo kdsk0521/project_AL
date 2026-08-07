@@ -450,3 +450,210 @@ body {
 .td-action-btn:hover { color: #ffd700; border-color: #ffd700; }
 .td-action-btn.locked { color: #555; border-color: #222; cursor: default; }
 .td-action-btn.locked:hover { color: #555; border-color: #222; }
+
+/* ============================================================
+   v2 패널 화면 (목업 6장 이식) — #panel-screen 스코프
+   ============================================================ */
+#panel-screen { display:none; position:fixed; inset:0; z-index:200; background:#0a0a0a; color:#c8c8c8;
+  font-family:'D2Coding','Consolas',monospace; font-size:14px; line-height:1.55; flex-direction:column; }
+#panel-screen * { box-sizing:border-box; }
+#panel-screen ::-webkit-scrollbar{width:6px} #panel-screen ::-webkit-scrollbar-track{background:#111} #panel-screen ::-webkit-scrollbar-thumb{background:#333}
+
+#panel-screen .v2-header { padding:8px 16px; border-bottom:1px solid #2a2a2a; color:#9aa; flex-shrink:0; display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+#panel-screen .v2-header .loc { color:#e8d9a0; font-size:15px; }
+#panel-screen .v2-header .ap { color:#7fd4a0; }
+#panel-screen .v2-header .soul { color:#7fd4ff; }
+#panel-screen .v2-header .stam { color:#e0a060; }
+#panel-screen .v2-header .sigil { color:#bcd; font-size:12px; }
+#panel-screen .v2-header .sigil b { color:#c8b0e0; }
+#panel-screen .v2-header .right { margin-left:auto; color:#667; font-size:12px; }
+#panel-screen .v2-main { flex:1 1 0; display:flex; min-height:0; }
+#panel-screen .v2-hint { color:#556; font-size:12px; padding:6px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; }
+#panel-screen h4 { color:#778; font-size:12px; margin:10px 12px 4px; font-weight:normal; letter-spacing:1px; }
+
+/* 행 메뉴 (허브) */
+#panel-screen .v2-menu { width:42%; border-right:1px solid #2a2a2a; overflow-y:auto; padding:8px 0; }
+#panel-screen .v2-act { padding:6px 16px; cursor:pointer; display:flex; align-items:baseline; gap:8px; }
+#panel-screen .v2-act:hover { background:#15151c; }
+#panel-screen .v2-act .num { color:#e8d9a0; width:22px; }
+#panel-screen .v2-act .nm { color:#fff; }
+#panel-screen .v2-act .cost { color:#7fd4a0; font-size:11px; }
+#panel-screen .v2-act .desc { color:#667; font-size:11px; margin-left:auto; }
+#panel-screen .v2-act.disabled { opacity:.4; }
+#panel-screen .v2-board { flex:1; overflow-y:auto; padding:10px 16px; }
+#panel-screen .v2-board h4 { margin:6px 0 4px; border-bottom:1px solid #1e1e1e; padding-bottom:2px; }
+#panel-screen .v2-deploy { font-size:12px; padding:2px 0; display:flex; gap:8px; }
+#panel-screen .v2-deploy .where { width:90px; color:#9aa; flex-shrink:0; }
+#panel-screen .v2-deploy .who { color:#bbc; }
+#panel-screen .v2-ev { font-size:12px; padding:2px 0; }
+#panel-screen .v2-ev .tag { color:#c678dd; }
+#panel-screen .v2-ev .warn { color:#e0a060; }
+#panel-screen .v2-log { border-top:1px solid #2a2a2a; padding:8px 16px; flex-shrink:0; max-height:120px; overflow-y:auto; }
+#panel-screen .v2-log .l { font-size:12px; color:#9a9; }
+#panel-screen .v2-log .l.tag { color:#c678dd; }
+#panel-screen .v2-log .l.warn { color:#e0a060; }
+
+/* 게이지/바 */
+#panel-screen .v2-row { display:flex; align-items:center; gap:6px; height:20px; }
+#panel-screen .v2-row .lbl { width:54px; color:#aab; font-size:12px; flex-shrink:0; }
+#panel-screen .v2-row .lv { width:80px; color:#667; font-size:12px; flex-shrink:0; }
+#panel-screen .v2-bar { flex:1; max-width:220px; height:8px; background:#1a1a1a; border:1px solid #2c2c2c; position:relative; }
+#panel-screen .v2-bar i { position:absolute; left:0; top:0; bottom:0; }
+#panel-screen .v2-row .val { width:60px; text-align:right; color:#889; font-size:12px; }
+#panel-screen .g-연모 i{background:#ff69b4} #panel-screen .g-복종 i{background:#ffd700} #panel-screen .g-음란 i{background:#c678dd}
+#panel-screen .g-공포 i{background:#6495ed} #panel-screen .g-반감 i{background:#ff5544}
+#panel-screen .g-호감 i{background:#5fb0a0} #panel-screen .sen i{background:#5fb0a0}
+#panel-screen .b-soul i{background:#7fd4ff} #panel-screen .b-stam i{background:#e0a060}
+
+/* 종족/카테고리 배지 */
+#panel-screen .race { font-size:11px; padding:0 4px; border:1px solid #333; border-radius:2px; }
+#panel-screen .r-요괴{color:#c678dd;border-color:#5a3a6a} #panel-screen .r-정령{color:#7fd4ff;border-color:#2a5a6a}
+#panel-screen .r-인조{color:#e0a060;border-color:#6a4a2a} #panel-screen .r-야수{color:#e07050;border-color:#6a3a2a}
+#panel-screen .r-환상{color:#9fc97f;border-color:#3a5a2a}
+
+/* 印 배지 */
+#panel-screen .sigb { font-size:11px; padding:0 5px; border:1px solid #3a3a4a; border-radius:2px; color:#bcd; }
+#panel-screen .sigb.prima { border-color:#7a6a3a; color:#e0c878; }
+
+/* 트레잇 칩 */
+#panel-screen .tchip { font-size:12px; padding:1px 7px; border:1px solid #2e2e2e; border-radius:3px; cursor:help; display:inline-block; margin:1px; }
+#panel-screen .t-전투{color:#e07050;border-color:#5a2e22} #panel-screen .t-성격{color:#9fc97f;border-color:#2e4a22}
+#panel-screen .t-성인{color:#c678dd;border-color:#4a2e5a} #panel-screen .t-신체{color:#7fd4ff;border-color:#22404a}
+#panel-screen .tchip.sig{border-color:#7fd4ff;color:#7fd4ff;box-shadow:0 0 0 1px #1a3a4a inset}
+#panel-screen .tchip.gone{border-color:#5a2e2e;color:#a55;text-decoration:line-through}
+
+/* 변용 루트 색 */
+#panel-screen .rt-애착{color:#ff9ec4} #panel-screen .rt-예속{color:#e8c860}
+#panel-screen .rt-탐닉{color:#c678dd} #panel-screen .rt-붕괴{color:#8a93a8} #panel-screen .rt-none{color:#556}
+#panel-screen .steps{letter-spacing:3px} #panel-screen .steps .on{color:inherit} #panel-screen .steps .off{color:#2e2e2e}
+
+/* 침염 도장 */
+#panel-screen .chim { letter-spacing:2px; font-size:13px; }
+#panel-screen .c-연모{color:#ff69b4} #panel-screen .c-복종{color:#ffd700} #panel-screen .c-음란{color:#c678dd}
+#panel-screen .c-공포{color:#6495ed} #panel-screen .c-반감{color:#ff5544} #panel-screen .c-고통{color:#d9603f}
+#panel-screen .chim .empty{color:#333}
+
+/* 목록/상세 2분할 (명부/추출/합체) */
+#panel-screen .v2-list { overflow-y:auto; border-right:1px solid #2a2a2a; }
+#panel-screen .v2-detail { flex:1; overflow-y:auto; padding:12px 18px; }
+#panel-screen .v2-u { padding:6px 14px; border-bottom:1px solid #161616; cursor:pointer; }
+#panel-screen .v2-u:hover { background:#15151c; }
+#panel-screen .v2-u.sel { background:#1c1c28; border-left:2px solid #c678dd; padding-left:12px; }
+#panel-screen .v2-u.no { opacity:.4; cursor:default; }
+#panel-screen .v2-u.picked { background:#1a1a26; }
+#panel-screen .v2-u.picked .nm { color:#566; text-decoration:line-through; }
+#panel-screen .v2-u .top { display:flex; align-items:baseline; gap:7px; }
+#panel-screen .v2-u .nm { color:#fff; font-weight:bold; }
+#panel-screen .v2-u .sub { font-size:11px; color:#667; margin-top:2px; display:flex; gap:10px; flex-wrap:wrap; }
+#panel-screen .v2-detail h2 { color:#fff; font-size:18px; margin:0 0 2px; }
+#panel-screen .v2-detail .dline { color:#889; font-size:12px; margin-bottom:10px; }
+#panel-screen .v2-detail h4 { margin:12px 0 4px; border-bottom:1px solid #1e1e1e; padding-bottom:2px; }
+
+/* 필터/액션 바 */
+#panel-screen .v2-filter { padding:6px 16px; border-bottom:1px solid #1e1e1e; color:#778; font-size:12px; flex-shrink:0; display:flex; gap:14px; flex-wrap:wrap; }
+#panel-screen .v2-filter .f { cursor:pointer; }
+#panel-screen .v2-filter .f.on { color:#e8d9a0; }
+#panel-screen .v2-filter .f:hover { color:#aab; }
+#panel-screen .v2-actions { padding:10px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; display:flex; gap:20px; flex-wrap:wrap; }
+#panel-screen .v2-actions .act { cursor:pointer; }
+#panel-screen .v2-actions .act:hover { color:#fff; }
+#panel-screen .v2-actions .act .num { color:#e8d9a0; }
+
+/* 슬롯 (합체) */
+#panel-screen .v2-slot { margin:6px 12px; border:1px dashed #333; min-height:70px; padding:8px 10px; }
+#panel-screen .v2-slot.filled { border-style:solid; border-color:#3a3a4a; background:#101018; }
+#panel-screen .v2-slot .empty { color:#445; text-align:center; padding:18px 0; }
+#panel-screen .v2-slot .sname { color:#fff; font-weight:bold; }
+#panel-screen .v2-slot .sline { font-size:11px; color:#778; margin:3px 0 5px; }
+#panel-screen .v2-slot .x { float:right; color:#a55; cursor:pointer; font-size:12px; }
+#panel-screen .v2-plus { text-align:center; color:#445; font-size:18px; margin:-2px 0; }
+#panel-screen .prima-note { margin:4px 12px; padding:6px 9px; border:1px solid #2a2a2a; font-size:11px; color:#889; }
+#panel-screen .prima-note.active { border-color:#7a6a3a; background:#15120a; color:#cdb87a; }
+#panel-screen .v2-inject { margin:0 12px; display:flex; gap:6px; }
+#panel-screen .vial { flex:1; border:1px solid #2a2a2a; padding:5px 4px; text-align:center; font-size:11px; cursor:pointer; }
+#panel-screen .vial:hover { background:#15151c; }
+#panel-screen .vial.on { border-color:#7a6a3a; background:#15120a; }
+#panel-screen .vial.off { opacity:.3; cursor:default; }
+#panel-screen .vial .vn { font-size:13px; }
+#panel-screen .v-염{color:#9fc0d8} #panel-screen .v-수은{color:#c8b0e0} #panel-screen .v-유황{color:#e0c860}
+
+/* 體神魂 카드 (추출) */
+#panel-screen .prima3 { display:flex; gap:8px; }
+#panel-screen .pcard { flex:1; border:1px solid #2a2a2a; padding:8px 9px; cursor:pointer; }
+#panel-screen .pcard:hover { background:#13131a; }
+#panel-screen .pcard.on.k염 { border-color:#5a7a9a; background:#0e1318; }
+#panel-screen .pcard.on.k수은 { border-color:#7a5a9a; background:#130e18; }
+#panel-screen .pcard.on.k유황 { border-color:#9a8a3a; background:#15120a; }
+#panel-screen .pcard .pn { font-size:14px; }
+#panel-screen .pcard.k염 .pn{color:#9fc0d8} #panel-screen .pcard.k수은 .pn{color:#c8b0e0} #panel-screen .pcard.k유황 .pn{color:#e0c860}
+#panel-screen .pcard .layer { font-size:11px; color:#667; }
+#panel-screen .pcard .cost { font-size:11px; color:#b88; margin-top:4px; }
+#panel-screen .loss { font-size:12px; padding:2px 0; }
+#panel-screen .loss .x { color:#e07070; }
+#panel-screen .pick-t .tchip { cursor:pointer; }
+#panel-screen .pick-t .tchip.chosen { border-color:#e0c860; color:#e0c860; }
+
+/* 실행 버튼 */
+#panel-screen .v2-go { margin:12px 0 0; padding:9px; text-align:center; border:1px solid #4a4a3a; color:#e8d9a0; cursor:pointer; }
+#panel-screen .v2-go:hover { background:#1a1a10; }
+#panel-screen .v2-go.disabled { opacity:.35; cursor:default; border-color:#2a2a2a; color:#667; }
+
+/* 모순쌍/계승 (합체 결과) */
+#panel-screen .inherit-row { display:flex; gap:6px; font-size:12px; padding:2px 0; align-items:baseline; }
+#panel-screen .inherit-row .path { width:110px; flex-shrink:0; font-size:11px; }
+#panel-screen .p-합성{color:#c678dd} #panel-screen .p-직접{color:#e0a050} #panel-screen .p-잠재{color:#7fc0a0}
+#panel-screen .contra { border:1px solid #4a3a2a; padding:7px 10px; margin:5px 0; font-size:12px; }
+#panel-screen .contra.merge { border-color:#3a5a4a; } #panel-screen .contra.split { border-color:#5a3030; }
+#panel-screen .contra .ctitle { font-weight:bold; }
+#panel-screen .contra.merge .ctitle { color:#7fd4b0; } #panel-screen .contra.split .ctitle { color:#e07070; }
+#panel-screen .sigeq { text-align:center; font-size:13px; margin:4px 0; color:#bcd; }
+#panel-screen .sigeq .op { color:#556; }
+
+/* 전투 관전 */
+#panel-screen .cb-field { display:flex; gap:0; border-bottom:1px solid #2a2a2a; flex-shrink:0; max-height:42%; overflow-y:auto; }
+#panel-screen .cb-side { flex:1; padding:8px 14px; }
+#panel-screen .cb-side.party { border-right:1px solid #2a2a2a; }
+#panel-screen .cb-side h4 { margin:0 0 5px; }
+#panel-screen .cb-side.enemy h4 { color:#a66; }
+#panel-screen .ent { margin-bottom:6px; }
+#panel-screen .ent.dead { opacity:.35; }
+#panel-screen .ent .top { display:flex; align-items:baseline; gap:6px; font-size:13px; }
+#panel-screen .ent .nm { color:#fff; }
+#panel-screen .cb-side.enemy .ent .nm { color:#e0a0a0; }
+#panel-screen .ent .aggro { font-size:10px; color:#e07050; margin-left:auto; }
+#panel-screen .hpbar { height:8px; background:#1a1a1a; border:1px solid #2c2c2c; position:relative; margin-top:2px; }
+#panel-screen .hpbar i { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#4a8a5a,#6fb080); transition:width .3s; }
+#panel-screen .cb-side.enemy .hpbar i { background:linear-gradient(90deg,#8a4a4a,#b06060); }
+#panel-screen .ent .apline { font-size:10px; color:#667; margin-top:1px; }
+#panel-screen .cb-log { flex:1 1 0; min-height:100px; overflow-y:auto; padding:10px 16px; }
+#panel-screen .cb-log .turn { color:#556; font-size:11px; border-bottom:1px solid #161616; margin:6px 0 3px; padding-bottom:2px; }
+#panel-screen .le { padding:1px 0; font-size:13px; }
+#panel-screen .le.sys { color:#778; } #panel-screen .le.skill { color:#c678dd; }
+#panel-screen .le.ko { color:#a66; } #panel-screen .le.win { color:#7fd4a0; } #panel-screen .le.lose { color:#e07070; }
+#panel-screen .le.use { color:#7fd4a0; }
+#panel-screen .cb-items { padding:7px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+#panel-screen .cb-items .ilab { color:#778; font-size:12px; }
+#panel-screen .item { border:1px solid #3a3a4a; padding:2px 9px; font-size:12px; cursor:pointer; color:#cde; }
+#panel-screen .item:hover { background:#15151c; }
+#panel-screen .item .cnt { color:#778; }
+#panel-screen .item.empty { opacity:.3; cursor:not-allowed; }
+#panel-screen .cb-ctrl { padding:10px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; display:flex; gap:18px; align-items:center; }
+#panel-screen .btn { cursor:pointer; color:#e8d9a0; border:1px solid #4a4a3a; padding:3px 12px; }
+#panel-screen .btn:hover { background:#1a1a10; }
+#panel-screen .btn.off { opacity:.4; }
+
+/* 툴팁 */
+#v2-tip { position:fixed; max-width:300px; background:#14141c; border:1px solid #3a3a4a; padding:7px 10px; font-size:12px; line-height:1.5; color:#bbc; z-index:300; pointer-events:none; display:none; box-shadow:0 3px 14px #000a; font-family:'D2Coding','Consolas',monospace; }
+#v2-tip .tname { font-weight:bold; margin-bottom:2px; color:#cbd; }
+
+/* 조교 대시보드 v2 추가 게이지 */
+#td-pleasure { margin:4px 0; }
+#td-pleasure .plbl { font-size:12px; color:#a98fc9; }
+#td-pleasure .pbar { height:13px; background:#1a1a1a; border:1px solid #3a3050; position:relative; }
+#td-pleasure .pbar i { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#7a4f9d,#c678dd); transition:width .25s; }
+#td-chimyeom { letter-spacing:2px; font-size:12px; }
+#td-chimyeom .empty { color:#333; }
+#td-variation .vrow { display:flex; align-items:center; gap:8px; height:20px; font-size:12px; }
+#td-variation .vrow .rname { width:36px; }
+#td-variation .vrow.locked { opacity:.38; }
+#td-variation .lockmark { color:#e8d9a0; font-size:11px; }

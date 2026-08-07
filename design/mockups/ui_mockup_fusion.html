@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>합체 화면 목업 — v2 (印 체계)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#c8c8c8; font-family:"D2Coding","Consolas",monospace; font-size:14px; line-height:1.55; height:100vh; display:flex; flex-direction:column; }
+  #header { padding:8px 16px; border-bottom:1px solid #2a2a2a; color:#9aa; flex-shrink:0; }
+  #header .loc { color:#e8d9a0; }
+  #header .soul { color:#7fd4ff; }
+  #main { flex:1 1 0; display:flex; min-height:0; }
+  /* 좌: 재료 풀 */
+  #pool { width:28%; border-right:1px solid #2a2a2a; overflow-y:auto; }
+  #pool h4, #stage h4, #result h4 { color:#778; font-size:12px; margin:10px 12px 4px; font-weight:normal; letter-spacing:1px; }
+  .pu { padding:6px 12px; border-bottom:1px solid #161616; cursor:pointer; font-size:13px; }
+  .pu:hover { background:#15151c; }
+  .pu.picked { background:#1a1a26; cursor:default; }
+  .pu .nm { color:#fff; }
+  .pu.picked .nm { color:#566; text-decoration:line-through; }
+  .race { font-size:11px; padding:0 4px; border:1px solid #333; border-radius:2px; }
+  .r-요괴{color:#c678dd;border-color:#5a3a6a}.r-정령{color:#7fd4ff;border-color:#2a5a6a}
+  .r-인조{color:#e0a060;border-color:#6a4a2a}.r-야수{color:#e07050;border-color:#6a3a2a}.r-환상{color:#9fc97f;border-color:#3a5a2a}
+  /* 印 배지 */
+  .sig { font-size:11px; padding:0 5px; border:1px solid #3a3a4a; border-radius:2px; color:#bcd; }
+  .sig.prima { border-color:#7a6a3a; color:#e0c878; }
+  .pu .sigline { font-size:11px; color:#778; margin-top:2px; }
+  /* 중앙: 슬롯 */
+  #stage { width:34%; border-right:1px solid #2a2a2a; overflow-y:auto; padding-bottom:12px; }
+  .slot { margin:6px 12px; border:1px dashed #333; min-height:70px; padding:8px 10px; }
+  .slot.filled { border-style:solid; border-color:#3a3a4a; background:#101018; }
+  .slot .empty { color:#445; text-align:center; padding:18px 0; }
+  .slot .sname { color:#fff; font-weight:bold; }
+  .slot .sline { font-size:11px; color:#778; margin:3px 0 5px; }
+  .slot .traits { display:flex; flex-wrap:wrap; gap:3px; }
+  .t { font-size:11px; padding:0 6px; border:1px solid #2e2e2e; border-radius:3px; cursor:help; }
+  .t-CT{color:#e07050;border-color:#5a2e22}.t-PT{color:#9fc97f;border-color:#2e4a22}
+  .t-AT{color:#c678dd;border-color:#4a2e5a}.t-BT{color:#7fd4ff;border-color:#22404a}
+  .t.sig2{border-color:#7fd4ff;color:#7fd4ff}
+  .slot .x { float:right; color:#a55; cursor:pointer; font-size:12px; }
+  .plus { text-align:center; color:#445; font-size:18px; margin:-2px 0; }
+  .prima-note { margin:4px 12px; padding:6px 9px; border:1px solid #2a2a2a; font-size:11px; color:#889; }
+  .prima-note.active { border-color:#7a6a3a; background:#15120a; color:#cdb87a; }
+  /* 비축 삼원질 주입 칩 */
+  #inject { margin:0 12px; display:flex; gap:6px; }
+  .vial { flex:1; border:1px solid #2a2a2a; padding:5px 4px; text-align:center; font-size:11px; cursor:pointer; }
+  .vial:hover { background:#15151c; }
+  .vial.on { border-color:#7a6a3a; background:#15120a; }
+  .vial.off { opacity:.3; cursor:default; }
+  .vial .vn { font-size:13px; }
+  .v-염{color:#9fc0d8}.v-수은{color:#c8b0e0}.v-유황{color:#e0c860}
+  /* 우: 결과 */
+  #result { flex:1; overflow-y:auto; padding:0 14px 14px; }
+  #result .rhead { text-align:center; padding:12px 0 6px; }
+  #result .rname { font-size:18px; color:#fff; }
+  #result .rsub { font-size:12px; color:#889; }
+  .sigeq { text-align:center; font-size:13px; margin:4px 0; color:#bcd; }
+  .sigeq .op { color:#556; }
+  .inherit-row { display:flex; gap:6px; font-size:12px; padding:2px 0; align-items:baseline; }
+  .inherit-row .path { width:96px; flex-shrink:0; font-size:11px; }
+  .p-합성{color:#c678dd}.p-직접{color:#e0a050}.p-잠재{color:#7fc0a0}
+  .traits { display:flex; flex-wrap:wrap; gap:3px; }
+  .contra { border:1px solid #4a3a2a; padding:7px 10px; margin:5px 0; font-size:12px; }
+  .contra.merge { border-color:#3a5a4a; } .contra.split { border-color:#5a3030; }
+  .contra .ctitle { font-weight:bold; }
+  .contra.merge .ctitle { color:#7fd4b0; } .contra.split .ctitle { color:#e07070; }
+  #go { margin:10px 0 0; padding:9px; text-align:center; border:1px solid #4a4a3a; color:#e8d9a0; cursor:pointer; }
+  #go:hover { background:#1a1a10; }
+  #go.disabled { opacity:.35; cursor:default; border-color:#2a2a2a; color:#667; }
+  .hint { color:#556; font-size:12px; padding:8px 16px; border-top:1px solid #2a2a2a; flex-shrink:0; }
+  #tip { position:fixed; max-width:300px; background:#14141c; border:1px solid #3a3a4a; padding:7px 10px; font-size:12px; line-height:1.5; color:#bbc; z-index:50; pointer-events:none; display:none; box-shadow:0 3px 14px #000a; }
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
+</style>
+</head>
+<body>
+
+<div id="header">
+  【 <span class="loc">연성진 · 합체</span> 】  1년 2월 14일  |  印A × 印B = 印C  |  영혼력: <span class="soul">9,194</span>
+</div>
+
+<div id="main">
+  <div id="pool">
+    <h4>재료 후보 <span style="color:#445">(印 보유)</span></h4>
+    <div id="poollist"></div>
+  </div>
+
+  <div id="stage">
+    <h4>소재</h4>
+    <div class="slot" id="slotA"><div class="empty">소재 A — 왼쪽에서 선택</div></div>
+    <div class="plus">＋</div>
+    <div class="slot" id="slotB"><div class="empty">소재 B — 왼쪽에서 선택</div></div>
+    <div class="prima-note" id="primaNote">삼원질 印을 가진 소재를 넣으면 계승에 특수 효과가 붙습니다.</div>
+
+    <h4>삼원질 주입 <span style="color:#445">(비축분 — 印 유닛 없이)</span></h4>
+    <div id="inject"></div>
+  </div>
+
+  <div id="result"><div style="color:#445;text-align:center;padding:40px 10px">소재 2를 고르면<br>印 합성 결과를 미리 봅니다.</div></div>
+</div>
+
+<div class="hint">※ 목업: 소재 클릭 → 슬롯, ✕ 해제. 印A×印B로 결과 印 결정, 삼원질 印은 계승 효과. 수치·문구 전부 잠정.</div>
+<div id="tip"></div>
+
+<script>
+// 印 정의 (알파 7종) — 12정인 중 6 + 특수인(삼원질) 3
+const SIGILS = {
+  "백양": { full:"백양(白羊)", arche:"점화자", kind:"정인", desc:"하소(煅燒). 태워 본질을 드러내는 자 — 전투형." },
+  "금우": { full:"금우(金牛)", arche:"형성자", kind:"정인", desc:"응고(凝固). 형태를 부여하는 자 — 안정·축적형." },
+  "거해": { full:"거해(巨蟹)", arche:"해체자", kind:"정인", desc:"용해(溶解). 굳은 것을 녹이는 자 — 관계형." },
+  "처녀": { full:"처녀(處女)", arche:"정제자", kind:"정인", desc:"증류(蒸溜). 순수를 추출하는 자 — 균형형." },
+  "천갈": { full:"천갈(天蝎)", arche:"해부자", kind:"정인", desc:"분리(分離). 원하는 것만 떼어내는 자 — 전투 극특화." },
+  "쌍어": { full:"쌍어(雙魚)", arche:"촉매자", kind:"정인", desc:"투사(投射). 곁의 것을 바꾸는 자 — 관계형." },
+  // 삼원질 (특수인)
+  "염":   { full:"염(鹽)·체",   arche:"삼원질", kind:"삼원질", prima:"염",   desc:"체(體). 소재 시 직접 계승 슬롯 +1." },
+  "수은": { full:"수은(汞)·신", arche:"삼원질", kind:"삼원질", prima:"수은", desc:"신(神). 소재 시 합성 발동 조건 완화." },
+  "유황": { full:"유황(硫)·혼", arche:"삼원질", kind:"삼원질", prima:"유황", desc:"혼(魂). 소재 시 잠재력 인하량 2배." },
+};
+// 합체 테이블 (印A×印B=印C) — 대표 조합만, 나머지는 기본 규칙
+const TABLE = {
+  "백양|천갈":"천갈", "백양|금우":"처녀", "백양|거해":"백양",
+  "천갈|금우":"천갈", "거해|쌍어":"쌍어", "처녀|쌍어":"거해",
+  "백양|쌍어":"백양", "금우|거해":"처녀", "천갈|쌍어":"천갈",
+};
+function fuseSigil(a,b){
+  const k1=a+"|"+b, k2=b+"|"+a;
+  if(TABLE[k1]) return TABLE[k1];
+  if(TABLE[k2]) return TABLE[k2];
+  // 기본: 정인끼리면 가나다 앞, 삼원질이 섞이면 정인 쪽 우선
+  const A=SIGILS[a], B=SIGILS[b];
+  if(A.kind==="삼원질" && B.kind!=="삼원질") return b;
+  if(B.kind==="삼원질" && A.kind!=="삼원질") return a;
+  return a;
+}
+
+const TRAIT_DESC = {
+  "친애":"[AT·시그] 애착 변용 도2. 관계 이벤트 해금.",
+  "음란체질":"[AT] 전부위 감도 성장 +20%.",
+  "겁없음":"[PT] 공격 가중↑. 공포 침염 저항.",
+  "화염 친화":"[CT] 열 스킬 +15%.",
+  "가시 비늘":"[BT] 피격 반사. 방어(위).",
+  "광폭":"[PT] 저HP 시 공격 ×1.5 오버라이드.",
+  "고통 내성":"[AT] 고통 샘 -40%.",
+  "두꺼운 가죽":"[BT] 물리 방어 +20%.",
+  "위압":"[PT] 敵対心+ · 적 명중 -5%.",
+  "강철 의지":"[PT] 공포·반감 침염 저항 강.",
+  "수호":"[PT] 敵対心 대폭+ · 아군 대신 받기.",
+  "금속 외피":"[BT] 물리/위 방어+ · 회피-.",
+  "요염":"[AT] 매혹 보정. 자성 어그로.",
+  "아홉 꼬리":"[BT] 환상 특성. 동 역가 +.",
+  "내향":"[PT] 초기 감도↓·호감 누적 시 급상승.",
+  "결정 피부":"[BT] 염 친화. 방어 안정.",
+  "용해의 손":"[AT] 조교 시 상대 경직 완화.",
+  // 합성 결과
+  "광전사":"[PT·합성] 광폭+강철의지 통합. 폭주+의지 유지.",
+  "철벽 수문장":"[PT·합성·분열위험] 수호+위압. 통합=불괴 / 분열=고립.",
+};
+
+// 재료 유닛 — 본질색 제거, 印 부여
+const pool = [
+  { name:"가시 임프", race:"요괴", lv:3, sigil:"백양",
+    traits:[{n:"음란체질",c:"AT"},{n:"겁없음",c:"PT"},{n:"화염 친화",c:"CT"},{n:"가시 비늘",c:"BT"}] },
+  { name:"잿빛 늑대", race:"야수", lv:7, sigil:"천갈",
+    traits:[{n:"광폭",c:"PT"},{n:"고통 내성",c:"AT"},{n:"두꺼운 가죽",c:"BT"},{n:"위압",c:"PT"}] },
+  { name:"무쇠 처녀", race:"인조", lv:8, sigil:"금우",
+    traits:[{n:"강철 의지",c:"PT"},{n:"수호",c:"PT"},{n:"금속 외피",c:"BT"}] },
+  { name:"안개 여우", race:"요괴", lv:6, sigil:"쌍어",
+    traits:[{n:"요염",c:"AT"},{n:"아홉 꼬리",c:"BT"},{n:"내향",c:"PT"}] },
+  { name:"소금 인형", race:"인조", lv:5, sigil:"염",
+    traits:[{n:"결정 피부",c:"BT"},{n:"용해의 손",c:"AT"}] },
+];
+
+const CONTRA = {
+  "광폭|강철 의지": { type:"merge", out:"광전사", desc:"폭주의 힘과 꺾이지 않는 의지가 한 몸에." },
+  "수호|위압":     { type:"split", out:"철벽 수문장", desc:"지킴과 군림이 충돌 — 수은 소재면 통합, 아니면 분열 위험." },
+};
+
+let A=null, B=null;
+// 비축 삼원질 (추출로 모은 것) + 주입 선택
+const vialStock = { 염:1, 수은:0, 유황:2 };
+let injected = null;
+
+function sigBadge(s){
+  const S=SIGILS[s];
+  return `<span class="sig ${S.kind==='삼원질'?'prima':''}" data-tip="${S.full} · ${S.arche}<br>${S.desc}" data-sigil="1">印 ${s}</span>`;
+}
+
+function renderPool(){
+  document.getElementById("poollist").innerHTML = pool.map((u,i)=>{
+    const picked=(A===i||B===i);
+    return `<div class="pu ${picked?'picked':''}" data-i="${i}">
+      <div><span class="race r-${u.race}">${u.race}</span> <span class="nm">${u.name}</span> <span style="color:#667;font-size:11px">Lv.${u.lv}</span></div>
+      <div class="sigline">${sigBadge(u.sigil)} <span style="color:#667">${SIGILS[u.sigil].arche}</span></div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".pu").forEach(el=>el.addEventListener("click",()=>{
+    const i=+el.dataset.i;
+    if(A===i||B===i) return;
+    if(A===null) A=i; else if(B===null) B=i; else return;
+    render();
+  }));
+}
+
+function tchip(t){ return `<span class="t t-${t.c} ${t.sig?'sig2':''}" data-tip="${TRAIT_DESC[t.n]||'(설명 미작성)'}">${t.sig?'★':''}${t.n}</span>`; }
+
+function slotHTML(idx, which){
+  if(idx===null) return `<div class="empty">소재 ${which} — 왼쪽에서 선택</div>`;
+  const u=pool[idx];
+  return `<span class="x" data-x="${which}">✕ 해제</span>
+    <span class="sname">${u.name}</span> <span class="race r-${u.race}">${u.race}</span>
+    <div class="sline">Lv.${u.lv} · ${sigBadge(u.sigil)} ${SIGILS[u.sigil].arche}</div>
+    <div class="traits">${u.traits.map(tchip).join("")}</div>`;
+}
+
+function renderSlots(){
+  const sa=document.getElementById("slotA"), sb=document.getElementById("slotB");
+  sa.className="slot"+(A!==null?" filled":""); sa.innerHTML=slotHTML(A,"A");
+  sb.className="slot"+(B!==null?" filled":""); sb.innerHTML=slotHTML(B,"B");
+  document.querySelectorAll(".x").forEach(el=>el.addEventListener("click",()=>{
+    if(el.dataset.x==="A") A=null; else B=null; render();
+  }));
+  // 삼원질 소재 노트
+  const primas=[];
+  if(A!==null && SIGILS[pool[A].sigil].prima) primas.push(SIGILS[pool[A].sigil].prima);
+  if(B!==null && SIGILS[pool[B].sigil].prima) primas.push(SIGILS[pool[B].sigil].prima);
+  const note=document.getElementById("primaNote");
+  if(primas.length){
+    const eff={염:"직접 계승 슬롯 +1",수은:"합성 발동 조건 완화",유황:"잠재력 인하량 2배"};
+    note.className="prima-note active";
+    note.innerHTML="삼원질 소재 — "+primas.map(p=>`<b>${p}</b>: ${eff[p]}`).join(" · ");
+  } else {
+    note.className="prima-note";
+    note.innerHTML="삼원질 印을 가진 소재를 넣으면 계승에 특수 효과가 붙습니다.";
+  }
+}
+
+function renderInject(){
+  const eff={염:"직접 슬롯 +1",수은:"합성 완화",유황:"잠재 ×2"};
+  document.getElementById("inject").innerHTML = ["염","수은","유황"].map(p=>{
+    const n=vialStock[p];
+    const cls = n<=0 ? "off" : (injected===p ? "on" : "");
+    return `<div class="vial ${cls}" data-vial="${p}">
+      <div class="vn v-${p}">${p}</div>
+      <div style="color:#778">×${n}</div>
+      <div style="color:#556">${eff[p]}</div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".vial").forEach(el=>el.addEventListener("click",()=>{
+    const p=el.dataset.vial;
+    if(vialStock[p]<=0) return;
+    injected = (injected===p? null : p);
+    render();
+  }));
+}
+
+function renderResult(){
+  const box=document.getElementById("result");
+  if(A===null||B===null){
+    box.innerHTML=`<div style="color:#445;text-align:center;padding:40px 10px">소재 2를 고르면<br>印 합성 결과를 미리 봅니다.</div>`;
+    return;
+  }
+  const ua=pool[A], ub=pool[B];
+  const childSigil=fuseSigil(ua.sigil, ub.sigil);
+  const childLv=Math.round((ua.lv+ub.lv)/2);
+  // 종족: 환상 합체전용은 별개. 여기선 상위Lv 종족 계승 데모
+  const childRace = (ua.lv>=ub.lv?ua.race:ub.race);
+  const childName = SIGILS[childSigil].arche + "의 아이";
+
+  // 삼원질 효과 수집 — 印 유닛 소재 + 비축 주입 둘 다
+  const primaA=SIGILS[ua.sigil].prima, primaB=SIGILS[ub.sigil].prima;
+  const primas=[primaA,primaB,injected].filter(Boolean);
+  const hasSlot = primas.includes("염");
+  const hasMercury = primas.includes("수은");
+  const hasSulfur = primas.includes("유황");
+
+  // 모순쌍 검출
+  const contras=[];
+  for(const a of ua.traits) for(const b of ub.traits){
+    const k1=a.n+"|"+b.n, k2=b.n+"|"+a.n;
+    if(CONTRA[k1]) contras.push({pair:[a.n,b.n],...CONTRA[k1]});
+    else if(CONTRA[k2]) contras.push({pair:[b.n,a.n],...CONTRA[k2]});
+  }
+
+  // 계승 3경로
+  const directSlots = 2 + (hasSlot?1:0);
+  const directTraits = [...ua.traits, ...ub.traits].slice(0, directSlots);
+  const lines=[];
+  lines.push({path:"합성 발동", cls:"합성", txt: contras.length? contras.map(c=>tchip({n:c.out,c:"AT",sig:1})).join("") : `<span style="color:#556">발동 모순쌍 없음</span>`});
+  lines.push({path:`직접 계승${hasSlot?' (염 +1)':''}`, cls:"직접", txt: directTraits.map(tchip).join("")});
+  lines.push({path:`잠재력 계승${hasSulfur?' (유황 ×2)':''}`, cls:"잠재", txt: `<span style="color:#778">남은 트레잇 임계 인하${hasSulfur?' — 두텁게(2배)':''}로 다음 세대에</span>`});
+
+  let html=`<h4 style="margin-left:0">결과 미리보기</h4>
+    <div class="rhead">
+      <div class="rname">${childName} <span class="race r-${childRace}" style="font-size:13px">${childRace}</span></div>
+      <div class="sigeq">印 ${ua.sigil} <span class="op">×</span> 印 ${ub.sigil} <span class="op">=</span> <b style="color:#cde">印 ${childSigil}</b></div>
+      <div class="rsub">${ua.name} ＋ ${ub.name}${injected?` ＋ <span class="v-${injected}">${injected} 주입</span>`:''} · Lv.${childLv} (평균)</div>
+    </div>`;
+
+  html+=`<h4 style="margin-left:0">계승 3경로</h4>`;
+  for(const ln of lines) html+=`<div class="inherit-row"><span class="path p-${ln.cls}">${ln.path}</span><span class="traits">${ln.txt}</span></div>`;
+
+  if(contras.length){
+    html+=`<h4 style="margin-left:0">모순쌍 검출</h4>`;
+    for(const c of contras){
+      const willMerge=(c.type==="merge")||hasMercury;
+      const cls=willMerge?"merge":"split";
+      const label=willMerge?("통합형 → "+c.out+(hasMercury&&c.type==='split'?" (수은이 발동)":"")):"분열형 위험 → 붕괴 트리거";
+      html+=`<div class="contra ${cls}"><div class="ctitle">${c.pair[0]} ⟷ ${c.pair[1]} : ${label}</div><div style="color:#889;margin-top:2px">${c.desc}</div></div>`;
+    }
+  }
+
+  html+=`<div id="go">◆ 합체 실행 (영혼력 2,400 · 소재 2 소멸)</div>`;
+  box.innerHTML=html;
+  document.getElementById("go").onclick=()=>alert("[목업] 합체 실행 — 결과 유닛이 명부에 추가됩니다.");
+  bindTips();
+}
+
+const tip=document.getElementById("tip");
+function bindTips(){
+  document.querySelectorAll("[data-tip]").forEach(el=>{
+    el.onmouseenter=()=>{ tip.innerHTML=`<b style="color:#cbd">${el.dataset.sigil?'':el.textContent}</b>${el.dataset.sigil?'':'<br>'}${el.dataset.tip}`; tip.style.display="block"; };
+    el.onmousemove=e=>{ let x=e.clientX+14,y=e.clientY+14; if(x+tip.offsetWidth>innerWidth)x=e.clientX-tip.offsetWidth-14; if(y+tip.offsetHeight>innerHeight)y=e.clientY-tip.offsetHeight-14; tip.style.left=x+"px";tip.style.top=y+"px"; };
+    el.onmouseleave=()=>{ tip.style.display="none"; };
+  });
+}
+
+function render(){ renderPool(); renderSlots(); renderInject(); renderResult(); }
+render();
+</script>
+</body>
+</html>

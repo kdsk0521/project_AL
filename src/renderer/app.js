@@ -14,6 +14,7 @@ const CraftingSystem = require('../game/systems/crafting');
 const UnitSystem     = require('../game/systems/unit');
 const EconomySystem  = require('../game/systems/economy');
 const TrainingSystem = require('../game/systems/training');
+const ExtractionSystem = require('../game/systems/extraction');
 
 // ============================================================
 //  App Class
@@ -32,6 +33,7 @@ class App {
     this.unit     = new UnitSystem(this.engine);
     this.economy  = new EconomySystem(this.engine);
     this.training = new TrainingSystem(this.engine);
+    this.extraction = new ExtractionSystem(this.engine);
 
     // Dungeon needs a combat reference
     this.dungeon.combat = this.combat;
@@ -129,6 +131,12 @@ class App {
       case 'training_part':      this.handleTrainingPart(cmd);      break;
       case 'training_action':    this.handleTrainingAction(cmd);    break;
       case 'advance_day':        this.handleAdvanceDay(cmd);        break;
+      case 'hub':                this.handleHub(cmd);               break;
+      case 'unit_roster':
+      case 'extraction':
+      case 'fusion2':
+      case 'combat2':
+      case 'residence':          break; // v2 패널 — 패널 내 키/마우스 입력 사용
       case 'end_game':           this.handleEndGame(cmd);           break;
       default:
         this.print('알 수 없는 상태입니다. 마을로 돌아갑니다.', 'error');
@@ -154,6 +162,14 @@ require('./screens/facility')(App);
 require('./screens/misc')(App);
 require('./screens/tool')(App);
 require('./screens/training')(App);
+
+// v2 패널 화면 (목업 이식) — hub는 town 허브를 대체하므로 마지막에 로드
+require('./screens/panels')(App);
+require('./screens/combat2')(App);
+require('./screens/unitlist2')(App);
+require('./screens/extraction2')(App);
+require('./screens/fusion2')(App);
+require('./screens/hub')(App);
 
 // ============================================================
 //  Bootstrap

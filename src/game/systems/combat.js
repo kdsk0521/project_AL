@@ -2,6 +2,8 @@
 
 const R = require('../balance/traitResolver');
 const CE = require('./combatEngine');
+const CS = require('./combatSpecials'); // special 공통 리졸버 (시스템 패스)
+const YK = require('../balance/yeokga'); // 역가 레벨업 (2026-08-07)
 
 // Combat System - Auto-battle with AP, simultaneous resolution
 class CombatSystem {
@@ -64,9 +66,13 @@ class CombatSystem {
 
     log.push({ type: 'round', text: `──── 라운드 ${round} ────` });
 
-    // Reset AP for this round
+    // Reset AP for this round + special 상태 처리
     for (const u of [...this.battleState.allies, ...this.battleState.enemies]) {
-      if (!u.isKO) u.ap = u.maxAp;
+      if (!u.isKO) {
+        u.ap = u.maxAp;
+        if (!u._spCache) u._spCache = CS.collect(this._unitBridges(u));
+        CS.roundStart(u, log);
+      }
     }
 
     // Collect all actions (simultaneous)
@@ -79,9 +85,13 @@ class CombatSystem {
       log.push(action.logEntry);
     }
 
-    // Apply damage (skip already KO'd targets)
+    // Apply damage (skip already KO'd targets) + special 명중 부여
     for (const action of allActions) {
+      if (action.target && !action.target.isKO && action.actor && !action.actor.isKO && action.damage >= 0 && action.target !== action.actor) {
+        CS.onHit(action, action.actor._spCache || {}, action.target._spCache || {}, log);
+      }
       if (action.target && action.damage > 0 && !action.target.isKO) {
+        (action.target._ykGain = action.target._ykGain || []).push(['방어숙련', action.element || '물리']); // 역가: 견딤→방어 숙련
         action.target.hp = Math.max(0, action.target.hp - action.damage);
         if (action.target.hp <= 0 && !action.target.isKO) {
           action.target.isKO = true;
@@ -108,6 +118,9 @@ class CombatSystem {
         log.push({ type: 'skill', text: `${enemy.name}이(가) 분열했다! 소형 슬라임 2체 출현!` });
       }
     }
+
+    // special 라운드 종료 틱 (도트·리젠·오라·상태 감쇠)
+    CS.roundEnd([...this.battleState.allies, ...this.battleState.enemies], log);
 
     // Boss gimmick: 폭주 슬라임 element shift each round
     for (const enemy of this.battleState.enemies) {
@@ -229,7 +242,7 @@ class CombatSystem {
   _aggro(unit) {
     const br = this._unitBridges(unit);
     let a = unit.敵対心 || 1;
-    for (const sp of br.specials) if (sp.effect === 'aggroUp' || sp.effect === 'taunt') a += (sp.value || 1);
+    for (const sp of br.specials) if (sp.effect === 'aggroUp' || sp.effect === 'taunt' || sp.effect === 'pullTarget') a += (sp.value || 1);
     return Math.max(0.1, a);
   }
   _chooseTarget(actor, alive) {
@@ -278,11 +291,16 @@ class CombatSystem {
   }
 
   executeBasicAttack(attacker, target) {
-    const damage = this.calcDamage(attacker.atk, target.defenseProfile.physical, 1.0);
+    const sp = attacker._spCache || (attacker._spCache = CS.collect(this._unitBridges(attacker)));
+    const mods = CS.attackMods(attacker, target, sp, target.defenseProfile.physical, { round: this.battleState.round, skillId: 'basic', extraAp: 0 });
+    const atkEff = attacker._atkDownActive ? attacker.atk * 0.85 : attacker.atk;
+    const damage = mods.missed ? 0 : Math.floor(this.calcDamage(atkEff, mods.defValue, 1.0) * mods.multBonus * mods.critMult);
+    (attacker._ykGain = attacker._ykGain || []).push(['공격숙련', '물리']); // 역가: 행위→속성 숙련
     return {
       actor: attacker,
       target,
       damage,
+      element: '물리',
       apCost: 1,
       logEntry: {
         type: 'action',
@@ -298,13 +316,19 @@ class CombatSystem {
       defValue = target.defenseProfile[element];
     }
 
+    const sp = attacker._spCache || (attacker._spCache = CS.collect(this._unitBridges(attacker)));
+    const extraAp = sp.allInStrike ? Math.max(0, (attacker.ap || 0) - (skill.apCost || 2)) : 0;
+    if (extraAp > 0) attacker.ap = skill.apCost || 2; // 올인: 남은 AP 전소비
+    const mods = CS.attackMods(attacker, target, sp, defValue, { round: this.battleState.round, skillId: skill.id || skill.name, extraAp });
     const atkValue = element ? skill.power || attacker.atk : attacker.atk;
-    const damage = this.calcDamage(atkValue, defValue, skill.multiplier || 1.2);
-
+    const atkEff = attacker._atkDownActive ? atkValue * 0.85 : atkValue;
+    const damage = mods.missed ? 0 : Math.floor(this.calcDamage(atkEff, mods.defValue, skill.multiplier || 1.2) * mods.multBonus * mods.critMult);
+    (attacker._ykGain = attacker._ykGain || []).push(['공격숙련', element || '물리']);
     return {
       actor: attacker,
       target,
       damage,
+      element: element || '물리',
       apCost: skill.apCost || 2,
       logEntry: {
         type: 'skill',
@@ -316,10 +340,22 @@ class CombatSystem {
   // Damage formula: ATK × (ATK / (ATK + DEF)) × skillMultiplier
   calcDamage(atk, def, multiplier) {
     if (atk + def === 0) return 0;
-    const rawDamage = atk * (atk / (atk + def)) * multiplier;
+    const rawDamage = atk * (atk / (atk + def)) * multiplier * this._damageScale();
     // Add ±10% variance
     const variance = 0.9 + Math.random() * 0.2;
     return Math.max(1, Math.floor(rawDamage * variance));
+  }
+
+  _damageScale() {
+    if (this._dmgScaleCache != null) return this._dmgScaleCache;
+    let v = 1.0;
+    try {
+      const kv = this.engine.balance.getKV('combat.csv', 'combat_constants');
+      if (kv && kv.damageScale != null) v = Number(kv.damageScale);
+    } catch (e) { /* fallback */ }
+    if (process.env.DMG_SCALE) v = Number(process.env.DMG_SCALE); // 시뮬 스윕용
+    this._dmgScaleCache = v;
+    return v;
   }
 
   // Apply battle results back to game state
@@ -355,6 +391,11 @@ class CombatSystem {
           if (unit) {
             unit.exp.combat += Math.floor(results.expGained);
             unit.exp.body += Math.floor(results.expGained * 0.3);
+            // 역가: 전투 중 기록된 숙련 포인트 반영
+            for (const [g, k] of (ally._ykGain || [])) {
+              const up = YK.gain(unit, g, k);
+              if (up) results.levelUps.push({ name: unit.name, 역가: `${g}.${k}`, newLevel: up.level });
+            }
             // Level up check
             const levelResult = this.checkUnitLevelUp(unit);
             if (levelResult) results.levelUps.push({ name: unit.name, newLevel: levelResult.newLevel });
