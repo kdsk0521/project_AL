@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AL 유닛 로어 연결망 v0.3</title>
+<style>
+*{box-sizing:border-box}
+body{background:#0e0e14;color:#ccd;font-family:'Malgun Gothic','맑은 고딕',sans-serif;margin:16px 20px}
+h1{font-size:20px;color:#e8d5a0;margin:0 0 2px} .sub{color:#667;font-size:12px;margin-bottom:12px}
+.bar{margin-bottom:8px;font-size:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bar .lbl{color:#778;font-size:11px;margin-right:2px}
+.chip{padding:3px 9px;border-radius:12px;font-size:12px;background:#22222e;border:1px solid #33334a;cursor:pointer;user-select:none;color:#99a}
+.chip.on{color:#e8e8f2}
+.chip.off{opacity:.38;text-decoration:line-through}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.lk{display:inline-block;width:14px;text-align:center;margin-right:3px;font-weight:bold}
+select,button{font-size:12px;background:#1a1a26;color:#aab;border:1px solid #33334a;border-radius:4px;padding:4px 8px;cursor:pointer}
+select{max-width:340px}
+button:hover{background:#2e2818;color:#e8d5a0;border-color:#a08030}
+.main{display:flex;gap:12px;align-items:stretch}
+.cvbox{flex:1;position:relative;background:#101018;border:1px solid #2a2a3a;border-radius:8px;overflow:hidden;min-height:440px;height:calc(100vh - 208px)}
+canvas{display:block;width:100%;height:100%;cursor:grab}
+canvas.drag{cursor:grabbing}
+.hint{position:absolute;left:10px;bottom:8px;font-size:10.5px;color:#4c4c60;pointer-events:none;line-height:1.5}
+.panel{width:344px;flex:none;background:#16161f;border:1px solid #2a2a3a;border-radius:8px;padding:12px 14px;overflow-y:auto;height:calc(100vh - 208px);min-height:440px}
+.panel h2{font-size:16px;margin:0 0 4px;color:#e8d5a0}
+.panel h3{font-size:12px;color:#9ab;margin:14px 0 5px;border-bottom:1px solid #2a2a3a;padding-bottom:3px}
+.meta{font-size:11.5px;color:#889;line-height:1.75}
+.meta b{color:#aab;font-weight:normal}
+.hook{font-size:12.5px;color:#cdd;line-height:1.72;background:#12121a;border-left:2px solid #3a3a50;padding:8px 10px;border-radius:0 5px 5px 0;margin-top:4px}
+.lnk{font-size:11.5px;line-height:1.6;padding:4px 0;border-bottom:1px dotted #24242f}
+.lnk .nm{color:#cdd} .lnk .nt{color:#667;font-size:10.5px}
+.lnk .tt{color:#cb7}
+.badge{font-size:10px;padding:1px 7px;border-radius:8px;margin-left:5px;border:1px solid}
+.axisb{background:#2e2818;color:#e8d5a0;border-color:#a08030}
+.archb{background:#2e1616;color:#ff9a9a;border-color:#a03a3a}
+.neob{background:#2b2113;color:#ffb877;border-color:#a06a2e}
+.poolb{background:#20202a;color:#9a9aa8;border-color:#4a4a58}
+.note{font-size:11px;color:#889;margin-top:6px;line-height:1.6}
+.lineitem{font-size:11.5px;color:#9ab;line-height:1.6;margin:3px 0;cursor:pointer}
+.lineitem:hover{color:#e8d5a0}
+.legend{font-size:11px;color:#778;margin-top:8px;line-height:1.9}
+.legend .k{margin-right:14px;white-space:nowrap}
+.foot{font-size:10.5px;color:#4c4c60;margin-top:10px}
+.tip{font-size:11px;color:#667;line-height:1.7}
+::-webkit-scrollbar{width:9px}::-webkit-scrollbar-track{background:#12121a}
+::-webkit-scrollbar-thumb{background:#2e2e3e;border-radius:5px}
+</style></head><body>
+<h1>AL 유닛 로어 연결망 v0.3</h1>
+<div class="sub">정본=design/unit_lore_web.md · 전부 잠정 · 10클러스터 + 대기풀 / 총 58유닛 / 61링크 · 교차 아키타입 라인 8</div>
+
+<div class="bar"><span class="lbl">클러스터</span><span id="clChips"></span>
+  <button onclick="allCl(true)">전체</button><button onclick="allCl(false)">해제</button></div>
+<div class="bar"><span class="lbl">링크</span><span id="ltChips"></span>
+  <button onclick="allLt(true)">전체</button><button onclick="allLt(false)">해제</button></div>
+<div class="bar"><span class="lbl">교차 라인</span>
+  <select id="lineSel" onchange="onLine()"></select>
+  <button onclick="reheat()">재배치</button><button onclick="unpinAll()">핀 해제</button>
+  <button onclick="resetView()">뷰 리셋</button>
+  <label style="color:#778;font-size:11px;margin-left:4px"><input type="checkbox" id="lblAll" checked onchange="draw()"> 라벨 항상</label></div>
+
+<div class="main">
+  <div class="cvbox"><canvas id="cv"></canvas>
+    <div class="hint">드래그=노드 이동(자동 고정) · 더블클릭=고정 토글 · 클릭=상세 · 휠=확대 · 빈 곳 드래그=이동</div></div>
+  <div class="panel" id="panel"></div>
+</div>
+<div class="legend" id="legend"></div>
+<div class="foot">unit_lore_web.html v0.3 — 정본 design/unit_lore_web.md(v0.7) 골격 그대로 시각화. v0.3 = 레퍼런스 로테이션 동기화: A「가라앉은 극장」(개명 4·배역 표기·정본 unit_lore_theater.md v0.4.2) · B「일곱 번째 잿더미」(3유닛·정본 unit_lore_ashes.md v0.3) · 수련 요정 A→E · 도마뱀 3종 미배속 대기 풀(엣지 0=의도된 고립) · 교차 라인 1·6 폐기(번호 유지). 클러스터 배속·훅·링크 전부 잠정(레티어스 검수 전).</div>
+
+<script>
+const CLUSTERS={"A": {"key": "A", "name": "가라앉은 극장", "color": "#3d92d6", "zone": "수계 · 반쯤 잠긴 대극장", "log": "극장이 왜 가라앉았는지 아무도 모른다 — 그래서 공연이 끝나지 않는다(쥐덫). 정본=unit_lore_theater.md"}, "B": {"key": "B", "name": "일곱 번째 잿더미", "color": "#e2563c", "zone": "화산·가마", "log": "불은 재난이 아니라 계절 — 터가 주기적으로 전부 타고 잿더미에서 다시 시작한다. 이번이 일곱 번째라는데 세는 자가 없다. 정본=unit_lore_ashes.md"}, "C": {"key": "C", "name": "소금의 정적", "color": "#dfe3ee", "zone": "석굴·결빙", "log": "지키려는 봉인이 너무 강해, 지키려던 것까지 시간째 굳었다"}, "D": {"key": "D", "name": "은의 공방", "color": "#c084d8", "zone": "기관부", "log": "잃어버린 것을 되만들려는 연작 — 인형 하나가 시도 하나"}, "E": {"key": "E", "name": "독을 삼킨 정원", "color": "#5cbf68", "zone": "독림", "log": "정원에 독이 스몄을 때, 어머니는 뱉는 대신 삼키기로 했다"}, "F": {"key": "F", "name": "거울과 실", "color": "#e88fb8", "zone": "연결망의 허브", "log": "갈라진 반쪽들, 그리고 그 사이 인연을 잣고 적는 자들"}, "G": {"key": "G", "name": "우레 남은 산맥", "color": "#f2cf4a", "zone": "심층", "log": "옛 전쟁은 끝난 게 아니라 중단되었다"}, "H": {"key": "H", "name": "잔류 기사단", "color": "#7f8a99", "zone": "기관부", "log": "지키던 것이 사라진 뒤에도 근무는 계속된다"}, "I": {"key": "I", "name": "실잣는 것들", "color": "#3fc9bd", "zone": "석굴", "log": "인연을 잇는 실과 끊는 실은 한 뿌리에서 나온다"}, "J": {"key": "J", "name": "귀향 없는 항해", "color": "#ff9a3c", "zone": "외해 항로 (신규·미배치)", "log": "돌아가는 길이 자꾸 길어진다. 뭐, 배 위가 나쁘지만은 않다"}, "W": {"key": "W", "name": "미배속 대기 풀", "color": "#6b6b78", "zone": "클러스터 무소속", "log": "추후 「도마뱀 소녀 계열」(레퍼런스 미정) 구상 시 사용 — 연결 라인 없음, 로어 미부여 보존", "pool": true}};
+const CL_ORDER=["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "W"];
+const LTYPES={"sister": {"key": "sister", "sym": "〰", "name": "자매/동원", "color": "#6fcf97", "dir": false, "desc": "같은 기원에서 갈라짐"}, "half": {"key": "half", "sym": "◐", "name": "반쪽", "color": "#ff8fd0", "dir": false, "desc": "하나였던 것의 분리 (자매보다 강함)"}, "make": {"key": "make", "sym": "⚒", "name": "제작/피조", "color": "#d4a259", "dir": true, "desc": "만든 자와 만들어진 자"}, "cause": {"key": "cause", "sym": "→", "name": "인과", "color": "#8aa8ff", "dir": true, "desc": "한쪽의 행위/사건이 다른 쪽의 현재 상태를 만듦"}, "rival": {"key": "rival", "sym": "⚔", "name": "대립", "color": "#e05252", "dir": false, "desc": "숙적·경쟁·침탈"}, "guard": {"key": "guard", "sym": "▣", "name": "사수/주종", "color": "#56b8d8", "dir": true, "desc": "지키는 자와 지켜지는 것, 따르는 자"}, "trade": {"key": "trade", "sym": "⇄", "name": "공급/거래", "color": "#b9a0e8", "dir": false, "desc": "물건·기술이 오감"}, "witness": {"key": "witness", "sym": "◎", "name": "목격/기록", "color": "#d8d8a0", "dir": true, "desc": "사건을 보았거나 적는 자"}};
+const LT_ORDER=["sister", "half", "make", "cause", "rival", "guard", "trade", "witness"];
+const NODES=[{"name": "폐막의 용녀", "cluster": "A", "axis": true, "tier": "★희귀 lv45", "hook": "극장의 여지배인. 침수 직전 무대 뒤 문을 잠갔다 — 지키려고, 혹은 가두려고. 최대 용의자이자 최대 협조자.", "notes": ["구명: 심해 용궁녀", "§4 슬롯: 문을 잠근 이유 — 지키려고 / 가두려고"], "uid": "UNIT_DEEP_SEA_DRAGON_LADY", "lv": 45, "sigil": "거해(巨蟹)", "cat": "요괴", "acq": "조우(희귀)", "el": "위/열", "habitat": "24~30층 심층 수계", "arch": false, "neo": false, "role": "용의자"}, {"name": "해파리 무희", "cluster": "A", "axis": false, "tier": "lv20", "hook": "군무 수석, 공연 쪽 소문통. 극장의 모든 뒷말이 그녀를 거친다.", "notes": [], "uid": "UNIT_JELLYFISH_DANCER", "lv": 20, "sigil": "거해(巨蟹)", "cat": "요괴", "acq": "조우(조건)", "el": "광/위", "habitat": "10~14층 수계 심부", "arch": false, "neo": false, "role": "주변 인물"}, {"name": "잔향의 인어", "cluster": "A", "axis": false, "tier": "희귀 lv44", "hook": "프리마돈나. 마지막 아리아가 아직 잔향으로 돈다 — 끝내지 못한 게 아니라 끝내면 안 됐던 거라면?", "notes": [], "uid": "UNIT_ECHO_MERMAID", "lv": 44, "sigil": "쌍어(雙魚)", "cat": "정령", "acq": "조우(희귀)", "el": "동/열", "habitat": "23~28층 심층 수계", "arch": false, "neo": false, "role": "용의자"}, {"name": "보일러실 대게", "cluster": "A", "axis": false, "tier": "lv25", "hook": "화부. 잠긴 극장이 얼지 않는 건 그녀 불씨 덕 — 그런데 사건 당일 보일러실은 밀실이었다.", "notes": ["구명: 온천 대게"], "uid": "UNIT_HOTSPRING_CRAB", "lv": 25, "sigil": "거해(巨蟹)", "cat": "야수", "acq": "조우", "el": "열/동", "habitat": "12~16층 화산-수계 경계 (온천 지대)", "arch": false, "neo": false, "role": "용의자"}, {"name": "달빛 해월", "cluster": "A", "axis": false, "tier": "합체전용 lv36", "hook": "영원한 단 한 명의 관객. 말 대신 몸에 장면을 띄워 대화한다. 재상연마다 조금씩 다른 장면이 수사의 유일한 진전.", "notes": ["◎ 사건 그 자체 (침몰의 밤 — 유닛 노드 아님)", "구명: 인 해월 (燐↔印 동음 회피)"], "uid": "UNIT_PHOSPHOR_MOON_JELLY", "lv": 36, "sigil": "거해(巨蟹)", "cat": "환상", "acq": "합체전용", "el": "광/식", "habitat": "", "arch": false, "neo": false, "role": "증인"}, {"name": "거품 슬라임", "cluster": "A", "axis": false, "tier": "lv3", "hook": "사건이 낳은 탐정. 태어나 보니 현장이었다 — 왜 태어났는지 알려면 사건을 풀어야 한다. 기억 없음=선입견 없음, 몸=그날 밤의 거품(걸어다니는 물증), 몸에 안 맞는 큰 탐정 모자. 조수는 용의자들이 번갈아 자원(수사를 각자 유리하게 끌려고).", "notes": ["▣ 극장 전원 (임시 조수 — 용의자 자원제 · 단일 노드 아님)"], "uid": "UNIT_BUBBLE_SLIME", "lv": 3, "sigil": "거해(巨蟹)", "cat": "요괴", "acq": "기초풀", "el": "열/동", "habitat": "1~3층 수계 구역 입구", "arch": false, "neo": false, "role": "탐정"}, {"name": "무대안개 해파리", "cluster": "A", "axis": false, "tier": "lv3", "hook": "무대 안개 담당. 사건 당일 안개를 평소보다 짙게 깔았다 — 지시받았다는데, 누구에게?", "notes": ["구명: 안개 해파리", "§4 슬롯: 안개의 지시자 — 누구의 연출인가"], "uid": "UNIT_MIST_JELLYFISH", "lv": 3, "sigil": "쌍어(雙魚)", "cat": "정령", "acq": "기초풀", "el": "동/광", "habitat": "1~4층 수계 구역", "arch": false, "neo": false, "role": "용의자"}, {"name": "산호 마녀", "cluster": "A", "axis": false, "tier": "합체전용 lv35", "hook": "지하 호수의 괴인. 산호가 얼굴을 덮었다(가면 아닌 가면 — J 차별화). 극장을 제 것이라 부르며 무대장치를 산호로 고쳐 짓는다 — \"극장을 살리는 중\".", "notes": [], "uid": "UNIT_CORAL_WITCH", "lv": 35, "sigil": "금우(金牛)", "cat": "요괴", "acq": "합체전용", "el": "식/광", "habitat": "", "arch": false, "neo": false, "role": "용의자"}, {"name": "업화의 인살", "cluster": "B", "axis": true, "tier": "★희귀 lv45", "hook": "예정된 불로 걸어들어가는 자. 전신 화상 문양 = 지난 순환들의 나이테. 살기로 보이는 건 계절이 스스로를 미워하지 않듯 망설임이 없어서.", "notes": ["§4 슬롯: 첫 번째 불은 누가 — 순환의 기원"], "uid": "UNIT_KARMIC_ASSASSIN", "lv": 45, "sigil": "천갈(天蝎)", "cat": "야수", "acq": "조우(희귀)", "el": "열/위", "habitat": "22~28층 화산 심층", "arch": false, "neo": false, "role": "집행자"}, {"name": "잿빛 무녀", "cluster": "B", "axis": false, "tier": "합체전용 lv34", "hook": "성화지기. 사당을 안 떠나는 이유: 사당의 불씨가 다음 큰불의 씨앗이라서. 재가 된 몸으로 재의 계절을 준비하며, 불 앞에서 지나간 여섯 번을 위한 진혼가를 부른다.", "notes": ["§4 슬롯: 이번에 타지 않는 것 — 여섯 번 동안 남긴 여섯 개는"], "uid": "UNIT_ASH_SHRINE_MAIDEN", "lv": 34, "sigil": "백양(白羊)", "cat": "환상", "acq": "합체전용", "el": "식/열", "habitat": "", "arch": false, "neo": false, "role": "사제"}, {"name": "슬래그 골렘", "cluster": "B", "axis": false, "tier": "lv14", "hook": "잿더미가 식으면 제일 먼저 일어난다 — 매번 형태가 조금 다르고 본인도 어디가 달라졌는지 모른다. 관절 틈 열기 = 전생의 잔불. 재건 일상의 주역(제일 힘세고 제일 명랑).", "notes": ["개명 후보: 「잿더미 골렘」 (ashes §5 · CSV 반영 대기)"], "uid": "UNIT_SLAG_GOLEM", "lv": 14, "sigil": "백양(白羊)", "cat": "인조", "acq": "기초풀", "el": "열/동", "habitat": "", "arch": false, "neo": false, "role": "되태어나는 자"}, {"name": "결계석", "cluster": "C", "axis": true, "tier": "★합체전용 lv37", "hook": "무언가를 지키려 세워진 결계가 인간형으로 깨어난 것. 결계가 너무 강해 지키려던 것까지 시간째 굳혔다. 감정이 빛 색으로만 새는 건, 말로 하면 또 무언가 굳을까 봐.", "notes": ["▣ ? (지키던 것 — §6 미스터리 슬롯)"], "uid": "UNIT_BARRIER_STONE", "lv": 37, "sigil": "염(鹽)", "cat": "환상", "acq": "합체전용", "el": "위/광", "habitat": "", "arch": false, "neo": false, "role": ""}, {"name": "미이라 무녀", "cluster": "C", "axis": false, "tier": "lv27", "hook": "잿빛 무녀와 한 사당의 무녀. 불의 답이 재라면 이쪽의 답은 보존 — 스스로를 감아 시간 밖으로 나갔다. 붕대 아래에 지키는 것이 있다(§6).", "notes": [], "uid": "UNIT_MUMMY_SHRINE_MAIDEN", "lv": 27, "sigil": "염(鹽)", "cat": "요괴", "acq": "조우", "el": "식/열", "habitat": "13~18층 기관부", "arch": false, "neo": false, "role": ""}, {"name": "소금꽃", "cluster": "C", "axis": false, "tier": "lv21", "hook": "굳은 이들의 눈물이 스며 핀 결정. 만지면 따끔한 것은 눈물의 온도.", "notes": [], "uid": "UNIT_SALT_FLOWER", "lv": 21, "sigil": "염(鹽)", "cat": "정령", "acq": "조우", "el": "광/동", "habitat": "8~13층 결빙 구역 (소금 동굴)", "arch": false, "neo": false, "role": ""}, {"name": "소금 슬라임", "cluster": "C", "axis": false, "tier": "lv3", "hook": "다 굳지 못하고 녹다 만 막내. 습기를 무서워하는 건 마저 녹으면 저까지 사라진다고 믿어서.", "notes": [], "uid": "UNIT_SALT_SLIME", "lv": 3, "sigil": "염(鹽)", "cat": "요괴", "acq": "기초풀", "el": "동/위", "habitat": "1~4층 석굴 구역", "arch": false, "neo": false, "role": ""}, {"name": "석상 소녀", "cluster": "C", "axis": false, "tier": "lv10", "hook": "굳은 사람인가, 사람을 본뜬 돌인가 — 본인도 모른다. 표정 변화가 미세한 건 굳기 전 마지막 표정에서 멀어지지 않으려는 것.", "notes": ["→ 결계석 (인과의 역방향: 원인을 찾아다님)"], "uid": "UNIT_STONE_MAIDEN", "lv": 10, "sigil": "염(鹽)", "cat": "인조", "acq": "기초풀", "el": "위/동", "habitat": "", "arch": false, "neo": false, "role": ""}, {"name": "호박 정령", "cluster": "C", "axis": false, "tier": "lv18", "hook": "정적 이전의 시간이 호박 속에 통째로 보존된 것. 안에 비치는 '고대 벌레'의 정체가 이 구역 최대 떡밥(§6).", "notes": [], "uid": "UNIT_AMBER_SPIRIT", "lv": 18, "sigil": "금우(金牛)", "cat": "정령", "acq": "조우", "el": "광/열", "habitat": "8~12층 기관부", "arch": false, "neo": false, "role": ""}, {"name": "백은의 연금술사", "cluster": "D", "axis": true, "tier": "★희귀 lv46", "hook": "비인간 연금술사. 잃어버린 누군가를 되만들기 위해 인형을 연작으로 만든다 — 인형 하나가 시도 하나, 실패 하나. 실패작을 버리지 않고 전부 딸로 삼았다.", "notes": [], "uid": "UNIT_SILVER_ALCHEMIST", "lv": 46, "sigil": "처녀(處女)", "cat": "요괴", "acq": "조우(희귀)", "el": "열/위", "habitat": "25~30층 기관부 심층", "arch": false, "neo": false, "role": ""}, {"name": "해골 외과의", "cluster": "D", "axis": false, "tier": "합체전용 lv37", "hook": "연금술사의 옛 스승. 죽었지만 수술을 멈추는 법은 배운 적이 없어 계속한다. 메스가 마력체인 건 손이 먼저 사라졌기 때문.", "notes": [], "uid": "UNIT_SKELETON_SURGEON", "lv": 37, "sigil": "천갈(天蝎)", "cat": "환상", "acq": "합체전용", "el": "위/식", "habitat": "", "arch": false, "neo": false, "role": ""}, {"name": "진흙 인형", "cluster": "D", "axis": false, "tier": "lv4", "hook": "1호. 가장 어설프고 가장 오래 곁에 있다. 표정이 어설픈 건 연금술사가 그날 이후 웃는 얼굴을 정확히 기억하지 못해서.", "notes": [], "uid": "UNIT_MUD_DOLL", "lv": 4, "sigil": "금우(金牛)", "cat": "인조", "acq": "기초풀", "el": "동/열", "habitat": "", "arch": false, "neo": false, "role": ""}, {"name": "야드 스파이더", "cluster": "D", "axis": false, "tier": "lv7", "hook": "2호(조수). 손가락이 도구인 건 '내 손을 대신할 손'으로 만들어져서.", "notes": [], "uid": "UNIT_YARD_SPIDER", "lv": 7, "sigil": "거해(巨蟹)", "cat": "인조", "acq": "기초풀", "el": "위/광", "habitat": "", "arch": false, "neo": false, "role": ""}, {"name": "증류기 인형", "cluster": "D", "axis": false, "tier": "lv16", "hook": "3호(심장 실험). 몸속을 도는 액체는 피의 대용품 후보들. 무표정한 건 실패를 얼굴에 담지 말라고 배워서.", "notes": [], "uid": "UNIT_DISTILLER_DOLL", "lv": 16, "sigil": "처녀(處女)", "cat": "인조", "acq": "기초풀", "el": "열/광", "habitat": "", "arch": false, "neo": false, "role": ""}, {"name": "향로 인형", "cluster": "D", "axis": false, "tier": "lv20", "hook": "4호(기억 실험). 향은 '그 사람'의 냄새를 재현하려는 시도. 곁에서 나른해지는 건 향에 섞인 그리움 때문.", "notes": [], "uid": "UNIT_INCENSE_DOLL", "lv": 20, "sigil": "쌍어(雙魚)", "cat": "인조", "acq": "조우(조건)", "el": "열/식", "habitat": "10~14층 기관부", "arch": false, "neo": false, "role": ""}, {"name": "해부인형", "cluster": "D", "axis": false, "tier": "lv22", "hook": "5호(원인 규명). 실패의 원인을 찾도록 몸이 열리게 설계됐다. 스스로를 교보재로 내놓는 걸 아프다고 생각하지 않는다 — 그게 더 아픈 지점.", "notes": [], "uid": "UNIT_DISSECTION_DOLL", "lv": 22, "sigil": "천갈(天蝎)", "cat": "인조", "acq": "조우(조건)", "el": "광/동", "habitat": "12~16층 기관부", "arch": false, "neo": false, "role": ""}, {"name": "수련 요정", "cluster": "E", "axis": false, "tier": "lv13", "hook": "독림 한가운데 아직 맑은 물웅덩이의 지기. 독이 물에 스미지 않는 건 그녀가 밤낮 물을 갈아서. 극장(A) 무대 수련잎도 출장 관리 — A↔E 다리.", "notes": ["A→E 재배치 (2026-08-08 · 집중도 조정)"], "uid": "UNIT_LOTUS_FAIRY", "lv": 13, "sigil": "거해(巨蟹)", "cat": "정령", "acq": "조우", "el": "열/식", "habitat": "5~8층 수계 구역", "arch": false, "neo": false, "role": ""}, {"name": "대지모", "cluster": "E", "axis": true, "tier": "★희귀 lv47", "hook": "정원의 뿌리, 태고의 어머니. 독이 스몄을 때(출처는 §5와 연동 가능) 뱉는 대신 삼키기로 했다 — 정원이 독째로 사는 법을 배우도록.", "notes": ["▣ 정원 전체 (클러스터 E 총괄)"], "uid": "UNIT_EARTH_MOTHER", "lv": 47, "sigil": "염(鹽)", "cat": "정령", "acq": "조우(희귀)", "el": "동/식", "habitat": "24~30층 심층 자연 구역", "arch": false, "neo": false, "role": ""}, {"name": "약초 요정", "cluster": "E", "axis": false, "tier": "lv5", "hook": "독을 약으로 되돌리려는 막내. 손끝이 늘 녹색인 건 하루도 손을 쉬지 않아서.", "notes": [], "uid": "UNIT_HERB_FAIRY", "lv": 5, "sigil": "처녀(處女)", "cat": "정령", "acq": "기초풀", "el": "식/열", "habitat": "1~4층 독림 구역 입구", "arch": false, "neo": false, "role": ""}, {"name": "독나비", "cluster": "E", "axis": false, "tier": "lv21", "hook": "독을 지우는 대신 아름다움으로 입은 자. 날개 인분 = 정원의 독의 정수.", "notes": [], "uid": "UNIT_POISON_BUTTERFLY", "lv": 21, "sigil": "처녀(處女)", "cat": "요괴", "acq": "조우(조건)", "el": "식/동", "habitat": "10~14층 독림 심부", "arch": false, "neo": false, "role": ""}, {"name": "독무 무용수", "cluster": "E", "axis": false, "tier": "lv28", "hook": "독을 춤으로 다스리는 정원의 경비. 지나간 자리의 독무 = 출입 금지선.", "notes": [], "uid": "UNIT_POISON_MIST_DANCER", "lv": 28, "sigil": "천갈(天蝎)", "cat": "정령", "acq": "조우", "el": "식/열", "habitat": "14~20층 독림 심층", "arch": false, "neo": false, "role": ""}, {"name": "공생균 소녀", "cluster": "E", "axis": false, "tier": "lv14", "hook": "정원과 한 몸이 된 아이. 어디까지가 나고 어디부터가 정원인지 경계가 흐리다. 곁이 편해지는 건 정원이 반긴다는 뜻.", "notes": [], "uid": "UNIT_SYMBIOTE_GIRL", "lv": 14, "sigil": "쌍어(雙魚)", "cat": "야수", "acq": "기초풀", "el": "식/열", "habitat": "5~9층 독림 구역", "arch": false, "neo": false, "role": ""}, {"name": "이끼 늑대", "cluster": "E", "axis": false, "tier": "lv9", "hook": "정원 순찰자. 느릿한 건 게을러서가 아니라 이끼(정원의 일부)를 업고 다녀서.", "notes": [], "uid": "UNIT_MOSS_WOLF", "lv": 9, "sigil": "금우(金牛)", "cat": "야수", "acq": "조우", "el": "식/동", "habitat": "3~6층 독림 구역 입구", "arch": false, "neo": false, "role": ""}, {"name": "전갈 소녀", "cluster": "E", "axis": false, "tier": "lv4", "hook": "정원 밖에서 흘러든 이방인. 독 때문에 쫓겨왔는데 여기서는 독이 자격이 된다 — 처음으로 받아들여진 곳.", "notes": [], "uid": "UNIT_SCORPION_GIRL", "lv": 4, "sigil": "천갈(天蝎)", "cat": "야수", "acq": "기초풀", "el": "식/위", "habitat": "2~5층 석굴 구역", "arch": false, "neo": false, "role": ""}, {"name": "인과의 직공", "cluster": "F", "axis": true, "tier": "★합체전용 lv35", "hook": "존재와 존재 사이의 인연을 실로 짜는 자. 이 연결망 전체가 그녀의 직물 — 어느 실도 그녀가 만들지 않았고, 다만 엮을 뿐.", "notes": ["전 클러스터 허브 (연결망 자체의 화자격)"], "uid": "UNIT_FATE_WEAVER", "lv": 35, "sigil": "쌍어(雙魚)", "cat": "환상", "acq": "합체전용", "el": "광/위", "habitat": "", "arch": false, "neo": false, "role": ""}, {"name": "봉인의 서기관", "cluster": "F", "axis": true, "tier": "★합체전용 lv36", "hook": "모든 사건의 기록자. 몸의 문자 = 지금까지 기록한 이야기들. 형태가 글자로 분해되는 건 이야기가 본체고 몸이 사본이라서. 로어 파편 해금의 화자 후보(§7).", "notes": ["◎ 침몰(달빛 해월 경유) · 첫 불 · 전쟁(현무 등딱지 해독)"], "uid": "UNIT_SEAL_SCRIBE", "lv": 36, "sigil": "처녀(處女)", "cat": "환상", "acq": "합체전용", "el": "광/식", "habitat": "", "arch": false, "neo": false, "role": ""}, {"name": "거울 여우", "cluster": "F", "axis": false, "tier": "lv8", "hook": "한 여우의 '비추는 반쪽'. 상대 감정을 따라 표정이 변하는 건 제 표정을 반쪽에게 두고 와서.", "notes": [], "uid": "UNIT_MIRROR_FOX", "lv": 8, "sigil": "쌍어(雙魚)", "cat": "요괴", "acq": "조우", "el": "광/동", "habitat": "3~7층 기관부 입구", "arch": false, "neo": false, "role": ""}, {"name": "칼날 여우", "cluster": "F", "axis": false, "tier": "lv19", "hook": "'베는 반쪽'. 허영은 갑옷 — 거울을 안 보는 건 볼 때마다 반쪽이 비치기 때문.", "notes": [], "uid": "UNIT_BLADE_FOX", "lv": 19, "sigil": "백양(白羊)", "cat": "요괴", "acq": "조우(조건)", "el": "광/식", "habitat": "8~12층 기관부", "arch": false, "neo": false, "role": ""}, {"name": "쌍두사", "cluster": "F", "axis": false, "tier": "lv26", "hook": "갈라지다 만 것. 좌우가 미묘하게 다른 건 두 존재가 한 몸에서 멈춰서. 여우 자매가 부러운지 다행인지, 머리마다 답이 다르다.", "notes": [], "uid": "UNIT_TWIN_SERPENT", "lv": 26, "sigil": "쌍어(雙魚)", "cat": "요괴", "acq": "조우", "el": "위/동", "habitat": "14~19층 석굴~기관부 경계", "arch": false, "neo": false, "role": ""}, {"name": "그림자 고양이", "cluster": "F", "axis": false, "tier": "lv9", "hook": "누군가에게서 떨어져 나온 그림자. 주인이 누군지 본인도 모른다(§6) — 어둠 속에서 빛나는 눈은 주인을 찾는 등불.", "notes": [], "uid": "UNIT_SHADOW_CAT", "lv": 9, "sigil": "천갈(天蝎)", "cat": "요괴", "acq": "조우", "el": "동/식", "habitat": "3~7층 석굴 어둠 구역", "arch": false, "neo": false, "role": ""}, {"name": "가시 임프", "cluster": "F", "axis": false, "tier": "lv3", "hook": "소문 배달꾼. 서기관의 기록을 훔쳐 읽고 소문으로 뿌린다 — 유닛들 사이에 이 이야기들이 도는 건 팔할이 이 아이 입. 등의 가시는 거짓말할 때마다 하나씩 돋는다(본인 주장).", "notes": [], "uid": "UNIT_THORN_IMP", "lv": 3, "sigil": "백양(白羊)", "cat": "요괴", "acq": "기초풀", "el": "위/열", "habitat": "1~3층 석굴 구역", "arch": false, "neo": false, "role": ""}, {"name": "뇌각 장수", "cluster": "G", "axis": true, "tier": "★희귀 lv43", "hook": "옛 전쟁의 마지막 장수. 상대는 불 — 업화의 인살과의 싸움은 끝난 게 아니라 중단되었다. 뿔 = 부러뜨린 벼락.", "notes": [], "uid": "UNIT_THUNDER_HORN_GENERAL", "lv": 43, "sigil": "백양(白羊)", "cat": "야수", "acq": "조우(희귀)", "el": "동/위", "habitat": "20~25층 심층 구역", "arch": false, "neo": false, "role": ""}, {"name": "폭뢰 정령", "cluster": "G", "axis": false, "tier": "lv24", "hook": "그 전쟁에서 떨어진 벼락이 땅에서 깨어난 것. 장수를 따르는 건 명령이 남아서가 아니라, 벼락은 원래 산으로 돌아가는 성질이라.", "notes": [], "uid": "UNIT_THUNDER_SPIRIT", "lv": 24, "sigil": "백양(白羊)", "cat": "정령", "acq": "조우", "el": "위/광", "habitat": "10~15층 위험 구역 심부", "arch": false, "neo": false, "role": ""}, {"name": "현무", "cluster": "G", "axis": false, "tier": "희귀 lv44", "hook": "전쟁을 등딱지로 받아낸 산. 등의 문양 = 그 전쟁의 전황도. 느린 건 산이 원래 그런 속도라서.", "notes": ["◎ 전쟁 전체 (사건 — 유닛 노드 아님)"], "uid": "UNIT_GENBU", "lv": 44, "sigil": "금우(金牛)", "cat": "환상", "acq": "조우(희귀)", "el": "동/식", "habitat": "22~28층 심층", "arch": false, "neo": false, "role": ""}, {"name": "철벽 기사", "cluster": "H", "axis": false, "tier": "lv26", "hook": "지키던 것이 사라진 뒤에도 근무를 계속하는 선임. 바이저를 열지 않는 건 교대자가 올 때까지 얼굴도 직무의 일부라서.", "notes": ["▣ ? (지키던 것 — §6 미스터리 슬롯)"], "uid": "UNIT_IRON_KNIGHT", "lv": 26, "sigil": "금우(金牛)", "cat": "인조", "acq": "조우", "el": "동/위", "habitat": "12~18층 기관부 심부", "arch": false, "neo": false, "role": ""}, {"name": "결정 기사", "cluster": "H", "axis": false, "tier": "lv27", "hook": "후임. 갑옷이 몸에 융합된 건 벗을 날이 오지 않아서. 둘 다 '무엇을 지켰는지' 기억이 마모되어 간다.", "notes": [], "uid": "UNIT_CRYSTAL_KNIGHT", "lv": 27, "sigil": "처녀(處女)", "cat": "인조", "acq": "조우", "el": "동/광", "habitat": "13~18층 기관부", "arch": false, "neo": false, "role": ""}, {"name": "수정 거미", "cluster": "I", "axis": false, "tier": "lv15", "hook": "실을 수정으로 잣는 언니. 잡은 것을 놓지 않는 소유욕 — 그런데 가장 좋은 실은 전부 직공에게 판다. 그건 아깝지 않다. 실이 어딘가에 닿는 게 좋아서.", "notes": [], "uid": "UNIT_CRYSTAL_SPIDER", "lv": 15, "sigil": "금우(金牛)", "cat": "요괴", "acq": "기초풀", "el": "광/동", "habitat": "5~10층 석굴 심부", "arch": false, "neo": false, "role": ""}, {"name": "침식 거미", "cluster": "I", "axis": false, "tier": "lv17", "hook": "닿은 것을 삭이는 실을 잣는 동생. 여섯 눈 = 끊어야 할 실을 고르는 눈. 직공의 가위 역할 — 잇는 실과 끊는 실은 한 뿌리.", "notes": [], "uid": "UNIT_EROSION_SPIDER", "lv": 17, "sigil": "천갈(天蝎)", "cat": "요괴", "acq": "기초풀", "el": "식/광", "habitat": "6~10층 석굴 심부", "arch": false, "neo": false, "role": ""}, {"name": "에우데미아", "cluster": "J", "axis": true, "arch": false, "neo": true, "role": "주역 ★", "tier": "신규(가안) ★주역", "hook": "떠도는 선장. 가짜 이름 '우데미아'를 한 글자 고쳐 자칭 개명(\"아무도아님은 졸업했다\"), 진짜 이름은 공란. 빈 해먹 얘기는 먼저 꺼내지 않는다.", "notes": ["부재의 중심 = 「귀향」 (집·항구·재회 — 유닛 노드 아님)", "배 = 우데미아호 (입항 기록이 남지 않는 배)", "§5 슬롯: 선장의 진짜 이름 — 답은 공란", "§5 슬롯: 우데미아호의 정원(定員) — 여분의 노·빈 해먹·큰 식탁"], "uid": "", "lv": 0, "sigil": "미정", "cat": "미정", "acq": "조우(희귀) 후보", "el": "미정", "habitat": ""}, {"name": "아이올라", "cluster": "J", "axis": false, "arch": false, "neo": true, "role": "선원", "tier": "신규(가안) 선원", "hook": "바람지기. 자루 관리는 완벽한데 본인이 샌다 — 놀라면 돌풍, 재채기는 해난 사고. 자루 안은? 그냥 바람자루(해소됨).", "notes": ["◎ 항로3 (항로 사슬 3번째 자리)"], "uid": "", "lv": 0, "sigil": "미정", "cat": "정령", "acq": "미정", "el": "미정", "habitat": ""}, {"name": "키르케", "cluster": "J", "axis": false, "arch": false, "neo": true, "role": "선원", "tier": "신규(가안) 선원", "hook": "잔(盞)의 마녀. 조언이 맞나 확인하러 탔다가 눌러앉은 은인 겸 잔소리꾼. 유일하게 원전 이름 그대로 — 잃은 게 없는 자.", "notes": ["◎ 항로4 (항로 사슬 4번째 자리)", "(보류) ⇄ 백은의 연금술사(D) — 변신 시술의 두 유파, 카드군 확장 시 재검토"], "uid": "", "lv": 0, "sigil": "미정", "cat": "요괴", "acq": "미정", "el": "미정", "habitat": ""}, {"name": "칼립소", "cluster": "J", "axis": false, "arch": false, "neo": true, "role": "선원", "tier": "신규(가안) 선원", "hook": "머무름의 님프. 놓는 대신 따라나선 최고참 승객(짐이 7년치). 어원='감추다' — 진짜 이름을 들었을지도(웃기만 함).", "notes": ["◎ 항로7 (항로 사슬 종착 — 머무름)"], "uid": "", "lv": 0, "sigil": "미정", "cat": "환상", "acq": "미정", "el": "미정", "habitat": ""}, {"name": "로토스 과수지기", "cluster": "J", "axis": false, "arch": false, "neo": true, "role": "적役", "tier": "신규(가안) 적役", "hook": "잊은 기억의 분실물 보관소를 운영하는 과수지기. \"한 알만\" 영업.", "notes": ["◎ 항로1 (항로 사슬 시작)"], "uid": "", "lv": 0, "sigil": "미정", "cat": "정령", "acq": "미정", "el": "미정", "habitat": ""}, {"name": "외눈 목양녀", "cluster": "J", "axis": false, "arch": false, "neo": true, "role": "적役", "tier": "신규(가안) 적役", "hook": "진짜 이름 수집 수첩의 거구. 마지막 칸은 그 선장 몫 — 선장에겐 줄 이름이 없다는 걸 둘 다 모른다.", "notes": ["◎ 항로2 (항로 사슬 2번째 자리)", "§5 슬롯: 선장의 진짜 이름 — 수첩의 마지막 칸"], "uid": "", "lv": 0, "sigil": "미정", "cat": "야수", "acq": "미정", "el": "미정", "habitat": ""}, {"name": "모래톱의 세이렌", "cluster": "J", "axis": false, "arch": false, "neo": true, "role": "적役", "tier": "신규(가안) 적役", "hook": "완창을 듣고도 오지 않은 유일한 청중을 다시 부르는 순회공연 가희.", "notes": ["◎ 항로5 (항로 사슬 5번째 자리)"], "uid": "", "lv": 0, "sigil": "미정", "cat": "환상", "acq": "미정", "el": "미정", "habitat": ""}, {"name": "여섯가면 해협지기", "cluster": "J", "axis": false, "arch": false, "neo": true, "role": "적役", "tier": "신규(가안) 적役", "hook": "떠다니는 가면 여섯=협상 창구, 들숨=하루 세 번의 예외 조항. 가면들이 일제히 입을 다물면 도망칠 시간. 모순쌍(소손↔전손) 태생 공존체.", "notes": ["◎ 항로6 (항로 사슬 6번째 자리)", "시스템 접점: 모순쌍 초기 공존체 — 통합형[음양합일] 쇼케이스 후보"], "uid": "", "lv": 0, "sigil": "미정", "cat": "요괴", "acq": "미정", "el": "미정", "habitat": ""}, {"name": "끝을 푸는 직녀", "cluster": "J", "axis": false, "arch": true, "neo": true, "role": "아치에너미", "tier": "신규(가안) 아치에너미", "hook": "밤마다 푸는 것은 수의가 아니라 항해 그 자체. 알면서 한다. 선장의 아내(부부·백합), 진짜 이름의 확정 보유자.", "notes": ["§5 슬롯: 직녀는 왜 — 동기는 공란", "진짜 이름의 확정 보유자 (부부·백합)"], "uid": "", "lv": 0, "sigil": "미정", "cat": "환상", "acq": "합체전용 후보", "el": "미정", "habitat": ""}, {"name": "서리 도마뱀 소녀", "cluster": "W", "axis": false, "tier": "lv8", "hook": "미배속 — 「도마뱀 소녀 계열」(레퍼런스 미정) 구상 대기. 연결 라인 없음, 로어 미부여 상태로 보존(web.md §3 ※).", "notes": ["구 로어 폐기: 「도마뱀 세 자매」 라인(§4-1) 폐기 2026-08-08", "엣지 0 = 의도된 고립"], "uid": "UNIT_FROST_LIZARD_GIRL", "lv": 8, "sigil": "백양(白羊)", "cat": "야수", "acq": "조우", "el": "열/위", "habitat": "4~7층 결빙 경계 구역", "arch": false, "neo": false, "role": "미배속"}, {"name": "렌즈 도롱뇽", "cluster": "W", "axis": false, "tier": "lv10", "hook": "미배속 — 「도마뱀 소녀 계열」(레퍼런스 미정) 구상 대기. 연결 라인 없음, 로어 미부여 상태로 보존(web.md §3 ※).", "notes": ["구 로어 폐기: 「도마뱀 세 자매」 라인(§4-1) 폐기 2026-08-08", "엣지 0 = 의도된 고립"], "uid": "UNIT_LENS_SALAMANDER", "lv": 10, "sigil": "처녀(處女)", "cat": "야수", "acq": "조우", "el": "광/위", "habitat": "4~8층 석굴 구역", "arch": false, "neo": false, "role": "미배속"}, {"name": "화석 도마뱀", "cluster": "W", "axis": false, "tier": "lv15", "hook": "미배속 — 「도마뱀 소녀 계열」(레퍼런스 미정) 구상 대기. 연결 라인 없음, 로어 미부여 상태로 보존(web.md §3 ※).", "notes": ["구 로어 폐기: 「도마뱀 세 자매」 라인(§4-1) 폐기 2026-08-08", "엣지 0 = 의도된 고립"], "uid": "UNIT_FOSSIL_LIZARD", "lv": 15, "sigil": "염(鹽)", "cat": "야수", "acq": "조우", "el": "열/식", "habitat": "5~9층 석굴 심부", "arch": false, "neo": false, "role": "미배속"}];
+const EDGES=[{"s": "폐막의 용녀", "t": "산호 마녀", "type": "rival", "note": "극장의 주인은 누구인가 — 여지배인 ↔ 지하 호수의 괴인", "tent": false}, {"s": "해파리 무희", "t": "잔향의 인어", "type": "sister", "note": "극장의 예인 — 소문통과 프리마돈나", "tent": false}, {"s": "해파리 무희", "t": "무대안개 해파리", "type": "sister", "note": "해파리 동원 — 군무 수석과 무대 안개 담당", "tent": false}, {"s": "달빛 해월", "t": "봉인의 서기관", "type": "trade", "note": "F교차: 침몰 증언은 서기관이 받아적는다 (§3 F ◎침몰 — 달빛 해월 경유)", "tent": false}, {"s": "산호 마녀", "t": "호박 정령", "type": "trade", "note": "C교차: §4 보존 삼상 — 뒤덮음 ↔ 가둠", "tent": false}, {"s": "업화의 인살", "t": "뇌각 장수", "type": "rival", "note": "G교차: 중단된 전쟁 — 그 전쟁도 어느 순환의 불", "tent": false}, {"s": "잿빛 무녀", "t": "미이라 무녀", "type": "sister", "note": "C교차: 한 사당 두 무녀 — 순환을 받아들인 자 ↔ 시간 밖으로 나간 자", "tent": false}, {"s": "슬래그 골렘", "t": "증류기 인형", "type": "trade", "note": "D교차 후보: 가마와 공방", "tent": true}, {"s": "결계석", "t": "석상 소녀", "type": "cause", "note": "정적의 인과 (역방향=원인을 찾아다님)", "tent": false}, {"s": "결계석", "t": "소금꽃", "type": "cause", "note": "정적의 인과", "tent": false}, {"s": "결계석", "t": "소금 슬라임", "type": "cause", "note": "정적의 인과", "tent": false}, {"s": "소금꽃", "t": "소금 슬라임", "type": "sister", "note": "", "tent": false}, {"s": "호박 정령", "t": "미이라 무녀", "type": "trade", "note": "§4 보존 삼상", "tent": false}, {"s": "백은의 연금술사", "t": "진흙 인형", "type": "make", "note": "1호", "tent": false}, {"s": "백은의 연금술사", "t": "야드 스파이더", "type": "make", "note": "2호(조수)", "tent": false}, {"s": "백은의 연금술사", "t": "증류기 인형", "type": "make", "note": "3호(심장 실험)", "tent": false}, {"s": "백은의 연금술사", "t": "향로 인형", "type": "make", "note": "4호(기억 실험)", "tent": false}, {"s": "백은의 연금술사", "t": "해부인형", "type": "make", "note": "5호(원인 규명)", "tent": false}, {"s": "백은의 연금술사", "t": "해골 외과의", "type": "guard", "note": "스승", "tent": false}, {"s": "해골 외과의", "t": "해부인형", "type": "make", "note": "공동 설계", "tent": false}, {"s": "해골 외과의", "t": "미이라 무녀", "type": "trade", "note": "C교차 후보: 보존 기술의 결", "tent": true}, {"s": "야드 스파이더", "t": "수정 거미", "type": "trade", "note": "I교차: 실 거래 / 도구 거래", "tent": false}, {"s": "증류기 인형", "t": "해골 외과의", "type": "guard", "note": "시술 담당", "tent": false}, {"s": "대지모", "t": "현무", "type": "sister", "note": "G교차: 태고 지기", "tent": false}, {"s": "약초 요정", "t": "독나비", "type": "rival", "note": "노선 대립: 독을 지울 것인가 입을 것인가", "tent": false}, {"s": "독나비", "t": "독무 무용수", "type": "guard", "note": "사사", "tent": false}, {"s": "독무 무용수", "t": "독나비", "type": "make", "note": "두르는 법을 가르침", "tent": false}, {"s": "독무 무용수", "t": "대지모", "type": "guard", "note": "", "tent": false}, {"s": "공생균 소녀", "t": "대지모", "type": "guard", "note": "공생", "tent": false}, {"s": "이끼 늑대", "t": "공생균 소녀", "type": "sister", "note": "동류: 업은 자와 스민 자", "tent": false}, {"s": "전갈 소녀", "t": "독무 무용수", "type": "guard", "note": "문지기와 신입", "tent": false}, {"s": "인과의 직공", "t": "수정 거미", "type": "trade", "note": "I: 실의 공급", "tent": false}, {"s": "인과의 직공", "t": "침식 거미", "type": "trade", "note": "I: 실의 절단", "tent": false}, {"s": "거울 여우", "t": "칼날 여우", "type": "half", "note": "한 여우의 두 반쪽", "tent": false}, {"s": "쌍두사", "t": "거울 여우", "type": "sister", "note": "여우 자매 반면교사", "tent": false}, {"s": "쌍두사", "t": "칼날 여우", "type": "sister", "note": "여우 자매 반면교사", "tent": false}, {"s": "그림자 고양이", "t": "인과의 직공", "type": "trade", "note": "실을 따라 주인 찾기 의뢰", "tent": false}, {"s": "가시 임프", "t": "봉인의 서기관", "type": "trade", "note": "절도 겸 잔심부름", "tent": false}, {"s": "뇌각 장수", "t": "폭뢰 정령", "type": "guard", "note": "벼락은 원래 산으로 돌아간다", "tent": false}, {"s": "현무", "t": "봉인의 서기관", "type": "trade", "note": "등딱지 문양 해독", "tent": false}, {"s": "철벽 기사", "t": "결정 기사", "type": "sister", "note": "선임과 후임", "tent": false}, {"s": "결정 기사", "t": "결계석", "type": "cause", "note": "C교차 후보: 같은 것을 지켰나", "tent": true}, {"s": "수정 거미", "t": "침식 거미", "type": "sister", "note": "잇는 실과 끊는 실은 한 뿌리", "tent": false}, {"s": "로토스 과수지기", "t": "외눈 목양녀", "type": "witness", "note": "항로 사슬 1→2", "tent": false}, {"s": "외눈 목양녀", "t": "아이올라", "type": "witness", "note": "항로 사슬 2→3", "tent": false}, {"s": "아이올라", "t": "키르케", "type": "witness", "note": "항로 사슬 3→4", "tent": false}, {"s": "키르케", "t": "모래톱의 세이렌", "type": "witness", "note": "항로 사슬 4→5", "tent": false}, {"s": "모래톱의 세이렌", "t": "여섯가면 해협지기", "type": "witness", "note": "항로 사슬 5→6", "tent": false}, {"s": "여섯가면 해협지기", "t": "칼립소", "type": "witness", "note": "항로 사슬 6→7 (항로의 끝 = 머무름)", "tent": false}, {"s": "아이올라", "t": "에우데미아", "type": "guard", "note": "선원 — 배의 바람지기", "tent": false}, {"s": "키르케", "t": "에우데미아", "type": "guard", "note": "선원 — 항해 조언자 겸 잔소리꾼", "tent": false}, {"s": "칼립소", "t": "에우데미아", "type": "trade", "note": "최고참 승객 — 놓는 대신 따라나섬", "tent": false}, {"s": "모래톱의 세이렌", "t": "에우데미아", "type": "trade", "note": "전설의 관객 — 완창을 듣고도 오지 않은 유일한 청중", "tent": false}, {"s": "외눈 목양녀", "t": "에우데미아", "type": "rival", "note": "수첩의 마지막 칸 — 그 이름의 주인인 줄 아직 모른다", "tent": false}, {"s": "끝을 푸는 직녀", "t": "에우데미아", "type": "rival", "note": "항해를 밤마다 되푸는 자 (선장 본인은 모름)", "tent": false}, {"s": "모래톱의 세이렌", "t": "잔향의 인어", "type": "trade", "note": "A교차: 노래의 두 미완 — 합동 공연 각", "tent": false}, {"s": "끝을 푸는 직녀", "t": "인과의 직공", "type": "trade", "note": "F교차: 잇는 자와 되푸는 자 — 직공이 경계하는 유일한 존재", "tent": false}, {"s": "잿빛 무녀", "t": "업화의 인살", "type": "cause", "note": "순환 사슬: 사당의 불씨가 다음 큰불의 씨앗 — 사제가 준비하고 집행자가 걸어들어간다", "tent": false}, {"s": "수련 요정", "t": "대지모", "type": "guard", "note": "정원의 맑은 물웅덩이 지기 (A↔E 다리 — 극장 무대 수련잎 출장 관리)", "tent": false}, {"s": "거품 슬라임", "t": "봉인의 서기관", "type": "trade", "note": "F교차 후보: 탐정의 조서 동업 — 렌즈 도롱뇽의 옛 동업 승계(theater §5-3)", "tent": true}, {"s": "보일러실 대게", "t": "폐막의 용녀", "type": "guard", "note": "잠정(뷰어 보강): 극장 소속 화부 ↔ 여지배인 — 그날 보일러 압력 이상을 보고하지 않았다(theater §2)", "tent": true}];
+const LINES=[{"no": 2, "name": "한 사당의 두 무녀", "scope": "B↔C", "desc": "잿빛(재로 남음)·미이라(감아서 남음) — 재난에 대한 두 신앙적 답. 서로의 답을 인정하지 않는다.", "members": ["잿빛 무녀", "미이라 무녀"]}, {"no": 3, "name": "실의 공급망", "scope": "I→F", "desc": "수정 거미(잇는 실)·침식 거미(끊는 실)→인과의 직공(엮음)→봉인의 서기관(문자로 고정) — 인연의 생산 라인.", "members": ["수정 거미", "침식 거미", "인과의 직공", "봉인의 서기관"]}, {"no": 4, "name": "여우 반쪽", "scope": "F", "desc": "거울↔칼날. 재회하면 어떻게 되는가가 떡밥(합체 접점 후보).", "members": ["거울 여우", "칼날 여우"]}, {"no": 5, "name": "불과 우레의 전쟁", "scope": "B↔G", "desc": "인살↔장수. 현무=전장이자 기록. 전쟁의 이유는 비워둠.", "members": ["업화의 인살", "뇌각 장수", "현무"]}, {"no": 7, "name": "태고 지기", "scope": "E↔G", "desc": "대지모↔현무. 큰 것들은 서로를 오래 안다.", "members": ["대지모", "현무"]}, {"no": 8, "name": "보존 삼상", "scope": "A↔C↔D", "desc": "산호(뒤덮음)·호박(가둠)·붕대(감음) — '남기는 법' 세 학파. +공방의 '되만듦'까지 네 번째 답으로 볼 수도.", "members": ["산호 마녀", "호박 정령", "미이라 무녀", "백은의 연금술사"]}, {"no": 9, "name": "노래의 두 미완", "scope": "A↔J", "desc": "잔향의 인어(끝내지 못한 노래)↔모래톱의 세이렌(끝냈는데 닿지 못한 완창) — 합동 공연 각.", "members": ["잔향의 인어", "모래톱의 세이렌"]}, {"no": 10, "name": "잇는 실과 푸는 손", "scope": "F↔J", "desc": "인과의 직공↔끝을 푸는 직녀 — 되푸는 기술은 연결망 전체에 대한 위협. 직공이 경계하는 유일한 존재.", "members": ["인과의 직공", "끝을 푸는 직녀"]}];
+/* ---------- index ---------- */
+const byName={}; NODES.forEach(n=>byName[n.name]=n);
+const adj={}; NODES.forEach(n=>adj[n.name]=new Set());
+EDGES.forEach(e=>{adj[e.s].add(e.t);adj[e.t].add(e.s);});
+const lineOf={}; NODES.forEach(n=>lineOf[n.name]=[]);
+LINES.forEach(l=>l.members.forEach(m=>lineOf[m].push(l)));
+
+/* parallel-edge curvature */
+const pairCnt={};
+EDGES.forEach(e=>{const k=[e.s,e.t].sort().join('|');pairCnt[k]=(pairCnt[k]||0)+1;});
+const pairSeen={};
+EDGES.forEach(e=>{const k=[e.s,e.t].sort().join('|');const i=(pairSeen[k]=(pairSeen[k]||0)+1)-1;
+  e.curv = pairCnt[k]>1 ? (i-(pairCnt[k]-1)/2)*30 : 0;});
+
+/* ---------- state ---------- */
+const clOn={}; CL_ORDER.forEach(c=>clOn[c]=true);
+const ltOn={}; LT_ORDER.forEach(t=>ltOn[t]=true);
+let selLine=null, selNode=null, hovNode=null;
+let temp=46, dragNode=null, panning=false, lastM={x:0,y:0}, moved=false;
+const view={k:1,tx:0,ty:0};
+
+/* ---------- init layout ---------- */
+const anchors={};
+const RING=CL_ORDER.filter(c=>!CLUSTERS[c].pool);
+RING.forEach((c,i)=>{const a=-Math.PI/2+i*2*Math.PI/RING.length;
+  anchors[c]={x:Math.cos(a)*300,y:Math.sin(a)*265};});
+CL_ORDER.filter(c=>CLUSTERS[c].pool).forEach(c=>{anchors[c]={x:-430,y:420};});
+NODES.forEach((n,i)=>{const a=anchors[n.cluster];
+  const t=i*2.399963;
+  n.x=a.x+Math.cos(t)*(28+ (i%5)*11);
+  n.y=a.y+Math.sin(t)*(28+ (i%5)*11);
+  n.r=(n.axis?11:6.2)+Math.min(n.lv||18,50)*0.085;
+  n.pin=false;});
+
+/* ---------- canvas ---------- */
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,dpr=1;
+function resize(){dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRect();
+  W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  if(view.tx===0&&view.ty===0){view.tx=W/2;view.ty=H/2;} draw();}
+window.addEventListener('resize',resize);
+const toW=(sx,sy)=>({x:(sx-view.tx)/view.k,y:(sy-view.ty)/view.k});
+
+/* ---------- physics (Fruchterman-Reingold 변형) ---------- */
+const K=76;
+function step(){
+  const d={}; NODES.forEach(n=>d[n.name]={x:0,y:0});
+  for(let i=0;i<NODES.length;i++)for(let j=i+1;j<NODES.length;j++){
+    const a=NODES[i],b=NODES[j];let dx=a.x-b.x,dy=a.y-b.y;
+    let dd=Math.sqrt(dx*dx+dy*dy)||0.01;
+    if(dd>460)continue;
+    let f=Math.min(K*K/dd,900);
+    const ux=dx/dd,uy=dy/dd;
+    d[a.name].x+=ux*f; d[a.name].y+=uy*f; d[b.name].x-=ux*f; d[b.name].y-=uy*f;
+  }
+  EDGES.forEach(e=>{
+    const a=byName[e.s],b=byName[e.t];let dx=b.x-a.x,dy=b.y-a.y;
+    let dd=Math.sqrt(dx*dx+dy*dy)||0.01;
+    const cross=a.cluster!==b.cluster;
+    const f=Math.min(dd*dd/(cross?K*2.1:K),1400);
+    const ux=dx/dd,uy=dy/dd;
+    d[a.name].x+=ux*f; d[a.name].y+=uy*f; d[b.name].x-=ux*f; d[b.name].y-=uy*f;
+  });
+  NODES.forEach(n=>{
+    const a=anchors[n.cluster];
+    d[n.name].x+=(a.x-n.x)*2.3; d[n.name].y+=(a.y-n.y)*2.3;
+    d[n.name].x-=n.x*0.55;      d[n.name].y-=n.y*0.55;
+  });
+  NODES.forEach(n=>{
+    if(n.pin||n===dragNode)return;
+    const v=d[n.name];const len=Math.sqrt(v.x*v.x+v.y*v.y)||0.01;
+    const s=Math.min(len,temp);
+    n.x+=v.x/len*s; n.y+=v.y/len*s;
+  });
+  temp=Math.max(temp*0.982,0.35);
+}
+function reheat(){temp=40;}
+
+/* ---------- visibility ---------- */
+function nodeActive(n){
+  if(!clOn[n.cluster])return false;
+  if(selLine && selLine.members.indexOf(n.name)<0)return false;
+  return true;
+}
+function focusSet(){
+  const f=hovNode||selNode; if(!f)return null;
+  const s=new Set([f.name]); adj[f.name].forEach(x=>s.add(x)); return s;
+}
+function nodeAlpha(n,fs){
+  let a=nodeActive(n)?1:0.13;
+  if(fs&&!fs.has(n.name))a=Math.min(a,0.11);
+  return a;
+}
+function edgeAlpha(e,fs){
+  if(!ltOn[e.type])return 0;
+  let a=(clOn[byName[e.s].cluster]&&clOn[byName[e.t].cluster])?0.82:0.07;
+  if(selLine){const m=selLine.members;
+    a=(m.indexOf(e.s)>=0&&m.indexOf(e.t)>=0)?1:Math.min(a,0.06);}
+  if(fs){a=(fs.has(e.s)&&fs.has(e.t)&&(e.s===(hovNode||selNode).name||e.t===(hovNode||selNode).name))?1:Math.min(a,0.05);}
+  return a;
+}
+
+/* ---------- draw ---------- */
+function draw(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.save(); ctx.translate(view.tx,view.ty); ctx.scale(view.k,view.k);
+  const fs=focusSet();
+  const labelAll=document.getElementById('lblAll').checked;
+
+  EDGES.forEach(e=>{
+    const a=edgeAlpha(e,fs); if(a<=0.02)return;
+    const A=byName[e.s],B=byName[e.t],lt=LTYPES[e.type];
+    const mx=(A.x+B.x)/2,my=(A.y+B.y)/2;
+    let dx=B.x-A.x,dy=B.y-A.y,dd=Math.sqrt(dx*dx+dy*dy)||1;
+    const cx=mx-dy/dd*e.curv, cy=my+dx/dd*e.curv;
+    ctx.globalAlpha=a; ctx.strokeStyle=lt.color;
+    ctx.lineWidth=(a>0.9?2.1:1.25)/view.k*Math.max(view.k,0.75);
+    ctx.setLineDash(e.tent?[5/view.k,4/view.k]:[]);
+    ctx.beginPath(); ctx.moveTo(A.x,A.y);
+    if(e.curv) ctx.quadraticCurveTo(cx,cy,B.x,B.y); else ctx.lineTo(B.x,B.y);
+    ctx.stroke(); ctx.setLineDash([]);
+    if(lt.dir){
+      const px=e.curv?cx:A.x, py=e.curv?cy:A.y;
+      let ax=B.x-px, ay=B.y-py, al=Math.sqrt(ax*ax+ay*ay)||1; ax/=al; ay/=al;
+      const tipx=B.x-ax*(B.r+2.5), tipy=B.y-ay*(B.r+2.5), sz=7;
+      ctx.fillStyle=lt.color;
+      ctx.beginPath();
+      ctx.moveTo(tipx,tipy);
+      ctx.lineTo(tipx-ax*sz-ay*sz*0.45, tipy-ay*sz+ax*sz*0.45);
+      ctx.lineTo(tipx-ax*sz+ay*sz*0.45, tipy-ay*sz-ax*sz*0.45);
+      ctx.closePath(); ctx.fill();
+    }
+  });
+
+  NODES.forEach(n=>{
+    const a=nodeAlpha(n,fs); const c=CLUSTERS[n.cluster].color;
+    ctx.globalAlpha=a;
+    if(n.axis){ctx.beginPath();ctx.arc(n.x,n.y,n.r+5,0,6.2832);
+      ctx.strokeStyle='#e8d5a0';ctx.lineWidth=1.6;ctx.stroke();}
+    if(n.arch){ctx.beginPath();ctx.arc(n.x,n.y,n.r+5,0,6.2832);
+      ctx.strokeStyle='#e05252';ctx.lineWidth=2;ctx.stroke();
+      ctx.globalAlpha=a*0.5;
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r+8.5,0,6.2832);
+      ctx.strokeStyle='#e05252';ctx.lineWidth=1;ctx.stroke();
+      ctx.globalAlpha=a;}
+    ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,6.2832);
+    ctx.fillStyle=c; ctx.fill();
+    if(n.neo&&n!==selNode&&!n.pin){
+      ctx.lineWidth=1.7; ctx.strokeStyle='#f2f2fa'; ctx.setLineDash([3,2.6]);
+    } else {
+      ctx.lineWidth=n===selNode?3:(n.pin?2:1.2);
+      ctx.strokeStyle=n===selNode?'#fff':(n.pin?'#e8d5a0':'#0e0e14');
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+  });
+
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  NODES.forEach(n=>{
+    const a=nodeAlpha(n,fs);
+    if(!labelAll && a<0.9 && n!==selNode && !n.axis)return;
+    ctx.globalAlpha=Math.max(a,0.16);
+    const big=n.axis||n===selNode||n===hovNode;
+    ctx.font=(big?'bold 12px':'11px')+" 'Malgun Gothic',sans-serif";
+    ctx.lineWidth=3.4; ctx.strokeStyle='#0e0e14';
+    ctx.strokeText(n.name,n.x,n.y+n.r+3);
+    ctx.fillStyle=big?'#f0e6c8':'#c9c9d8';
+    ctx.fillText(n.name,n.x,n.y+n.r+3);
+  });
+  ctx.globalAlpha=1; ctx.restore();
+}
+
+/* ---------- loop ---------- */
+function loop(){ if(temp>0.36||dragNode) step(); draw(); requestAnimationFrame(loop); }
+
+/* ---------- picking ---------- */
+function pick(sx,sy){
+  const p=toW(sx,sy); let best=null,bd=1e9;
+  NODES.forEach(n=>{const dx=n.x-p.x,dy=n.y-p.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<Math.max(n.r+7,12)&&d<bd){bd=d;best=n;}});
+  return best;
+}
+cv.addEventListener('mousedown',ev=>{
+  const r=cv.getBoundingClientRect(),sx=ev.clientX-r.left,sy=ev.clientY-r.top;
+  moved=false; lastM={x:sx,y:sy};
+  const n=pick(sx,sy);
+  if(n){dragNode=n;cv.classList.add('drag');} else {panning=true;cv.classList.add('drag');}
+});
+window.addEventListener('mousemove',ev=>{
+  const r=cv.getBoundingClientRect(),sx=ev.clientX-r.left,sy=ev.clientY-r.top;
+  if(dragNode){const p=toW(sx,sy);dragNode.x=p.x;dragNode.y=p.y;moved=true;draw();return;}
+  if(panning){view.tx+=sx-lastM.x;view.ty+=sy-lastM.y;lastM={x:sx,y:sy};moved=true;draw();return;}
+  if(sx<0||sy<0||sx>r.width||sy>r.height){if(hovNode){hovNode=null;draw();}return;}
+  const n=pick(sx,sy);
+  if(n!==hovNode){hovNode=n;draw();}
+});
+window.addEventListener('mouseup',()=>{
+  if(dragNode){ if(moved){dragNode.pin=true;} else {select(dragNode);} }
+  else if(panning&&!moved){ selNode=null; renderPanel(); }
+  dragNode=null;panning=false;cv.classList.remove('drag');draw();
+});
+cv.addEventListener('dblclick',ev=>{
+  const r=cv.getBoundingClientRect();const n=pick(ev.clientX-r.left,ev.clientY-r.top);
+  if(n){n.pin=!n.pin;reheat();draw();}
+});
+cv.addEventListener('wheel',ev=>{
+  ev.preventDefault();
+  const r=cv.getBoundingClientRect(),sx=ev.clientX-r.left,sy=ev.clientY-r.top;
+  const p=toW(sx,sy); const f=ev.deltaY<0?1.12:1/1.12;
+  view.k=Math.max(0.25,Math.min(3.4,view.k*f));
+  view.tx=sx-p.x*view.k; view.ty=sy-p.y*view.k; draw();
+},{passive:false});
+function unpinAll(){NODES.forEach(n=>n.pin=false);reheat();}
+function autoFit(){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  NODES.forEach(n=>{x0=Math.min(x0,n.x-n.r);y0=Math.min(y0,n.y-n.r);
+                    x1=Math.max(x1,n.x+n.r);y1=Math.max(y1,n.y+n.r);});
+  const pad=34, bw=(x1-x0)||1, bh=(y1-y0)||1;
+  view.k=Math.max(0.25,Math.min(2.2,Math.min((W-pad*2)/bw,(H-pad*2-14)/bh)));
+  view.tx=W/2-(x0+x1)/2*view.k; view.ty=H/2-(y0+y1)/2*view.k;
+  draw();
+}
+function resetView(){autoFit();}
+
+/* ---------- chips / filters ---------- */
+function buildChips(){
+  const cc=document.getElementById('clChips');
+  cc.innerHTML=CL_ORDER.map(c=>{const C=CLUSTERS[c];
+    return '<span class="chip on" id="cc_'+c+'" onclick="tgCl(\''+c+'\')" title="'+esc(C.log)+'">'+
+    '<span class="dot" style="background:'+C.color+'"></span>'+c+'. '+C.name+'</span>';}).join(' ');
+  const lc=document.getElementById('ltChips');
+  lc.innerHTML=LT_ORDER.map(t=>{const T=LTYPES[t];
+    return '<span class="chip on" id="lc_'+t+'" onclick="tgLt(\''+t+'\')" title="'+esc(T.desc)+'">'+
+    '<span class="lk" style="color:'+T.color+'">'+T.sym+'</span>'+T.name+'</span>';}).join(' ');
+  const sel=document.getElementById('lineSel');
+  sel.innerHTML='<option value="">— 전체 표시 —</option>'+
+    LINES.map(l=>'<option value="'+l.no+'">'+l.no+'. '+l.name+' ('+l.scope+')</option>').join('');
+  document.getElementById('legend').innerHTML=
+    '<b style="color:#9ab">링크 범례</b> &nbsp;'+LT_ORDER.map(t=>{const T=LTYPES[t];
+      return '<span class="k"><span style="color:'+T.color+';font-weight:bold">'+T.sym+'</span> '+T.name+'</span>';}).join('')+
+    '<span class="k" style="color:#667">┄┄ 점선=잠정(?) 링크</span>'+
+    '<span class="k" style="color:#e8d5a0">◎ 금테=클러스터 축(★)</span>'+
+    '<span class="k" style="color:#e05252">◎ 붉은 링=아치에너미</span>'+
+    '<span class="k" style="color:#dfe3ee">◌ 흰 점선 테두리=신규(가안) 유닛</span>'+
+    '<span class="k" style="color:#6b6b78">● 회색=미배속 대기 풀(링크 0)</span>';
+}
+function tgCl(c){clOn[c]=!clOn[c];document.getElementById('cc_'+c).className='chip '+(clOn[c]?'on':'off');draw();}
+function tgLt(t){ltOn[t]=!ltOn[t];document.getElementById('lc_'+t).className='chip '+(ltOn[t]?'on':'off');draw();}
+function allCl(v){CL_ORDER.forEach(c=>{clOn[c]=v;document.getElementById('cc_'+c).className='chip '+(v?'on':'off');});draw();}
+function allLt(v){LT_ORDER.forEach(t=>{ltOn[t]=v;document.getElementById('lc_'+t).className='chip '+(v?'on':'off');});draw();}
+function onLine(){const v=document.getElementById('lineSel').value;
+  selLine=v?LINES.find(l=>l.no==v):null; renderPanel(); draw();}
+function pickLine(no){document.getElementById('lineSel').value=no;onLine();}
+
+/* ---------- panel ---------- */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function select(n){selNode=n;renderPanel();draw();}
+function linksOf(name){
+  return EDGES.filter(e=>e.s===name||e.t===name).map(e=>{
+    const other=e.s===name?e.t:e.s, out=e.s===name;
+    return {other:other,type:e.type,note:e.note,tent:e.tent,out:out};
+  });
+}
+function renderPanel(){
+  const p=document.getElementById('panel');
+  if(!selNode){
+    let h='<h2>연결망 개요</h2><div class="meta">노드 <b>'+NODES.length+'</b> · 링크 <b>'+EDGES.length+
+      '</b> · 클러스터 <b>'+CL_ORDER.filter(c=>!CLUSTERS[c].pool).length+'</b> + 대기풀 · 교차 라인 <b>'+LINES.length+'</b></div>'+
+      '<div class="tip" style="margin-top:8px">유닛 노드를 클릭하면 훅 전문과 링크 목록이 여기 표시됩니다.</div>';
+    h+='<h3>§2 클러스터 지도</h3>';
+    CL_ORDER.forEach(c=>{const C=CLUSTERS[c];const cnt=NODES.filter(n=>n.cluster===c).length;
+      const ax=NODES.filter(n=>n.cluster===c&&n.axis).map(n=>n.name).join('·')||'—';
+      h+='<div class="lnk"><span class="dot" style="background:'+C.color+'"></span><span class="nm">'+
+      c+'. '+esc(C.name)+'</span> <span class="nt">'+cnt+'유닛 · '+esc(C.zone)+
+      (C.pool?' · 링크 없음(의도된 고립)':' · 축 '+esc(ax))+
+      '</span><div class="nt" style="margin-left:13px">'+esc(C.log)+'</div></div>';});
+    h+='<h3>§4 교차 아키타입 라인</h3>';
+    LINES.forEach(l=>{h+='<div class="lineitem" onclick="pickLine('+l.no+')">'+l.no+'. <b>'+esc(l.name)+
+      '</b> <span class="nt">('+esc(l.scope)+')</span><div class="nt" style="margin-left:12px">'+esc(l.desc)+'</div></div>';});
+    if(selLine){h+='<h3>선택된 라인</h3><div class="hook">'+selLine.no+'. '+esc(selLine.name)+' ('+esc(selLine.scope)+
+      ')<br>'+esc(selLine.desc)+'<div class="nt" style="margin-top:6px">멤버: '+selLine.members.map(esc).join(' · ')+'</div></div>';}
+    h+='<h3>§1 링크 유형 사전</h3>';
+    LT_ORDER.forEach(t=>{const T=LTYPES[t];const c=EDGES.filter(e=>e.type===t).length;
+      h+='<div class="lnk"><span class="lk" style="color:'+T.color+'">'+T.sym+'</span><span class="nm">'+
+      esc(T.name)+'</span> <span class="nt">'+c+'개 · '+esc(T.desc)+(T.dir?' · 방향성':'')+'</span></div>';});
+    p.innerHTML=h; return;
+  }
+  const n=selNode, C=CLUSTERS[n.cluster];
+  let h='<h2>'+esc(n.name)+(n.axis?'<span class="badge axisb">축 ★</span>':'')+
+     (n.arch?'<span class="badge archb">아치에너미</span>':'')+
+     (n.neo?'<span class="badge neob">신규(가안)</span>':'')+
+     (C.pool?'<span class="badge poolb">미배속</span>':'')+'</h2>';
+  h+='<div class="meta"><span class="dot" style="background:'+C.color+'"></span><b>'+n.cluster+'. '+esc(C.name)+
+     '</b> <span style="color:#667">— '+esc(C.log)+'</span><br>'+
+     (C.pool?'<span style="color:#9a9aa8">미배속 — 도마뱀 소녀 계열 구상 대기</span><br>':'')+
+     (n.role&&!C.pool?'서사 포지션 <b>'+esc(n.role)+'</b><br>':'')+
+     '대분류 <b>'+esc(n.cat)+'</b> · 인 <b>'+esc(n.sigil)+'</b>'+(n.lv?' · Lv <b>'+n.lv+'</b>':'')+'<br>'+
+     '획득 <b>'+esc(n.acq)+'</b> · 서사 위계 <b>'+esc(n.tier)+'</b><br>'+
+     '원소 '+esc(n.el)+(n.habitat?' · 서식 '+esc(n.habitat):'')+'<br>'+
+     (n.uid?'<span style="color:#556">'+esc(n.uid)+'</span>'
+           :'<span style="color:#ffb877">신규·인(印) 미정</span><span style="color:#556"> — units.csv 미등록 가안 (정본 unit_lore_odyssey.md v0.5)</span>')+'</div>';
+  h+='<h3>역할 훅 (§3 전문)</h3><div class="hook">'+esc(n.hook)+'</div>';
+  const ls=linksOf(n.name);
+  h+='<h3>링크 '+ls.length+'</h3>';
+  if(!ls.length)h+='<div class="nt">연결 라인 없음'+(C.pool?' — 의도된 고립(미배속 대기 풀)':'')+'</div>';
+  ls.forEach(l=>{const T=LTYPES[l.type],o=byName[l.other];
+    const cross=o.cluster!==n.cluster;
+    h+='<div class="lnk"><span class="lk" style="color:'+T.color+'">'+T.sym+'</span>'+
+      '<span class="nm" style="cursor:pointer" onclick="select(byName['+JSON.stringify(l.other)+'])">'+esc(l.other)+'</span> '+
+      '<span class="nt"><span class="dot" style="width:6px;height:6px;background:'+CLUSTERS[o.cluster].color+'"></span>'+
+      o.cluster+(cross?' 교차':'')+' · '+esc(T.name)+(T.dir?(l.out?' (→ 나감)':' (← 들어옴)'):'')+
+      (l.tent?' <span class="tt">· 잠정(?)</span>':'')+'</span>'+
+      (l.note?'<div class="nt" style="margin-left:17px">'+esc(l.note)+'</div>':'')+'</div>';});
+  if(n.notes.length){h+='<h3>비-노드 링크 / 메모</h3>';
+    n.notes.forEach(x=>h+='<div class="lnk"><span class="nt">'+esc(x)+'</span></div>');}
+  const lns=lineOf[n.name];
+  if(lns.length){h+='<h3>소속 교차 라인</h3>';
+    lns.forEach(l=>h+='<div class="lineitem" onclick="pickLine('+l.no+')">'+l.no+'. <b>'+esc(l.name)+
+      '</b> <span class="nt">('+esc(l.scope)+')</span><div class="nt" style="margin-left:12px">'+esc(l.desc)+'</div></div>');}
+  h+='<div class="note">' + (n.pin?'📌 고정됨 (더블클릭 해제)':'미고정 — 드래그하면 고정') + '</div>';
+  h+='<div class="lineitem" style="margin-top:10px;color:#667" onclick="selNode=null;renderPanel();draw()">← 개요로</div>';
+  p.innerHTML=h;
+}
+
+/* ---------- boot ---------- */
+buildChips(); resize(); renderPanel();
+for(let i=0;i<220;i++) step();
+autoFit();
+loop();
+</script>
+</body></html>
